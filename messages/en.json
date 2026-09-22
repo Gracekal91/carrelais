@@ -548,5 +548,295 @@
       "save": "Save Changes",
       "saving": "Saving..."
     }
+  },
+  "AdminPortal": {
+    "nav": {
+      "title": "Admin Portal",
+      "superAdmin": "Super Admin",
+      "dashboard": "Dashboard",
+      "listings": "Listings",
+      "users": "Users",
+      "dealerships": "Dealerships",
+      "reports": "Reports",
+      "logout": "Sign Out"
+    },
+    "dashboard": {
+      "title": "Admin Dashboard",
+      "subtitle": "Global marketplace supervision & moderation for Car Relais DRC",
+      "kpis": {
+        "users": "Registered Users",
+        "dealersBreakdown": "{count} dealerships",
+        "individualsBreakdown": "{count} individuals",
+        "listings": "Total Listings",
+        "pending": "Pending Approval",
+        "pendingNotice": "Requires your attention",
+        "published": "Live Listings",
+        "sold": "Sold Listings",
+        "dealerships": "Dealerships"
+      },
+      "actionsRequired": {
+        "title": "Action Required",
+        "pendingListings": "{count} pending listings",
+        "newReports": "{count} unresolved reports",
+        "unverifiedDealers": "{count} dealers awaiting verification",
+        "allClear": "All moderation tasks are up to date!",
+        "view": "Review"
+      },
+      "recentActivity": {
+        "title": "Recent Activity",
+        "empty": "No recent activity recorded."
+      },
+      "statusBreakdown": {
+        "title": "Listing Status Breakdown",
+        "viewFiltered": "View listings"
+      }
+    },
+    "listings": {
+      "title": "Manage Listings",
+      "subtitle": "Inspect, filter and moderate vehicle listings submitted across the platform",
+      "searchPlaceholder": "Search by make, model, seller or ID...",
+      "filters": {
+        "status": "Status",
+        "allStatuses": "All statuses",
+        "sellerType": "Seller Type",
+        "allSellers": "All sellers",
+        "dealer": "Dealership",
+        "individual": "Individual",
+        "date": "Date Range",
+        "allDates": "All dates",
+        "today": "Today",
+        "thisWeek": "This week",
+        "thisMonth": "This month",
+        "reset": "Reset filters"
+      },
+      "table": {
+        "vehicle": "Vehicle",
+        "seller": "Seller",
+        "price": "Price",
+        "status": "Status",
+        "dateSubmitted": "Date Submitted",
+        "actions": "Actions",
+        "review": "Review"
+      },
+      "pagination": {
+        "showing": "Showing {start} to {end} of {total} listings",
+        "prev": "Previous",
+        "next": "Next"
+      },
+      "empty": {
+        "title": "No listings found",
+        "desc": "No listings match the selected filters. Try adjusting your search or reset filters."
+      }
+    },
+    "review": {
+      "back": "Back to listings",
+      "title": "Review Listing",
+      "statusLabel": "Current status:",
+      "photosTitle": "Submitted Photos Gallery",
+      "noPhotos": "No photos provided for this vehicle.",
+      "specsTitle": "Vehicle Specifications",
+      "priceTitle": "Pricing & Financing",
+      "negotiable": "Price negotiable",
+      "finance": "Financing available",
+      "featuresTitle": "Vehicle Features & Options",
+      "noFeatures": "No specific features selected.",
+      "sellerTitle": "Seller Information",
+      "viewSellerProfile": "View seller profile",
+      "descriptionTitle": "Seller Description",
+      "noDescription": "No description provided.",
+      "trustTitle": "History & Transparency (DRC)",
+      "historyTitle": "Administrative Decision History",
+      "actionsTitle": "Admin Actions",
+      "approveBtn": "Approve Listing",
+      "rejectBtn": "Reject Listing",
+      "suspendBtn": "Suspend Listing",
+      "putOnHoldBtn": "Put on Hold",
+      "unpublishBtn": "Unpublish (Draft)",
+      "approveModal": {
+        "title": "Approve this listing?",
+        "message": "This listing will be published immediately on Car Relais and become visible to buyers across the marketplace.",
+        "confirm": "Confirm & Publish",
+        "cancel": "Cancel"
+      },
+      "rejectModal": {
+        "title": "Reject Listing",
+        "subtitle": "Specify the rejection reason. It will be recorded and communicated to the seller.",
+        "reasonLabel": "Primary rejection reason",
+        "reasons": {
+          "incomplete": "Incomplete information",
+          "photos": "Insufficient or blurry photos",
+          "incorrect": "Incorrect or inconsistent information",
+          "price": "Unrealistic or misleading price",
+          "description": "Insufficient or misleading description",
+          "inappropriate": "Inappropriate content or photos",
+          "sold": "Vehicle already sold",
+          "duplicate": "Duplicate listing",
+          "other": "Other reason"
+        },
+        "commentLabel": "Comment for the seller",
+        "commentPlaceholder": "Explain specifically what needs to be fixed for this listing to be approved...",
+        "confirm": "Confirm Rejection",
+        "cancel": "Cancel"
+      }
+    },
+    "users": {
+      "title": "Manage Users",
+      "subtitle": "Supervise individual accounts, dealerships and administrators",
+      "searchPlaceholder": "Search by name, email, phone or dealership...",
+      "filters": {
+        "accountType": "Account Type",
+        "allTypes": "All types",
+        "individuals": "Individuals",
+        "dealers": "Dealerships",
+        "admins": "Administrators",
+        "status": "Status",
+        "allStatuses": "All statuses",
+        "active": "Active only",
+        "suspended": "Suspended only"
+      },
+      "table": {
+        "name": "Name / Dealership",
+        "accountType": "Account Type",
+        "contact": "Contact",
+        "status": "Status",
+        "joined": "Joined",
+        "actions": "Actions",
+        "details": "Details"
+      },
+      "pagination": {
+        "showing": "Showing {start} to {end} of {total} users",
+        "prev": "Previous",
+        "next": "Next"
+      },
+      "detailsModal": {
+        "title": "User Details",
+        "general": "General Information",
+        "activity": "Activity on Car Relais",
+        "totalListings": "Total listings",
+        "activeListings": "Active listings",
+        "soldListings": "Sold listings",
+        "rejectedListings": "Rejected listings",
+        "suspendBtn": "Suspend Account",
+        "reactivateBtn": "Reactivate Account",
+        "suspendConfirmTitle": "Suspend this user account?",
+        "suspendConfirmMsg": "This user will no longer be able to post listings and their active listings will be hidden.",
+        "suspendReasonPlaceholder": "Enter reason for suspension...",
+        "confirmSuspend": "Confirm Suspension",
+        "confirmReactivate": "Confirm Reactivation",
+        "close": "Close"
+      },
+      "empty": {
+        "title": "No users found",
+        "desc": "No users match your current search criteria."
+      }
+    },
+    "dealers": {
+      "title": "Manage Dealerships",
+      "subtitle": "Validate and monitor automotive professionals across DRC",
+      "stats": {
+        "total": "Total Dealerships",
+        "verified": "Verified",
+        "unverified": "Awaiting Verification"
+      },
+      "searchPlaceholder": "Search dealership by name, city...",
+      "filters": {
+        "verification": "Verification Status",
+        "all": "All dealerships",
+        "verifiedOnly": "Verified only",
+        "unverifiedOnly": "Unverified only"
+      },
+      "table": {
+        "dealership": "Dealership",
+        "contact": "Contact",
+        "location": "Location",
+        "inventory": "Active Inventory",
+        "status": "Status",
+        "actions": "Actions",
+        "manage": "Verification & Profile"
+      },
+      "pagination": {
+        "showing": "Showing {start} to {end} of {total} dealerships"
+      },
+      "verifyModal": {
+        "title": "Dealership Verification",
+        "verifiedBadge": "✓ Verified Dealership",
+        "unverifiedBadge": "Pending Verification",
+        "description": "Awarding the verified badge certifies the legal existence of the business (RCCM, Id. Nat.) and builds trust with potential car buyers.",
+        "verifyBtn": "Grant Official Verification",
+        "unverifyBtn": "Revoke Verification",
+        "viewStorefront": "View Public Storefront",
+        "close": "Close"
+      },
+      "empty": {
+        "title": "No dealerships found",
+        "desc": "No dealerships match the selected criteria."
+      }
+    },
+    "reports": {
+      "title": "Moderation Reports",
+      "subtitle": "Process complaints, fraudulent listings and reported policy violations",
+      "searchPlaceholder": "Search by target, reason, email...",
+      "filters": {
+        "status": "Status",
+        "allStatuses": "All statuses",
+        "new": "New",
+        "inProgress": "In Progress",
+        "resolved": "Resolved",
+        "rejected": "Rejected",
+        "type": "Violation Type",
+        "allTypes": "All types"
+      },
+      "types": {
+        "FRAUD": "Suspected scam or fraud",
+        "INCORRECT_INFO": "Incorrect or false information",
+        "ALREADY_SOLD": "Vehicle already sold",
+        "MISLEADING_PRICE": "Misleading or unrealistic price",
+        "WRONG_PHOTOS": "Stolen or inaccurate photos",
+        "INAPPROPRIATE": "Inappropriate content",
+        "OTHER": "Other violation"
+      },
+      "table": {
+        "target": "Reported Target",
+        "type": "Violation",
+        "reason": "Reported Details",
+        "reporter": "Reporter",
+        "date": "Date",
+        "status": "Status",
+        "actions": "Actions",
+        "treat": "Review"
+      },
+      "pagination": {
+        "showing": "Showing {start} to {end} of {total} reports"
+      },
+      "resolveModal": {
+        "title": "Process Moderation Report",
+        "reportedItem": "Reported target:",
+        "reasonReported": "Submitted reason:",
+        "resolutionNote": "Internal resolution note (optional)",
+        "notePlaceholder": "Explain the action taken or reason for dismissal...",
+        "resolveBtn": "Mark as Resolved",
+        "rejectBtn": "Dismiss Report (Reject)",
+        "inspectListing": "View Reported Listing",
+        "close": "Close"
+      },
+      "empty": {
+        "title": "No reports",
+        "desc": "No moderation reports match your current filters. Marketplace is healthy!"
+      }
+    },
+    "statuses": {
+      "DRAFT": "Draft",
+      "PENDING_REVIEW": "Pending Review",
+      "PUBLISHED": "Published",
+      "REJECTED": "Rejected",
+      "SOLD": "Sold",
+      "EXPIRED": "Expired",
+      "SUSPENDED": "Suspended"
+    },
+    "userStatuses": {
+      "ACTIVE": "Active",
+      "SUSPENDED": "Suspended",
+      "DISABLED": "Disabled"
+    }
   }
 }

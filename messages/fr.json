@@ -548,5 +548,295 @@
       "save": "Enregistrer les modifications",
       "saving": "Enregistrement..."
     }
+  },
+  "AdminPortal": {
+    "nav": {
+      "title": "Portail Admin",
+      "superAdmin": "Super Admin",
+      "dashboard": "Tableau de bord",
+      "listings": "Annonces",
+      "users": "Utilisateurs",
+      "dealerships": "Concessionnaires",
+      "reports": "Signalements",
+      "logout": "Déconnexion"
+    },
+    "dashboard": {
+      "title": "Tableau de bord administrateur",
+      "subtitle": "Supervision globale et modération du marketplace Car Relais RDC",
+      "kpis": {
+        "users": "Utilisateurs inscrits",
+        "dealersBreakdown": "{count} concessionnaires",
+        "individualsBreakdown": "{count} particuliers",
+        "listings": "Total Annonces",
+        "pending": "En attente d'approbation",
+        "pendingNotice": "Nécessite votre attention",
+        "published": "Annonces en ligne",
+        "sold": "Annonces vendues",
+        "dealerships": "Concessionnaires"
+      },
+      "actionsRequired": {
+        "title": "Actions requises",
+        "pendingListings": "{count} annonces en attente",
+        "newReports": "{count} signalements non résolus",
+        "unverifiedDealers": "{count} concessionnaires à vérifier",
+        "allClear": "Toutes les tâches de modération sont à jour !",
+        "view": "Examiner"
+      },
+      "recentActivity": {
+        "title": "Activité récente",
+        "empty": "Aucune activité récente enregistrée."
+      },
+      "statusBreakdown": {
+        "title": "Répartition des annonces par statut",
+        "viewFiltered": "Voir les annonces"
+      }
+    },
+    "listings": {
+      "title": "Gestion des annonces",
+      "subtitle": "Examinez, filtrez et modérez les véhicules soumis sur la plateforme",
+      "searchPlaceholder": "Rechercher par marque, modèle, vendeur ou ID...",
+      "filters": {
+        "status": "Statut",
+        "allStatuses": "Tous les statuts",
+        "sellerType": "Type de vendeur",
+        "allSellers": "Tous les vendeurs",
+        "dealer": "Concessionnaire",
+        "individual": "Particulier",
+        "date": "Période",
+        "allDates": "Toutes les dates",
+        "today": "Aujourd'hui",
+        "thisWeek": "Cette semaine",
+        "thisMonth": "Ce mois-ci",
+        "reset": "Réinitialiser les filtres"
+      },
+      "table": {
+        "vehicle": "Véhicule",
+        "seller": "Vendeur",
+        "price": "Prix",
+        "status": "Statut",
+        "dateSubmitted": "Date de soumission",
+        "actions": "Actions",
+        "review": "Examiner"
+      },
+      "pagination": {
+        "showing": "Affichage de {start} à {end} sur {total} annonces",
+        "prev": "Précédent",
+        "next": "Suivant"
+      },
+      "empty": {
+        "title": "Aucune annonce trouvée",
+        "desc": "Aucune annonce ne correspond aux filtres sélectionnés. Essayez d'ajuster vos critères ou réinitialisez les filtres."
+      }
+    },
+    "review": {
+      "back": "Retour aux annonces",
+      "title": "Examen de l'annonce",
+      "statusLabel": "Statut actuel :",
+      "photosTitle": "Galerie photos soumises",
+      "noPhotos": "Aucune photo disponible pour ce véhicule.",
+      "specsTitle": "Fiche technique du véhicule",
+      "priceTitle": "Tarification & Financement",
+      "negotiable": "Prix négociable",
+      "finance": "Financement disponible",
+      "featuresTitle": "Équipements et options déclarés",
+      "noFeatures": "Aucun équipement spécifique renseigné.",
+      "sellerTitle": "Informations sur le vendeur",
+      "viewSellerProfile": "Voir le profil complet",
+      "descriptionTitle": "Description fournie par le vendeur",
+      "noDescription": "Aucune description renseignée.",
+      "trustTitle": "Historique & Transparence (RDC)",
+      "historyTitle": "Historique des décisions administratives",
+      "actionsTitle": "Actions administratives",
+      "approveBtn": "Approuver l'annonce",
+      "rejectBtn": "Rejeter l'annonce",
+      "suspendBtn": "Suspendre l'annonce",
+      "putOnHoldBtn": "Mettre en attente",
+      "unpublishBtn": "Dépublier (Brouillon)",
+      "approveModal": {
+        "title": "Approuver cette annonce ?",
+        "message": "Cette annonce sera immédiatement publiée sur Car Relais et deviendra visible aux acheteurs sur l'ensemble du marketplace.",
+        "confirm": "Confirmer et publier",
+        "cancel": "Annuler"
+      },
+      "rejectModal": {
+        "title": "Rejeter l'annonce",
+        "subtitle": "Précisez la raison du rejet. Elle sera enregistrée et communiquée au vendeur.",
+        "reasonLabel": "Motif principal du rejet",
+        "reasons": {
+          "incomplete": "Informations incomplètes",
+          "photos": "Photos insuffisantes ou de mauvaise qualité",
+          "incorrect": "Informations incorrectes ou incohérentes",
+          "price": "Prix anormal, erroné ou suspect",
+          "description": "Description trompeuse ou insuffisante",
+          "inappropriate": "Contenu ou photos inappropriés",
+          "sold": "Véhicule déjà vendu",
+          "duplicate": "Annonce en doublon",
+          "other": "Autre motif"
+        },
+        "commentLabel": "Commentaire à l'attention du vendeur",
+        "commentPlaceholder": "Expliquez précisément au vendeur ce qui doit être corrigé pour que son annonce puisse être validée...",
+        "confirm": "Confirmer le rejet",
+        "cancel": "Annuler"
+      }
+    },
+    "users": {
+      "title": "Gestion des utilisateurs",
+      "subtitle": "Supervisez les comptes particuliers, concessionnaires et administrateurs",
+      "searchPlaceholder": "Rechercher par nom, email, téléphone ou concession...",
+      "filters": {
+        "accountType": "Type de compte",
+        "allTypes": "Tous les types",
+        "individuals": "Particuliers",
+        "dealers": "Concessionnaires",
+        "admins": "Administrateurs",
+        "status": "Statut",
+        "allStatuses": "Tous les statuts",
+        "active": "Actifs uniquement",
+        "suspended": "Suspendus uniquement"
+      },
+      "table": {
+        "name": "Nom / Établissement",
+        "accountType": "Type de compte",
+        "contact": "Contact",
+        "status": "Statut",
+        "joined": "Inscription",
+        "actions": "Actions",
+        "details": "Détails"
+      },
+      "pagination": {
+        "showing": "Affichage de {start} à {end} sur {total} utilisateurs",
+        "prev": "Précédent",
+        "next": "Suivant"
+      },
+      "detailsModal": {
+        "title": "Fiche utilisateur",
+        "general": "Informations générales",
+        "activity": "Activité sur Car Relais",
+        "totalListings": "Total annonces",
+        "activeListings": "Annonces actives",
+        "soldListings": "Annonces vendues",
+        "rejectedListings": "Annonces rejetées",
+        "suspendBtn": "Suspendre cet utilisateur",
+        "reactivateBtn": "Réactiver cet utilisateur",
+        "suspendConfirmTitle": "Suspendre le compte de l'utilisateur ?",
+        "suspendConfirmMsg": "Cet utilisateur ne pourra plus publier d'annonces et ses annonces publiées seront immédiatement suspendues.",
+        "suspendReasonPlaceholder": "Indiquez le motif de suspension...",
+        "confirmSuspend": "Confirmer la suspension",
+        "confirmReactivate": "Confirmer la réactivation",
+        "close": "Fermer"
+      },
+      "empty": {
+        "title": "Aucun utilisateur trouvé",
+        "desc": "Aucun utilisateur ne correspond à vos critères de recherche."
+      }
+    },
+    "dealers": {
+      "title": "Gestion des concessionnaires",
+      "subtitle": "Validez et suivez les professionnels de l'automobile en RDC",
+      "stats": {
+        "total": "Total concessionnaires",
+        "verified": "Vérifiés",
+        "unverified": "En attente de vérification"
+      },
+      "searchPlaceholder": "Rechercher un concessionnaire par nom, ville...",
+      "filters": {
+        "verification": "Statut de vérification",
+        "all": "Tous les concessionnaires",
+        "verifiedOnly": "Vérifiés uniquement",
+        "unverifiedOnly": "Non vérifiés uniquement"
+      },
+      "table": {
+        "dealership": "Concessionnaire",
+        "contact": "Contact",
+        "location": "Emplacement",
+        "inventory": "Véhicules en vente",
+        "status": "Statut",
+        "actions": "Actions",
+        "manage": "Vérification & Profil"
+      },
+      "pagination": {
+        "showing": "Affichage de {start} à {end} sur {total} concessionnaires"
+      },
+      "verifyModal": {
+        "title": "Vérification du concessionnaire",
+        "verifiedBadge": "✓ Concessionnaire vérifié",
+        "unverifiedBadge": "En attente de vérification",
+        "description": "L'attribution du badge vérifié certifie l'existence légale de l'établissement (RCCM, Id. Nat.) et confère une crédibilité renforcée auprès des acheteurs.",
+        "verifyBtn": "Accorder la vérification officielle",
+        "unverifyBtn": "Révoquer la vérification",
+        "viewStorefront": "Consulter la vitrine publique",
+        "close": "Fermer"
+      },
+      "empty": {
+        "title": "Aucun concessionnaire trouvé",
+        "desc": "Aucun concessionnaire ne correspond aux critères sélectionnés."
+      }
+    },
+    "reports": {
+      "title": "Modération des signalements",
+      "subtitle": "Traitez les plaintes, annonces frauduleuses et infractions constatées",
+      "searchPlaceholder": "Rechercher par cible, motif, email...",
+      "filters": {
+        "status": "Statut",
+        "allStatuses": "Tous les statuts",
+        "new": "Nouveaux",
+        "inProgress": "En cours",
+        "resolved": "Résolus",
+        "rejected": "Rejetés",
+        "type": "Motif d'infraction",
+        "allTypes": "Tous les motifs"
+      },
+      "types": {
+        "FRAUD": "Arnaque ou fraude suspectée",
+        "INCORRECT_INFO": "Informations erronées ou falsifiées",
+        "ALREADY_SOLD": "Véhicule déjà vendu",
+        "MISLEADING_PRICE": "Prix trompeur ou anormal",
+        "WRONG_PHOTOS": "Photos volées ou non conformes",
+        "INAPPROPRIATE": "Contenu inapproprié",
+        "OTHER": "Autre infraction"
+      },
+      "table": {
+        "target": "Cible du signalement",
+        "type": "Infraction",
+        "reason": "Détails rapportés",
+        "reporter": "Déclarant",
+        "date": "Date",
+        "status": "Statut",
+        "actions": "Actions",
+        "treat": "Traiter"
+      },
+      "pagination": {
+        "showing": "Affichage de {start} à {end} sur {total} signalements"
+      },
+      "resolveModal": {
+        "title": "Traitement du signalement",
+        "reportedItem": "Élément signalé :",
+        "reasonReported": "Motif transmis :",
+        "resolutionNote": "Note de traitement interne (optionnelle)",
+        "notePlaceholder": "Expliquez l'action entreprise ou la justification de clôture...",
+        "resolveBtn": "Marquer comme résolu",
+        "rejectBtn": "Classer sans suite (Rejeter)",
+        "inspectListing": "Voir l'annonce ciblée",
+        "close": "Fermer"
+      },
+      "empty": {
+        "title": "Aucun signalement",
+        "desc": "Aucun signalement ne correspond à vos filtres actuels. Le marketplace est sain !"
+      }
+    },
+    "statuses": {
+      "DRAFT": "Brouillon",
+      "PENDING_REVIEW": "En attente",
+      "PUBLISHED": "Publiée",
+      "REJECTED": "Rejetée",
+      "SOLD": "Vendue",
+      "EXPIRED": "Expirée",
+      "SUSPENDED": "Suspendue"
+    },
+    "userStatuses": {
+      "ACTIVE": "Actif",
+      "SUSPENDED": "Suspendu",
+      "DISABLED": "Désactivé"
+    }
   }
 }

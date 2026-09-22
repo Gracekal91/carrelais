@@ -145,17 +145,234 @@ export async function createListing(data: Partial<ExtendedVehicleListing>) {
   return { success: true, id };
 }
 
-export async function updateListingStatus(id: string, status: ExtendedVehicleListing["status"], reason?: string) {
-  const listing = db.listings.find(l => l.id === id);
-  if (!listing) return { success: false };
-  
-  listing.status = status;
-  if (reason) listing.rejectionReason = reason;
-  
+export async function requireAdmin() {
+  const user = await getCurrentUser();
+  if (!user || user.role !== "ADMIN") {
+    throw new Error("Accès non autorisé : droits administrateur requis");
+  }
+  return user;
+}
+
+export async function approveListingAction(listingId: string) {
+  const admin = await requireAdmin();
+  const listing = db.listings.find(l => l.id === listingId);
+  if (!listing) return { success: false, error: "Annonce introuvable" };
+
+  listing.status = "PUBLISHED";
+  listing.approvedAt = new Date().toISOString();
+  listing.approvedBy = `${admin.firstName} ${admin.lastName}`;
+
+  if (!listing.approvalHistory) listing.approvalHistory = [];
+  listing.approvalHistory.push({
+    date: new Date().toISOString(),
+    adminName: `${admin.firstName} ${admin.lastName}`,
+    action: "APPROVED",
+  });
+
+  if (!db.auditLogs) db.auditLogs = [];
+  db.auditLogs.unshift({
+    id: `audit_${Date.now()}`,
+    adminId: admin.id,
+    adminName: `${admin.firstName} ${admin.lastName}`,
+    action: "LISTING_APPROVED",
+    targetType: "LISTING",
+    targetId: listing.id,
+    targetLabel: `${listing.year} ${listing.make} ${listing.model}`,
+    details: "Annonce approuvée et mise en ligne sur le marketplace.",
+    timestamp: new Date().toISOString(),
+  });
+
+  revalidatePath("/admin");
   revalidatePath("/admin/listings");
+  revalidatePath(`/admin/listings/${listingId}`);
   revalidatePath("/dashboard");
   revalidatePath("/vehicles");
   return { success: true };
+}
+
+export async function rejectListingAction(listingId: string, reason: string, comment?: string) {
+  const admin = await requireAdmin();
+  const listing = db.listings.find(l => l.id === listingId);
+  if (!listing) return { success: false, error: "Annonce introuvable" };
+
+  listing.status = "REJECTED";
+  listing.rejectionReason = reason;
+  listing.rejectionComment = comment?.trim() || undefined;
+
+  if (!listing.approvalHistory) listing.approvalHistory = [];
+  listing.approvalHistory.push({
+    date: new Date().toISOString(),
+    adminName: `${admin.firstName} ${admin.lastName}`,
+    action: "REJECTED",
+    reason,
+    comment: comment?.trim() || undefined,
+  });
+
+  if (!db.auditLogs) db.auditLogs = [];
+  db.auditLogs.unshift({
+    id: `audit_${Date.now()}`,
+    adminId: admin.id,
+    adminName: `${admin.firstName} ${admin.lastName}`,
+    action: "LISTING_REJECTED",
+    targetType: "LISTING",
+    targetId: listing.id,
+    targetLabel: `${listing.year} ${listing.make} ${listing.model}`,
+    details: `Motif : ${reason}${comment ? ` (${comment})` : ""}`,
+    timestamp: new Date().toISOString(),
+  });
+
+  revalidatePath("/admin");
+  revalidatePath("/admin/listings");
+  revalidatePath(`/admin/listings/${listingId}`);
+  revalidatePath("/dashboard");
+  revalidatePath("/vehicles");
+  return { success: true };
+}
+
+export async function setListingStatusAction(listingId: string, status: ExtendedVehicleListing["status"], note?: string) {
+  const admin = await requireAdmin();
+  const listing = db.listings.find(l => l.id === listingId);
+  if (!listing) return { success: false, error: "Annonce introuvable" };
+
+  const previousStatus = listing.status;
+  listing.status = status;
+
+  let auditAction: any = "LISTING_UNPUBLISHED";
+  if (status === "SUSPENDED") auditAction = "LISTING_SUSPENDED";
+  else if (status === "PUBLISHED") auditAction = "LISTING_APPROVED";
+
+  if (!listing.approvalHistory) listing.approvalHistory = [];
+  listing.approvalHistory.push({
+    date: new Date().toISOString(),
+    adminName: `${admin.firstName} ${admin.lastName}`,
+    action: status === "SUSPENDED" ? "SUSPENDED" : "REACTIVATED",
+    reason: note || `Statut modifié de ${previousStatus} à ${status}`,
+  });
+
+  if (!db.auditLogs) db.auditLogs = [];
+  db.auditLogs.unshift({
+    id: `audit_${Date.now()}`,
+    adminId: admin.id,
+    adminName: `${admin.firstName} ${admin.lastName}`,
+    action: auditAction,
+    targetType: "LISTING",
+    targetId: listing.id,
+    targetLabel: `${listing.year} ${listing.make} ${listing.model}`,
+    details: note || `Statut modifié de ${previousStatus} à ${status}`,
+    timestamp: new Date().toISOString(),
+  });
+
+  revalidatePath("/admin");
+  revalidatePath("/admin/listings");
+  revalidatePath(`/admin/listings/${listingId}`);
+  revalidatePath("/dashboard");
+  revalidatePath("/vehicles");
+  return { success: true };
+}
+
+export async function toggleUserStatusAction(userId: string, newStatus: "ACTIVE" | "SUSPENDED", reason?: string) {
+  const admin = await requireAdmin();
+  const user = db.users.find(u => u.id === userId);
+  if (!user) return { success: false, error: "Utilisateur introuvable" };
+
+  user.status = newStatus;
+
+  // If user is suspended, also mark their active listings as suspended
+  if (newStatus === "SUSPENDED") {
+    db.listings.forEach(l => {
+      if (l.ownerId === user.id && l.status === "PUBLISHED") {
+        l.status = "SUSPENDED";
+      }
+    });
+  }
+
+  if (!db.auditLogs) db.auditLogs = [];
+  db.auditLogs.unshift({
+    id: `audit_${Date.now()}`,
+    adminId: admin.id,
+    adminName: `${admin.firstName} ${admin.lastName}`,
+    action: newStatus === "SUSPENDED" ? "USER_SUSPENDED" : "USER_REACTIVATED",
+    targetType: "USER",
+    targetId: user.id,
+    targetLabel: user.accountType === "DEALERSHIP" ? (user.dealershipName || user.email) : `${user.firstName} ${user.lastName}`,
+    details: reason || (newStatus === "SUSPENDED" ? "Compte suspendu par l'administration" : "Compte réactivé par l'administration"),
+    timestamp: new Date().toISOString(),
+  });
+
+  revalidatePath("/admin");
+  revalidatePath("/admin/users");
+  revalidatePath("/admin/dealers");
+  revalidatePath("/admin/listings");
+  return { success: true };
+}
+
+export async function toggleDealerVerificationAction(dealerId: string, isVerified: boolean, reason?: string) {
+  const admin = await requireAdmin();
+  const user = db.users.find(u => u.id === dealerId);
+  if (!user) return { success: false, error: "Concessionnaire introuvable" };
+
+  user.isVerified = isVerified;
+
+  // Synchronize on dealer listings
+  db.listings.forEach(l => {
+    if (l.ownerId === user.id && l.seller) {
+      l.seller.isVerified = isVerified;
+      l.isVerified = isVerified;
+    }
+  });
+
+  if (!db.auditLogs) db.auditLogs = [];
+  db.auditLogs.unshift({
+    id: `audit_${Date.now()}`,
+    adminId: admin.id,
+    adminName: `${admin.firstName} ${admin.lastName}`,
+    action: isVerified ? "DEALER_VERIFIED" : "DEALER_UNVERIFIED",
+    targetType: "DEALER",
+    targetId: user.id,
+    targetLabel: user.dealershipName || `${user.firstName} ${user.lastName}`,
+    details: reason || (isVerified ? "Concessionnaire vérifié avec succès." : "Statut de vérification révoqué."),
+    timestamp: new Date().toISOString(),
+  });
+
+  revalidatePath("/admin");
+  revalidatePath("/admin/dealers");
+  revalidatePath("/admin/users");
+  revalidatePath(`/dealers/${dealerId}`);
+  revalidatePath("/vehicles");
+  return { success: true };
+}
+
+export async function resolveReportAction(reportId: string, status: "RESOLVED" | "REJECTED", resolutionNote?: string) {
+  const admin = await requireAdmin();
+  if (!db.reports) db.reports = [];
+  const report = db.reports.find(r => r.id === reportId);
+  if (!report) return { success: false, error: "Signalement introuvable" };
+
+  report.status = status;
+  report.resolvedAt = new Date().toISOString();
+  report.resolvedBy = `${admin.firstName} ${admin.lastName}`;
+  report.resolutionNote = resolutionNote?.trim() || undefined;
+
+  if (!db.auditLogs) db.auditLogs = [];
+  db.auditLogs.unshift({
+    id: `audit_${Date.now()}`,
+    adminId: admin.id,
+    adminName: `${admin.firstName} ${admin.lastName}`,
+    action: status === "RESOLVED" ? "REPORT_RESOLVED" : "REPORT_REJECTED",
+    targetType: "REPORT",
+    targetId: report.id,
+    targetLabel: report.targetTitle,
+    details: resolutionNote || (status === "RESOLVED" ? "Signalement traité et résolu." : "Signalement classé sans suite."),
+    timestamp: new Date().toISOString(),
+  });
+
+  revalidatePath("/admin");
+  revalidatePath("/admin/reports");
+  return { success: true };
+}
+
+export async function updateListingStatus(id: string, status: ExtendedVehicleListing["status"], reason?: string) {
+  return setListingStatusAction(id, status, reason);
 }
 
 export async function incrementAnalytics(id: string, type: "views" | "chats" | "phoneClicks" | "contacts") {

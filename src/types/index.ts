@@ -1,6 +1,6 @@
 export type SellerType = "DEALERSHIP" | "INDIVIDUAL";
 export type VehicleAvailability = "IN_CONGO" | "IMPORT";
-export type VehicleStatus = "DRAFT" | "PENDING_REVIEW" | "PUBLISHED" | "SOLD" | "REJECTED";
+export type VehicleStatus = "DRAFT" | "PENDING_REVIEW" | "PUBLISHED" | "SOLD" | "REJECTED" | "EXPIRED" | "SUSPENDED";
 export type Transmission = "Automatic" | "Manual" | "CVT" | "Automated Manual";
 export type FuelType = "Petrol" | "Diesel" | "Hybrid" | "Electric" | "Plug-in Hybrid";
 export type BodyType = "SUV" | "Sedan" | "Hatchback" | "Pickup" | "Coupe" | "Van" | "Wagon" | "Convertible";
