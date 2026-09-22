@@ -281,8 +281,14 @@ export default function LearnLandingPage({
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {articles.map((article) => (
-              <ArticleCard key={article.id} article={article} locale={locale} />
+            {articles.map((article, index) => (
+              <ArticleCard
+                key={article.id}
+                article={article}
+                locale={locale}
+                priority={index < 3}
+                loading={index < 3 ? "eager" : "lazy"}
+              />
             ))}
           </div>
         )}

@@ -7,9 +7,16 @@ import { Article, ARTICLE_CATEGORIES } from "@/types/article";
 interface ArticleCardProps {
   article: Article;
   locale: string;
+  priority?: boolean;
+  loading?: "eager" | "lazy";
 }
 
-export default function ArticleCard({ article, locale }: ArticleCardProps) {
+export default function ArticleCard({
+  article,
+  locale,
+  priority = false,
+  loading,
+}: ArticleCardProps) {
   const categoryConfig = ARTICLE_CATEGORIES[article.category] || ARTICLE_CATEGORIES.other;
   const isEn = locale === "en" || article.language === "en";
 
@@ -40,6 +47,8 @@ export default function ArticleCard({ article, locale }: ArticleCardProps) {
             src={article.featuredImage}
             alt={article.title}
             fill
+            priority={priority}
+            loading={loading || (priority ? "eager" : undefined)}
             className="object-cover group-hover:scale-105 transition-transform duration-500 ease-out"
             sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
           />

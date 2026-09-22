@@ -534,6 +534,7 @@ export default function ArticleForm({
                     src={featuredImage}
                     alt="Aperçu image à la une"
                     fill
+                    loading="eager"
                     className="object-cover"
                   />
                   <button
