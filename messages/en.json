@@ -107,7 +107,13 @@
     "importShort": "🚢 Import",
     "dealer": "Dealer",
     "New": "New",
-    "Used": "Used"
+    "Used": "Used",
+    "NEW": "New",
+    "LIKE_NEW": "Like New",
+    "EXCELLENT": "Excellent Condition",
+    "GOOD": "Good Condition",
+    "FAIR": "Fair Condition",
+    "FOR_REPAIR": "To Repair"
   },
   "VehicleDetail": {
     "home": "Home",
@@ -132,5 +138,415 @@
     "whatsapp": "WhatsApp",
     "callSeller": "Call Seller",
     "reportListing": "Report this listing"
+  },
+  "VehicleWizard": {
+    "pageTitle": "Post a Car",
+    "stepCounter": "Step {step} of 7",
+    "steps": {
+      "1": "Vehicle Information",
+      "2": "Price",
+      "3": "Vehicle Details",
+      "4": "Features",
+      "5": "Photos",
+      "6": "Description",
+      "7": "Review & Submit"
+    },
+    "step1": {
+      "mainTitle": "Key Information",
+      "additionalTitle": "Additional Information",
+      "makeLabel": "Make",
+      "makePlaceholder": "Select a make",
+      "modelLabel": "Model",
+      "modelPlaceholder": "Select a model",
+      "otherOption": "Other",
+      "customModelPlaceholder": "Specify model",
+      "yearLabel": "Year",
+      "conditionLabel": "Vehicle Condition",
+      "conditionOptions": {
+        "NEW": "New",
+        "LIKE_NEW": "Like New",
+        "EXCELLENT": "Excellent Condition",
+        "GOOD": "Good Condition",
+        "FAIR": "Fair Condition",
+        "FOR_REPAIR": "To Repair"
+      },
+      "mileageLabel": "Mileage (km)",
+      "transmissionLabel": "Gearbox",
+      "transmissionOptions": {
+        "Automatic": "Automatic",
+        "Manual": "Manual",
+        "Semi-Automatic": "Semi-automatic"
+      },
+      "fuelLabel": "Fuel",
+      "fuelOptions": {
+        "Petrol": "Petrol",
+        "Diesel": "Diesel",
+        "Hybrid": "Hybrid",
+        "Electric": "Electric"
+      },
+      "availabilityLabel": "Availability",
+      "availabilityOptions": {
+        "AVAILABLE": "Available",
+        "SOLD": "Sold",
+        "RESERVED": "Reserved"
+      },
+      "vehicleTypeLabel": "Vehicle Type",
+      "vehicleTypeOptions": {
+        "Berline": "Sedan",
+        "SUV": "SUV",
+        "4x4": "4x4",
+        "Pick-up": "Pickup",
+        "Coupé": "Coupe",
+        "Cabriolet": "Convertible",
+        "Break": "Station Wagon",
+        "Monospace": "Minivan",
+        "Minibus": "Minibus",
+        "Bus": "Bus",
+        "Camionnette": "Van / Light Truck",
+        "Autre": "Other"
+      },
+      "drivetrainLabel": "Drivetrain",
+      "drivetrainOptions": {
+        "2WD": "2-Wheel Drive",
+        "4WD": "4-Wheel Drive (4x4)"
+      },
+      "steeringSideLabel": "Steering Position",
+      "steeringSideOptions": {
+        "LEFT": "Left-hand drive",
+        "RIGHT": "Right-hand drive"
+      },
+      "seatsLabel": "Number of Seats",
+      "seatsOptions": {
+        "2": "2",
+        "4": "4",
+        "5": "5",
+        "6": "6",
+        "7": "7",
+        "8+": "8+"
+      }
+    },
+    "step2": {
+      "title": "Price",
+      "priceLabel": "Price (USD)",
+      "currency": "$",
+      "negotiable": "Price is negotiable",
+      "financing": "Financing available"
+    },
+    "step3": {
+      "title": "Vehicle Details",
+      "appearanceTitle": "Appearance",
+      "exteriorColorLabel": "Exterior Color",
+      "interiorColorLabel": "Interior Color",
+      "colorOptions": {
+        "Noir": "Black",
+        "Blanc": "White",
+        "Gris": "Grey",
+        "Argent": "Silver",
+        "Bleu": "Blue",
+        "Rouge": "Red",
+        "Vert": "Green",
+        "Marron": "Brown",
+        "Beige": "Beige",
+        "Jaune": "Yellow",
+        "Orange": "Orange",
+        "Violet": "Purple",
+        "Autre": "Other"
+      },
+      "interiorColorOptions": {
+        "Noir": "Black",
+        "Beige": "Beige",
+        "Gris": "Grey",
+        "Marron": "Brown",
+        "Blanc": "White",
+        "Autre": "Other"
+      },
+      "dimensionsEngineTitle": "Dimensions & Engine",
+      "doorsLabel": "Number of Doors",
+      "doorsOptions": {
+        "2": "2",
+        "3": "3",
+        "4": "4",
+        "5": "5",
+        "6+": "6+"
+      },
+      "engineSizeLabel": "Engine Size (L)",
+      "engineSizePlaceholder": "e.g. 2.0",
+      "horsepowerLabel": "Horsepower (hp)",
+      "horsepowerPlaceholder": "e.g. 150"
+    },
+    "step4": {
+      "title": "Features",
+      "subtitle": "Select features and equipment included with your vehicle.",
+      "categories": {
+        "comfort": "Comfort",
+        "safety": "Safety",
+        "technology": "Technology",
+        "parkingDriving": "Parking & Driving",
+        "exterior": "Exterior",
+        "drivetrainPerformance": "Performance & Drivetrain"
+      },
+      "features": {
+        "Climatisation": "Air Conditioning",
+        "Sièges en cuir": "Leather Seats",
+        "Vitres électriques": "Power Windows",
+        "Verrouillage centralisé": "Central Locking",
+        "Direction assistée": "Power Steering",
+        "Toit ouvrant": "Sunroof",
+        "Sièges chauffants": "Heated Seats",
+        "Sièges ventilés": "Ventilated Seats",
+        "ABS": "ABS",
+        "Airbags": "Airbags",
+        "Contrôle de stabilité (ESP)": "Stability Control (ESP)",
+        "Antipatinage": "Traction Control",
+        "Alarme": "Alarm",
+        "Antidémarrage": "Immobilizer",
+        "Fixations ISOFIX": "ISOFIX Anchors",
+        "Bluetooth": "Bluetooth",
+        "Apple CarPlay": "Apple CarPlay",
+        "Android Auto": "Android Auto",
+        "GPS / Navigation": "GPS / Navigation",
+        "Écran tactile": "Touchscreen",
+        "Port USB": "USB Port",
+        "Prise AUX": "AUX Port",
+        "Système multimédia": "Multimedia System",
+        "Tableau de bord numérique": "Digital Dashboard",
+        "Caméra de recul": "Backup Camera",
+        "Radars de stationnement": "Parking Sensors",
+        "Caméra 360°": "360° Camera",
+        "Régulateur de vitesse": "Cruise Control",
+        "Régulateur de vitesse adaptatif": "Adaptive Cruise Control",
+        "Démarrage sans clé": "Keyless Start",
+        "Démarrage par bouton": "Push Button Start",
+        "Accès sans clé": "Keyless Entry",
+        "Jantes en alliage": "Alloy Wheels",
+        "Phares LED": "LED Headlights",
+        "Phares antibrouillard": "Fog Lights",
+        "Phares Xenon": "Xenon Headlights",
+        "Feux de jour": "Daytime Running Lights",
+        "Rétroviseurs électriques": "Electric Mirrors",
+        "Rails de toit": "Roof Rails",
+        "Mode Sport": "Sport Mode",
+        "Mode Éco": "Eco Mode",
+        "Aide à la descente": "Hill Descent Control",
+        "Blocage de différentiel": "Differential Lock"
+      }
+    },
+    "step5": {
+      "title": "Vehicle Photos",
+      "subtitle": "Add photos of your vehicle",
+      "dropzoneText": "Drag and drop images here or click to browse files.",
+      "recommendation": "Add at least 5 photos to showcase your vehicle from different angles.",
+      "mainPhoto": "Main Cover Photo",
+      "setAsMain": "Set as main photo",
+      "remove": "Remove",
+      "addUrlTitle": "Or add photo via URL link",
+      "addUrlPlaceholder": "https://...",
+      "addUrlButton": "Add",
+      "chooseFiles": "Choose files",
+      "useDemoImages": "Add sample photos"
+    },
+    "step6": {
+      "title": "Description",
+      "subtitle": "Present your vehicle to buyers",
+      "placeholder": "Describe vehicle condition, service history, features, and key details for buyers.",
+      "historyTitle": "Vehicle History",
+      "serviceHistoryLabel": "Service History",
+      "serviceHistoryOptions": {
+        "FULL": "Full service history",
+        "PARTIAL": "Partial service history",
+        "NONE": "No service history",
+        "UNKNOWN": "Unknown"
+      },
+      "accidentHistoryLabel": "Accident History",
+      "accidentHistoryOptions": {
+        "NONE": "No known accident",
+        "ACCIDENTED": "Accident damage history",
+        "UNKNOWN": "Unknown"
+      },
+      "importTitle": "Import Information",
+      "isImportedLabel": "Imported vehicle",
+      "yes": "Yes",
+      "no": "No",
+      "importYearLabel": "Import Year",
+      "documentsLabel": "Available Documents",
+      "documentsOptions": {
+        "carte_rose": "Pink Card / Carte rose",
+        "certificat_immat": "Registration Certificate",
+        "douane": "Customs Documents",
+        "autres": "Other Documents"
+      },
+      "customsStatusLabel": "Customs Status",
+      "customsStatusOptions": {
+        "CLEARED": "Customs Cleared",
+        "IN_PROGRESS": "In Progress",
+        "NOT_AVAILABLE": "Not Available",
+        "UNKNOWN": "Unknown"
+      },
+      "locationTitle": "Location",
+      "cityLabel": "City",
+      "cityPlaceholder": "Select a city",
+      "cityOptions": {
+        "Kinshasa": "Kinshasa",
+        "Lubumbashi": "Lubumbashi",
+        "Goma": "Goma",
+        "Kisangani": "Kisangani",
+        "Bukavu": "Bukavu",
+        "Kolwezi": "Kolwezi",
+        "Matadi": "Matadi",
+        "Mbuji-Mayi": "Mbuji-Mayi",
+        "Kananga": "Kananga",
+        "Autre": "Other"
+      },
+      "communeLabel": "Municipality / Neighborhood",
+      "communePlaceholder": "e.g. Gombe, Limete, etc."
+    },
+    "step7": {
+      "title": "Review & Submit",
+      "previewSubtitle": "Please verify your vehicle details before publishing.",
+      "vehicleLabel": "Vehicle",
+      "priceLabel": "Price",
+      "mileageLabel": "Mileage",
+      "transmissionLabel": "Gearbox",
+      "fuelLabel": "Fuel",
+      "conditionLabel": "Condition",
+      "locationLabel": "Location",
+      "photosLabel": "Photos",
+      "featuresLabel": "Features",
+      "descriptionLabel": "Description",
+      "moderationNotice": "Your listing will be submitted to our team for review. Once approved, it will be published on the marketplace."
+    },
+    "buttons": {
+      "back": "Back",
+      "next": "Next Step",
+      "submit": "Publish Listing",
+      "submitting": "Publishing..."
+    },
+    "validation": {
+      "requiredMake": "Please select a make.",
+      "requiredModel": "Please select or specify a model.",
+      "requiredYear": "Please provide a valid year (between 1970 and {maxYear}).",
+      "requiredCondition": "Please select vehicle condition.",
+      "requiredMileage": "Mileage must be a positive number or zero.",
+      "requiredTransmission": "Please select a gearbox type.",
+      "requiredFuel": "Please select a fuel type.",
+      "requiredAvailability": "Please select availability.",
+      "requiredPrice": "Price must be greater than 0 USD.",
+      "requiredPhotos": "Please add at least one vehicle photo.",
+      "requiredCity": "Please select a city.",
+      "fixErrors": "Please fix the required fields before continuing."
+    }
+  },
+  "DealerProfile": {
+    "title": "Dealership Profile",
+    "verifiedDealership": "Verified Dealership",
+    "dealership": "Dealership",
+    "privateSeller": "Private Seller",
+    "editProfile": "Edit Profile",
+    "viewPublicProfile": "View Public Storefront",
+    "contact": {
+      "whatsapp": "WhatsApp",
+      "call": "Call",
+      "message": "Send Message",
+      "share": "Share",
+      "copied": "Link copied!"
+    },
+    "stats": {
+      "activeVehicles": "Vehicles Available",
+      "totalViews": "Total Impressions",
+      "totalContacts": "Inquiries Received"
+    },
+    "about": {
+      "title": "About Us",
+      "noDescription": "No description provided yet."
+    },
+    "details": {
+      "title": "Dealership Information",
+      "companyName": "Company Name",
+      "phone": "Phone",
+      "whatsapp": "WhatsApp",
+      "email": "Email",
+      "city": "City",
+      "commune": "Municipality",
+      "address": "Business Address",
+      "foundedYear": "Year Founded",
+      "sellerType": "Seller Type"
+    },
+    "hours": {
+      "title": "Business Hours",
+      "closed": "Closed",
+      "today": "Today",
+      "days": {
+        "monday": "Monday",
+        "tuesday": "Tuesday",
+        "wednesday": "Wednesday",
+        "thursday": "Thursday",
+        "friday": "Friday",
+        "saturday": "Saturday",
+        "sunday": "Sunday"
+      }
+    },
+    "inventory": {
+      "title": "Vehicles Available",
+      "count": "{count} vehicles",
+      "singleCount": "1 vehicle",
+      "searchPlaceholder": "Search make, model...",
+      "allMakes": "All Makes",
+      "allBodyTypes": "All Body Types",
+      "allPrices": "All Prices",
+      "noResults": "No vehicles found matching your criteria.",
+      "resetFilters": "Reset Filters",
+      "soldTitle": "Recently Sold Vehicles",
+      "soldSubtitle": "Vehicles successfully sold by this dealership"
+    },
+    "trust": {
+      "memberSince": "On Car Relais since {year}",
+      "verifiedPhone": "Verified Phone Number",
+      "verifiedEmail": "Verified Email Address",
+      "verifiedIdentity": "Verified Business Identity"
+    },
+    "location": {
+      "title": "Our Location",
+      "drcBadge": "DRC (Congo)",
+      "viewOnMap": "View on Map"
+    },
+    "social": {
+      "title": "Social Media & Website",
+      "website": "Official Website",
+      "facebook": "Facebook",
+      "instagram": "Instagram",
+      "tiktok": "TikTok"
+    },
+    "report": {
+      "button": "Report this dealer",
+      "title": "Report this seller",
+      "description": "If you notice fraudulent activity or inappropriate behavior, please let us know.",
+      "placeholder": "Describe the reason for reporting...",
+      "cancel": "Cancel",
+      "submit": "Submit Report",
+      "success": "Your report has been submitted to the moderation team."
+    },
+    "editModal": {
+      "title": "Edit Dealership Profile",
+      "subtitle": "Update your dealership details and contact information.",
+      "dealershipName": "Dealership Name",
+      "logoUrl": "Logo / Photo URL",
+      "description": "Presentation / About",
+      "descriptionPlaceholder": "Share your dealership story, services, and commitment to customers...",
+      "phone": "Call Phone",
+      "whatsapp": "WhatsApp Number",
+      "city": "City",
+      "commune": "Municipality / Neighborhood",
+      "address": "Business Address",
+      "foundedYear": "Founded Year",
+      "businessHours": "Business Hours",
+      "socialLinks": "Business Links",
+      "website": "Website",
+      "facebook": "Facebook Link",
+      "instagram": "Instagram Link",
+      "tiktok": "TikTok Link",
+      "cancel": "Cancel",
+      "save": "Save Changes",
+      "saving": "Saving..."
+    }
   }
 }

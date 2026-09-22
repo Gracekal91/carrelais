@@ -157,7 +157,13 @@ export default async function VehicleDetailPage(props: { params: Promise<{ slug:
                 </div>
                 <div>
                   <div className="flex items-center gap-1.5">
-                    <h3 className="font-semibold text-lg">{vehicle.seller.name}</h3>
+                    {vehicle.seller.type === "DEALERSHIP" ? (
+                      <Link href={`/dealers/${vehicle.seller.id}`} className="font-semibold text-lg hover:text-primary hover:underline transition-colors">
+                        {vehicle.seller.name}
+                      </Link>
+                    ) : (
+                      <h3 className="font-semibold text-lg">{vehicle.seller.name}</h3>
+                    )}
                     {vehicle.seller.isVerified && <CheckCircle2 className="w-4 h-4 text-primary" />}
                   </div>
                   <div className="text-sm text-zinc-500 mb-1">

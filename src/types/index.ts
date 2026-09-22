@@ -29,7 +29,7 @@ export interface VehicleListing {
   fuelType: FuelType;
   transmission: Transmission;
   bodyType: BodyType;
-  condition: "New" | "Used";
+  condition: "New" | "Used" | "NEW" | "LIKE_NEW" | "EXCELLENT" | "GOOD" | "FAIR" | "FOR_REPAIR" | string;
   location: string;
   availability: VehicleAvailability;
   description: string;
@@ -43,4 +43,22 @@ export interface VehicleListing {
   engineSize?: string;
   color?: string;
   features?: string[];
+  vehicleType?: string;
+  drivetrain?: string;
+  steeringSide?: string;
+  interiorColor?: string;
+  horsepower?: number;
+  listingAvailability?: string;
+  serviceHistory?: string;
+  accidentHistory?: string;
+  isImported?: boolean;
+  importYear?: number;
+  documents?: string[];
+  customsStatus?: string;
+  city?: string;
+  commune?: string;
+  doors?: number;
+  seats?: number;
+  isNegotiable?: boolean;
+  financeAvailable?: boolean;
 }

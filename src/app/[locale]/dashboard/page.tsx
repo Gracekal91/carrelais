@@ -1,7 +1,8 @@
 import { getCurrentUser } from "@/lib/auth";
 import { db } from "@/lib/db";
 import Link from "next/link";
-import { PlusCircle, Eye, MessageSquare, Phone } from "lucide-react";
+import { PlusCircle } from "lucide-react";
+import DashboardPerformanceChart from "@/components/dashboard/DashboardPerformanceChart";
 
 export default async function DashboardPage() {
   const user = await getCurrentUser();
@@ -74,25 +75,8 @@ export default async function DashboardPage() {
         </div>
       </div>
 
-      <div className="bg-white dark:bg-zinc-900 rounded-xl border border-zinc-200 dark:border-zinc-800 shadow-sm p-6">
-        <h2 className="text-xl font-bold mb-6">Performance (Last 7 Days)</h2>
-        <div className="space-y-4">
-          {aggregatedStats.map((stat) => (
-            <div key={stat.date} className="flex items-center gap-4">
-              <span className="w-24 text-sm font-medium text-zinc-500">{stat.date}</span>
-              <div className="flex-1 h-6 bg-zinc-100 dark:bg-zinc-800 rounded-full overflow-hidden flex">
-                <div 
-                  className="h-full bg-blue-500" 
-                  style={{ width: `${Math.min(100, (stat.views / (Math.max(...aggregatedStats.map(s => s.views)) || 1)) * 100)}%` }} 
-                  title={`${stat.views} views`}
-                />
-              </div>
-              <span className="w-16 text-right text-sm font-semibold">{stat.views} v</span>
-              <span className="w-16 text-right text-sm font-semibold text-green-500">{stat.contacts} c</span>
-            </div>
-          ))}
-        </div>
-      </div>
+      <DashboardPerformanceChart stats={aggregatedStats} />
+
     </div>
   );
 }

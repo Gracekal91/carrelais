@@ -28,9 +28,28 @@ if (!global.__db) {
     role: "USER",
     accountType: "DEALERSHIP",
     dealershipName: "Premium Cars DRC",
-    location: "Kinshasa, DRC",
-    description: "Best cars in town",
-    joinedAt: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString(),
+    location: "Kinshasa, RDC",
+    city: "Kinshasa",
+    commune: "Gombe",
+    address: "Boulevard du 30 Juin, Gombe, Kinshasa",
+    description: "Best cars in town. Premium Cars DRC est votre concessionnaire de référence en République Démocratique du Congo pour l'achat, la vente et l'importation de véhicules certifiés et garantis.",
+    logo: "https://images.unsplash.com/photo-1549399542-7e3f8b79c341?auto=format&fit=crop&w=200&q=80",
+    joinedAt: new Date(Date.now() - 365 * 24 * 60 * 60 * 1000).toISOString(),
+    isVerified: true,
+    whatsapp: "+243810000000",
+    foundedYear: 2018,
+    businessHours: {
+      monday: "08:00 – 18:00",
+      tuesday: "08:00 – 18:00",
+      wednesday: "08:00 – 18:00",
+      thursday: "08:00 – 18:00",
+      friday: "08:00 – 18:00",
+      saturday: "09:00 – 16:00",
+      sunday: "Fermé",
+    },
+    website: "https://premiumcars-drc.com",
+    facebook: "https://facebook.com/premiumcarsdrc",
+    instagram: "https://instagram.com/premiumcarsdrc",
   };
 
   const individualUser: User = {
@@ -89,7 +108,7 @@ if (!global.__db) {
       dailyStats,
       isNegotiable: Math.random() > 0.5,
       financeAvailable: isDealer && Math.random() > 0.5,
-      status: v.status as any, // keep original status
+      status: (isDealer && (i === 10 || i === 16)) ? "SOLD" : (v.status as any),
     };
   });
 

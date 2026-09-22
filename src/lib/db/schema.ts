@@ -17,6 +17,17 @@ export interface User {
   description?: string;
   logo?: string;
   joinedAt: string;
+  isVerified?: boolean;
+  whatsapp?: string;
+  city?: string;
+  commune?: string;
+  address?: string;
+  foundedYear?: number;
+  businessHours?: Record<string, string>;
+  website?: string;
+  facebook?: string;
+  instagram?: string;
+  tiktok?: string;
 }
 
 export interface ExtendedVehicleListing extends VehicleListing {

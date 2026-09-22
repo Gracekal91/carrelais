@@ -107,7 +107,13 @@
     "importShort": "🚢 Import",
     "dealer": "Concessionnaire",
     "New": "Neuf",
-    "Used": "Occasion"
+    "Used": "Occasion",
+    "NEW": "Neuf",
+    "LIKE_NEW": "Comme neuf",
+    "EXCELLENT": "Excellent état",
+    "GOOD": "Bon état",
+    "FAIR": "État correct",
+    "FOR_REPAIR": "À réparer"
   },
   "VehicleDetail": {
     "home": "Accueil",
@@ -132,5 +138,415 @@
     "whatsapp": "WhatsApp",
     "callSeller": "Appeler le vendeur",
     "reportListing": "Signaler cette annonce"
+  },
+  "VehicleWizard": {
+    "pageTitle": "Publier une voiture",
+    "stepCounter": "Étape {step} sur 7",
+    "steps": {
+      "1": "Informations du véhicule",
+      "2": "Prix",
+      "3": "Détails du véhicule",
+      "4": "Équipements",
+      "5": "Photos",
+      "6": "Description",
+      "7": "Vérification et publication"
+    },
+    "step1": {
+      "mainTitle": "Informations principales",
+      "additionalTitle": "Informations complémentaires",
+      "makeLabel": "Marque",
+      "makePlaceholder": "Sélectionner une marque",
+      "modelLabel": "Modèle",
+      "modelPlaceholder": "Sélectionner un modèle",
+      "otherOption": "Autre",
+      "customModelPlaceholder": "Préciser le modèle",
+      "yearLabel": "Année",
+      "conditionLabel": "État du véhicule",
+      "conditionOptions": {
+        "NEW": "Neuf",
+        "LIKE_NEW": "Comme neuf",
+        "EXCELLENT": "Excellent état",
+        "GOOD": "Bon état",
+        "FAIR": "État correct",
+        "FOR_REPAIR": "À réparer"
+      },
+      "mileageLabel": "Kilométrage (km)",
+      "transmissionLabel": "Boîte de vitesses",
+      "transmissionOptions": {
+        "Automatic": "Automatique",
+        "Manual": "Manuelle",
+        "Semi-Automatic": "Semi-automatique"
+      },
+      "fuelLabel": "Carburant",
+      "fuelOptions": {
+        "Petrol": "Essence",
+        "Diesel": "Diesel",
+        "Hybrid": "Hybride",
+        "Electric": "Électrique"
+      },
+      "availabilityLabel": "Disponibilité",
+      "availabilityOptions": {
+        "AVAILABLE": "Disponible",
+        "SOLD": "Vendu",
+        "RESERVED": "Réservé"
+      },
+      "vehicleTypeLabel": "Type de véhicule",
+      "vehicleTypeOptions": {
+        "Berline": "Berline",
+        "SUV": "SUV",
+        "4x4": "4x4",
+        "Pick-up": "Pick-up",
+        "Coupé": "Coupé",
+        "Cabriolet": "Cabriolet",
+        "Break": "Break",
+        "Monospace": "Monospace",
+        "Minibus": "Minibus",
+        "Bus": "Bus",
+        "Camionnette": "Camionnette",
+        "Autre": "Autre"
+      },
+      "drivetrainLabel": "Motricité",
+      "drivetrainOptions": {
+        "2WD": "2 roues motrices",
+        "4WD": "4 roues motrices (4x4)"
+      },
+      "steeringSideLabel": "Position du volant",
+      "steeringSideOptions": {
+        "LEFT": "Volant à gauche",
+        "RIGHT": "Volant à droite"
+      },
+      "seatsLabel": "Nombre de places",
+      "seatsOptions": {
+        "2": "2",
+        "4": "4",
+        "5": "5",
+        "6": "6",
+        "7": "7",
+        "8+": "8+"
+      }
+    },
+    "step2": {
+      "title": "Prix",
+      "priceLabel": "Prix (USD)",
+      "currency": "$",
+      "negotiable": "Prix négociable",
+      "financing": "Financement disponible"
+    },
+    "step3": {
+      "title": "Détails du véhicule",
+      "appearanceTitle": "Apparence",
+      "exteriorColorLabel": "Couleur extérieure",
+      "interiorColorLabel": "Couleur intérieure",
+      "colorOptions": {
+        "Noir": "Noir",
+        "Blanc": "Blanc",
+        "Gris": "Gris",
+        "Argent": "Argent",
+        "Bleu": "Bleu",
+        "Rouge": "Rouge",
+        "Vert": "Vert",
+        "Marron": "Marron",
+        "Beige": "Beige",
+        "Jaune": "Jaune",
+        "Orange": "Orange",
+        "Violet": "Violet",
+        "Autre": "Autre"
+      },
+      "interiorColorOptions": {
+        "Noir": "Noir",
+        "Beige": "Beige",
+        "Gris": "Gris",
+        "Marron": "Marron",
+        "Blanc": "Blanc",
+        "Autre": "Autre"
+      },
+      "dimensionsEngineTitle": "Dimensions et moteur",
+      "doorsLabel": "Nombre de portes",
+      "doorsOptions": {
+        "2": "2",
+        "3": "3",
+        "4": "4",
+        "5": "5",
+        "6+": "6+"
+      },
+      "engineSizeLabel": "Cylindrée (L)",
+      "engineSizePlaceholder": "Ex: 2.0",
+      "horsepowerLabel": "Puissance (ch)",
+      "horsepowerPlaceholder": "Ex: 150"
+    },
+    "step4": {
+      "title": "Équipements",
+      "subtitle": "Sélectionnez les options et équipements inclus dans votre véhicule.",
+      "categories": {
+        "comfort": "Confort",
+        "safety": "Sécurité",
+        "technology": "Technologie",
+        "parkingDriving": "Stationnement et conduite",
+        "exterior": "Extérieur",
+        "drivetrainPerformance": "Transmission et conduite"
+      },
+      "features": {
+        "Climatisation": "Climatisation",
+        "Sièges en cuir": "Sièges en cuir",
+        "Vitres électriques": "Vitres électriques",
+        "Verrouillage centralisé": "Verrouillage centralisé",
+        "Direction assistée": "Direction assistée",
+        "Toit ouvrant": "Toit ouvrant",
+        "Sièges chauffants": "Sièges chauffants",
+        "Sièges ventilés": "Sièges ventilés",
+        "ABS": "ABS",
+        "Airbags": "Airbags",
+        "Contrôle de stabilité (ESP)": "Contrôle de stabilité (ESP)",
+        "Antipatinage": "Antipatinage",
+        "Alarme": "Alarme",
+        "Antidémarrage": "Antidémarrage",
+        "Fixations ISOFIX": "Fixations ISOFIX",
+        "Bluetooth": "Bluetooth",
+        "Apple CarPlay": "Apple CarPlay",
+        "Android Auto": "Android Auto",
+        "GPS / Navigation": "GPS / Navigation",
+        "Écran tactile": "Écran tactile",
+        "Port USB": "Port USB",
+        "Prise AUX": "Prise AUX",
+        "Système multimédia": "Système multimédia",
+        "Tableau de bord numérique": "Tableau de bord numérique",
+        "Caméra de recul": "Caméra de recul",
+        "Radars de stationnement": "Radars de stationnement",
+        "Caméra 360°": "Caméra 360°",
+        "Régulateur de vitesse": "Régulateur de vitesse",
+        "Régulateur de vitesse adaptatif": "Régulateur de vitesse adaptatif",
+        "Démarrage sans clé": "Démarrage sans clé",
+        "Démarrage par bouton": "Démarrage par bouton",
+        "Accès sans clé": "Accès sans clé",
+        "Jantes en alliage": "Jantes en alliage",
+        "Phares LED": "Phares LED",
+        "Phares antibrouillard": "Phares antibrouillard",
+        "Phares Xenon": "Phares Xenon",
+        "Feux de jour": "Feux de jour",
+        "Rétroviseurs électriques": "Rétroviseurs électriques",
+        "Rails de toit": "Rails de toit",
+        "Mode Sport": "Mode Sport",
+        "Mode Éco": "Mode Éco",
+        "Aide à la descente": "Aide à la descente",
+        "Blocage de différentiel": "Blocage de différentiel"
+      }
+    },
+    "step5": {
+      "title": "Photos du véhicule",
+      "subtitle": "Ajoutez des photos de votre véhicule",
+      "dropzoneText": "Glissez-déposez les images ici ou cliquez pour sélectionner des fichiers.",
+      "recommendation": "Ajoutez au moins 5 photos pour présenter votre véhicule sous différents angles.",
+      "mainPhoto": "Photo principale",
+      "setAsMain": "Définir comme photo principale",
+      "remove": "Supprimer",
+      "addUrlTitle": "Ou ajouter une photo par lien URL",
+      "addUrlPlaceholder": "https://...",
+      "addUrlButton": "Ajouter",
+      "chooseFiles": "Sélectionner des fichiers",
+      "useDemoImages": "Ajouter des exemples de photos"
+    },
+    "step6": {
+      "title": "Description",
+      "subtitle": "Présentez votre véhicule aux acheteurs",
+      "placeholder": "Décrivez l'état du véhicule, son historique d'entretien, ses équipements et toute information importante pour les acheteurs.",
+      "historyTitle": "Historique du véhicule",
+      "serviceHistoryLabel": "Historique d'entretien",
+      "serviceHistoryOptions": {
+        "FULL": "Carnet d'entretien complet",
+        "PARTIAL": "Entretien partiel",
+        "NONE": "Aucun historique d'entretien",
+        "UNKNOWN": "Inconnu"
+      },
+      "accidentHistoryLabel": "Historique d'accident",
+      "accidentHistoryOptions": {
+        "NONE": "Aucun accident connu",
+        "ACCIDENTED": "Véhicule accidenté",
+        "UNKNOWN": "Inconnu"
+      },
+      "importTitle": "Informations d'importation",
+      "isImportedLabel": "Véhicule importé",
+      "yes": "Oui",
+      "no": "Non",
+      "importYearLabel": "Année d'importation",
+      "documentsLabel": "Documents disponibles",
+      "documentsOptions": {
+        "carte_rose": "Carte rose",
+        "certificat_immat": "Certificat d'immatriculation",
+        "douane": "Documents douaniers",
+        "autres": "Autres documents"
+      },
+      "customsStatusLabel": "Situation douanière",
+      "customsStatusOptions": {
+        "CLEARED": "Douane en ordre",
+        "IN_PROGRESS": "En cours",
+        "NOT_AVAILABLE": "Non disponible",
+        "UNKNOWN": "Inconnue"
+      },
+      "locationTitle": "Localisation",
+      "cityLabel": "Ville",
+      "cityPlaceholder": "Sélectionner une ville",
+      "cityOptions": {
+        "Kinshasa": "Kinshasa",
+        "Lubumbashi": "Lubumbashi",
+        "Goma": "Goma",
+        "Kisangani": "Kisangani",
+        "Bukavu": "Bukavu",
+        "Kolwezi": "Kolwezi",
+        "Matadi": "Matadi",
+        "Mbuji-Mayi": "Mbuji-Mayi",
+        "Kananga": "Kananga",
+        "Autre": "Autre"
+      },
+      "communeLabel": "Commune / Quartier",
+      "communePlaceholder": "Ex: Gombe, Limete, etc."
+    },
+    "step7": {
+      "title": "Vérification et publication",
+      "previewSubtitle": "Veuillez vérifier les informations de votre véhicule avant la mise en ligne.",
+      "vehicleLabel": "Véhicule",
+      "priceLabel": "Prix",
+      "mileageLabel": "Kilométrage",
+      "transmissionLabel": "Boîte de vitesses",
+      "fuelLabel": "Carburant",
+      "conditionLabel": "État",
+      "locationLabel": "Localisation",
+      "photosLabel": "Photos",
+      "featuresLabel": "Équipements",
+      "descriptionLabel": "Description",
+      "moderationNotice": "Votre annonce sera soumise à notre équipe pour vérification. Une fois approuvée, elle sera publiée sur la marketplace."
+    },
+    "buttons": {
+      "back": "Retour",
+      "next": "Étape suivante",
+      "submit": "Publier l'annonce",
+      "submitting": "Publication en cours..."
+    },
+    "validation": {
+      "requiredMake": "Veuillez sélectionner une marque.",
+      "requiredModel": "Veuillez sélectionner ou indiquer un modèle.",
+      "requiredYear": "Veuillez indiquer une année valide (entre 1970 et {maxYear}).",
+      "requiredCondition": "Veuillez sélectionner l'état du véhicule.",
+      "requiredMileage": "Le kilométrage doit être un nombre positif ou nul.",
+      "requiredTransmission": "Veuillez sélectionner une boîte de vitesses.",
+      "requiredFuel": "Veuillez sélectionner un type de carburant.",
+      "requiredAvailability": "Veuillez sélectionner la disponibilité.",
+      "requiredPrice": "Le prix doit être supérieur à 0 USD.",
+      "requiredPhotos": "Veuillez ajouter au moins une photo du véhicule.",
+      "requiredCity": "Veuillez sélectionner une ville.",
+      "fixErrors": "Veuillez corriger les champs requis avant de continuer."
+    }
+  },
+  "DealerProfile": {
+    "title": "Profil du concessionnaire",
+    "verifiedDealership": "Concessionnaire vérifié",
+    "dealership": "Concessionnaire",
+    "privateSeller": "Vendeur particulier",
+    "editProfile": "Modifier le profil",
+    "viewPublicProfile": "Voir la page publique",
+    "contact": {
+      "whatsapp": "WhatsApp",
+      "call": "Appeler",
+      "message": "Envoyer un message",
+      "share": "Partager",
+      "copied": "Lien copié !"
+    },
+    "stats": {
+      "activeVehicles": "Véhicules disponibles",
+      "totalViews": "Vues enregistrées",
+      "totalContacts": "Contacts reçus"
+    },
+    "about": {
+      "title": "À propos de nous",
+      "noDescription": "Aucune description fournie pour le moment."
+    },
+    "details": {
+      "title": "Informations sur le concessionnaire",
+      "companyName": "Nom de l'entreprise",
+      "phone": "Téléphone",
+      "whatsapp": "WhatsApp",
+      "email": "E-mail",
+      "city": "Ville",
+      "commune": "Commune",
+      "address": "Adresse / Zone",
+      "foundedYear": "Année de création",
+      "sellerType": "Type de vendeur"
+    },
+    "hours": {
+      "title": "Heures d'ouverture",
+      "closed": "Fermé",
+      "today": "Aujourd'hui",
+      "days": {
+        "monday": "Lundi",
+        "tuesday": "Mardi",
+        "wednesday": "Mercredi",
+        "thursday": "Jeudi",
+        "friday": "Vendredi",
+        "saturday": "Samedi",
+        "sunday": "Dimanche"
+      }
+    },
+    "inventory": {
+      "title": "Véhicules disponibles",
+      "count": "{count} véhicules",
+      "singleCount": "1 véhicule",
+      "searchPlaceholder": "Rechercher une marque, un modèle...",
+      "allMakes": "Toutes les marques",
+      "allBodyTypes": "Tous les types",
+      "allPrices": "Tous les prix",
+      "noResults": "Aucun véhicule ne correspond à vos critères.",
+      "resetFilters": "Réinitialiser les filtres",
+      "soldTitle": "Véhicules vendus",
+      "soldSubtitle": "Historique des véhicules récemment vendus par ce concessionnaire"
+    },
+    "trust": {
+      "memberSince": "Sur Car Relais depuis {year}",
+      "verifiedPhone": "Numéro de téléphone vérifié",
+      "verifiedEmail": "E-mail vérifié",
+      "verifiedIdentity": "Identité professionnelle vérifiée"
+    },
+    "location": {
+      "title": "Notre emplacement",
+      "drcBadge": "RDC (Congo)",
+      "viewOnMap": "Voir sur la carte"
+    },
+    "social": {
+      "title": "Réseaux sociaux et site web",
+      "website": "Site web officiel",
+      "facebook": "Facebook",
+      "instagram": "Instagram",
+      "tiktok": "TikTok"
+    },
+    "report": {
+      "button": "Signaler ce concessionnaire",
+      "title": "Signaler ce vendeur",
+      "description": "Si vous constatez une annonce frauduleuse ou un comportement inapproprié, faites-le nous savoir.",
+      "placeholder": "Décrivez la raison de votre signalement...",
+      "cancel": "Annuler",
+      "submit": "Envoyer le signalement",
+      "success": "Votre signalement a été transmis à l'équipe de modération."
+    },
+    "editModal": {
+      "title": "Modifier le profil concessionnaire",
+      "subtitle": "Mettez à jour les coordonnées et les informations de votre concession.",
+      "dealershipName": "Nom du concessionnaire",
+      "logoUrl": "URL du logo / image",
+      "description": "Présentation / À propos",
+      "descriptionPlaceholder": "Présentez l'histoire de votre concession, vos services et engagements...",
+      "phone": "Téléphone d'appel",
+      "whatsapp": "Numéro WhatsApp",
+      "city": "Ville",
+      "commune": "Commune / Quartier",
+      "address": "Adresse professionnelle",
+      "foundedYear": "Année de création",
+      "businessHours": "Heures d'ouverture",
+      "socialLinks": "Liens professionnels",
+      "website": "Site web",
+      "facebook": "Lien Facebook",
+      "instagram": "Lien Instagram",
+      "tiktok": "Lien TikTok",
+      "cancel": "Annuler",
+      "save": "Enregistrer les modifications",
+      "saving": "Enregistrement..."
+    }
   }
 }

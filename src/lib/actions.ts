@@ -64,13 +64,56 @@ export async function createListing(data: Partial<ExtendedVehicleListing>) {
   const ownerId = owner.id;
   
   const id = `listing_${Date.now()}`;
-  const slug = `${data.make}-${data.model}-${data.year}-${id}`.toLowerCase().replace(/[^a-z0-9]+/g, "-");
+  const cleanMake = (data.make || "").trim();
+  const cleanModel = (data.model || "").trim();
+  const cleanCity = (data.city || "").trim();
+  const cleanCommune = (data.commune || "").trim();
+  const resolvedLocation = cleanCommune && cleanCity
+    ? `${cleanCommune}, ${cleanCity}, RDC`
+    : cleanCity
+    ? `${cleanCity}, RDC`
+    : (data.location || owner.location || "Kinshasa, RDC");
+
+  const slug = `${cleanMake}-${cleanModel}-${data.year}-${id}`.toLowerCase().replace(/[^a-z0-9]+/g, "-");
   
+  // Body type mapping fallback
+  const bodyTypeMap: Record<string, any> = {
+    "Berline": "Sedan",
+    "SUV": "SUV",
+    "4x4": "SUV",
+    "Pick-up": "Pickup",
+    "Coupé": "Coupe",
+    "Cabriolet": "Convertible",
+    "Break": "Wagon",
+    "Monospace": "Van",
+    "Minibus": "Van",
+    "Bus": "Van",
+    "Camionnette": "Van",
+  };
+  const resolvedBodyType = (data.vehicleType && bodyTypeMap[data.vehicleType]) || data.bodyType || "SUV";
+
   const newListing: ExtendedVehicleListing = {
     ...data,
     id,
     slug,
     ownerId,
+    title: data.title || `${data.year} ${cleanMake} ${cleanModel}`,
+    make: cleanMake,
+    model: cleanModel,
+    price: Math.max(0, Number(data.price) || 0),
+    mileage: Math.max(0, Number(data.mileage) || 0),
+    doors: data.doors ? Math.max(1, Number(data.doors)) : 4,
+    seats: data.seats ? Math.max(1, Number(data.seats)) : 5,
+    horsepower: data.horsepower ? Math.max(0, Number(data.horsepower)) : undefined,
+    bodyType: resolvedBodyType,
+    availability: data.isImported ? "IMPORT" : (data.availability || "IN_CONGO"),
+    listingAvailability: data.listingAvailability || "AVAILABLE",
+    location: resolvedLocation,
+    city: cleanCity,
+    commune: cleanCommune,
+    images: (data.images && data.images.length > 0)
+      ? data.images
+      : ["https://images.unsplash.com/photo-1542362567-b07e54358753?auto=format&fit=crop&w=800&q=80"],
     views: 0,
     contacts: 0,
     chats: 0,
@@ -89,7 +132,7 @@ export async function createListing(data: Partial<ExtendedVehicleListing>) {
       isVerified: true,
       phone: owner.phone,
       whatsapp: owner.phone,
-      location: owner.location || data.location,
+      location: owner.location || resolvedLocation,
       joinedAt: owner.joinedAt,
     }
   } as ExtendedVehicleListing;
@@ -97,6 +140,7 @@ export async function createListing(data: Partial<ExtendedVehicleListing>) {
   db.listings.unshift(newListing);
   revalidatePath("/dashboard");
   revalidatePath("/admin/listings");
+  revalidatePath("/vehicles");
   
   return { success: true, id };
 }
@@ -130,4 +174,50 @@ export async function incrementAnalytics(id: string, type: "views" | "chats" | "
   
   if (type === "views") stat.views++;
   else stat.contacts++;
+}
+
+export async function updateUserProfile(data: Partial<User>) {
+  const user = await getCurrentUser();
+  if (!user) throw new Error("Unauthorized");
+
+  const existing = db.users.find(u => u.id === user.id);
+  if (!existing) return { success: false, error: "User not found" };
+
+  if (data.dealershipName !== undefined) existing.dealershipName = data.dealershipName.trim();
+  if (data.firstName !== undefined) existing.firstName = data.firstName.trim();
+  if (data.lastName !== undefined) existing.lastName = data.lastName.trim();
+  if (data.phone !== undefined) existing.phone = data.phone.trim();
+  if (data.whatsapp !== undefined) existing.whatsapp = data.whatsapp.trim();
+  if (data.description !== undefined) existing.description = data.description.trim();
+  if (data.logo !== undefined) existing.logo = data.logo.trim();
+  if (data.city !== undefined) existing.city = data.city.trim();
+  if (data.commune !== undefined) existing.commune = data.commune.trim();
+  if (data.address !== undefined) existing.address = data.address.trim();
+  if (data.foundedYear !== undefined) existing.foundedYear = Number(data.foundedYear) || undefined;
+  if (data.businessHours !== undefined) existing.businessHours = data.businessHours;
+  if (data.website !== undefined) existing.website = data.website.trim();
+  if (data.facebook !== undefined) existing.facebook = data.facebook.trim();
+  if (data.instagram !== undefined) existing.instagram = data.instagram.trim();
+  if (data.tiktok !== undefined) existing.tiktok = data.tiktok.trim();
+
+  if (existing.commune && existing.city) {
+    existing.location = `${existing.commune}, ${existing.city}, RDC`;
+  } else if (existing.city) {
+    existing.location = `${existing.city}, RDC`;
+  }
+
+  // Update seller references across listings
+  db.listings.forEach(l => {
+    if (l.ownerId === existing.id && l.seller) {
+      if (existing.dealershipName) l.seller.name = existing.dealershipName;
+      if (existing.phone) l.seller.phone = existing.phone;
+      if (existing.whatsapp) l.seller.whatsapp = existing.whatsapp;
+      if (existing.location) l.seller.location = existing.location;
+    }
+  });
+
+  revalidatePath("/dashboard/profile");
+  revalidatePath(`/dealers/${existing.id}`);
+  revalidatePath("/vehicles");
+  return { success: true };
 }

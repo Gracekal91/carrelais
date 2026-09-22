@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import { ChevronLeft, Eye, MessageSquare, Phone } from "lucide-react";
 import Image from "next/image";
+import ListingAnalyticsChart from "@/components/dashboard/ListingAnalyticsChart";
 
 export default async function ListingAnalyticsPage({ params }: { params: any }) {
   const user = await getCurrentUser();
@@ -79,26 +80,8 @@ export default async function ListingAnalyticsPage({ params }: { params: any }) 
         <span className="text-xl font-bold text-primary">{contactRate}%</span>
       </div>
 
-      <div className="bg-white dark:bg-zinc-900 rounded-xl border border-zinc-200 dark:border-zinc-800 p-6 mt-6">
-        <h3 className="text-lg font-bold mb-6">Views over time</h3>
-        <div className="space-y-4">
-          {listing.dailyStats.map((stat, idx) => {
-            const maxViews = Math.max(...listing.dailyStats.map(s => s.views)) || 1;
-            return (
-              <div key={idx} className="flex items-center gap-4">
-                <span className="w-24 text-sm text-zinc-500">{stat.date}</span>
-                <div className="flex-1 h-8 bg-zinc-100 dark:bg-zinc-800 rounded-sm overflow-hidden">
-                  <div 
-                    className="h-full bg-blue-500 transition-all" 
-                    style={{ width: `${(stat.views / maxViews) * 100}%` }}
-                  />
-                </div>
-                <span className="w-12 text-right font-medium">{stat.views}</span>
-              </div>
-            );
-          })}
-        </div>
-      </div>
+      <ListingAnalyticsChart dailyStats={listing.dailyStats} />
+
     </div>
   );
 }
