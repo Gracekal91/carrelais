@@ -16,8 +16,16 @@ export function MobileBottomNav() {
     getAuthUser().then(setUser).catch(() => setUser(null));
   }, [pathname]);
 
-  // Hide on admin portal screens
-  if (pathname.startsWith("/admin")) {
+  // Hide on admin portal and auth screens
+  if (
+    pathname.startsWith("/admin") ||
+    pathname.startsWith("/signin") ||
+    pathname.startsWith("/login") ||
+    pathname.startsWith("/signup") ||
+    pathname.startsWith("/forgot-password") ||
+    pathname.startsWith("/reset-password") ||
+    pathname.startsWith("/verify-email")
+  ) {
     return null;
   }
 

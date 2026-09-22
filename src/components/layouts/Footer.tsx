@@ -1,13 +1,28 @@
-import { Link } from "@/i18n/routing";
+"use client";
+
+import { Link, usePathname } from "@/i18n/routing";
 import { useTranslations, useLocale } from "next-intl";
 
 export function Footer() {
   const t = useTranslations("Footer");
   const locale = useLocale();
+  const pathname = usePathname();
   const learnHref = locale === "en" ? "/learn" : "/apprendre";
 
+  const isAuthPage =
+    pathname.startsWith("/signin") ||
+    pathname.startsWith("/login") ||
+    pathname.startsWith("/signup") ||
+    pathname.startsWith("/forgot-password") ||
+    pathname.startsWith("/reset-password") ||
+    pathname.startsWith("/verify-email");
+
   return (
-    <footer className="border-t border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 py-12 pb-24 lg:pb-12">
+    <footer
+      className={`border-t border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 py-12 pb-24 lg:pb-12 ${
+        isAuthPage ? "hidden md:block" : ""
+      }`}
+    >
       <div className="container mx-auto px-4 grid grid-cols-1 md:grid-cols-4 gap-8">
         <div>
           <span className="text-2xl font-bold text-primary block mb-4">CarRelais</span>
