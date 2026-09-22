@@ -1,17 +1,23 @@
 import { AdvancedSearchWidget } from "@/components/search/AdvancedSearchWidget";
 import { VehicleGrid } from "@/components/vehicles/VehicleGrid";
-import { getFeaturedVehicles, dummyVehicles } from "@/lib/data";
+import { getFeaturedVehicles, getLocalVehicles } from "@/lib/data";
+import { connectToDatabase } from "@/lib/mongodb";
+import { ListingModel } from "@/lib/models/Listing";
 import { Button } from "@/components/ui/Button";
 import { Link } from "@/i18n/routing";
 import { ArrowRight, ShieldCheck, Globe2, Clock } from "lucide-react";
-import { useTranslations } from "next-intl";
+import { getTranslations } from "next-intl/server";
 
-export default function Home() {
-  const featuredVehicles = getFeaturedVehicles();
-  const localVehicles = dummyVehicles.filter(v => v.availability === "IN_CONGO").slice(0, 4);
-  const tHome = useTranslations("Home");
-  const tFeatures = useTranslations("Features");
-  const tHero = useTranslations("Hero");
+export default async function Home() {
+  await connectToDatabase();
+  const [featuredVehicles, localVehicles, totalPublishedCount, tHome, tFeatures, tHero] = await Promise.all([
+    getFeaturedVehicles(4),
+    getLocalVehicles(4),
+    ListingModel.countDocuments({ status: "PUBLISHED" }),
+    getTranslations("Home"),
+    getTranslations("Features"),
+    getTranslations("Hero"),
+  ]);
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -37,7 +43,7 @@ export default function Home() {
 
           {/* Widget capped at ~70% max width, left-aligned */}
           <div className="w-full max-w-2xl mb-12">
-            <AdvancedSearchWidget />
+            <AdvancedSearchWidget initialCount={totalPublishedCount} />
           </div>
         </div>
       </section>

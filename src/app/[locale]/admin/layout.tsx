@@ -1,6 +1,9 @@
 import { redirect } from "next/navigation";
 import { getCurrentUser } from "@/lib/auth";
-import { db } from "@/lib/db";
+import { connectToDatabase } from "@/lib/mongodb";
+import { ListingModel } from "@/lib/models/Listing";
+import { ReportModel } from "@/lib/models/Report";
+import { UserModel } from "@/lib/models/User";
 import AdminNav from "@/components/admin/AdminNav";
 
 export default async function AdminLayout({
@@ -10,14 +13,17 @@ export default async function AdminLayout({
   params: Promise<any>;
 }) {
   const user = await getCurrentUser();
-  if (!user || user.role !== "ADMIN") {
+  if (!user || (user.role !== "ADMIN" && user.role !== "SUPER_ADMIN")) {
     redirect("/signin");
   }
 
-  // Calculate live notification badges
-  const pendingListingsCount = db.listings.filter(l => l.status === "PENDING_REVIEW").length;
-  const newReportsCount = (db.reports || []).filter(r => r.status === "NEW").length;
-  const unverifiedDealersCount = db.users.filter(u => u.accountType === "DEALERSHIP" && !u.isVerified).length;
+  // Calculate live notification badges from MongoDB Atlas
+  await connectToDatabase();
+  const [pendingListingsCount, newReportsCount, unverifiedDealersCount] = await Promise.all([
+    ListingModel.countDocuments({ status: "PENDING_REVIEW" }),
+    ReportModel.countDocuments({ status: "NEW" }),
+    UserModel.countDocuments({ accountType: "DEALERSHIP", isVerified: false }),
+  ]);
 
   return (
     <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950 flex flex-col md:flex-row text-zinc-900 dark:text-zinc-100">

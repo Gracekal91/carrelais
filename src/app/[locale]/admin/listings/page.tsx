@@ -1,10 +1,13 @@
 import Link from "next/link";
 import Image from "next/image";
-import { db } from "@/lib/db";
+import { connectToDatabase } from "@/lib/mongodb";
+import { ListingModel } from "@/lib/models/Listing";
+import { formatListing } from "@/lib/data";
 import { Eye, CarFront, Store, User as UserIcon } from "lucide-react";
 import ListingFilters from "@/components/admin/ListingFilters";
 import ListingStatusBadge from "@/components/admin/ListingStatusBadge";
 import PaginationControls from "@/components/admin/PaginationControls";
+import mongoose from "mongoose";
 
 interface AdminListingsPageProps {
   searchParams: Promise<{
@@ -21,57 +24,67 @@ export default async function AdminListingsPage(props: AdminListingsPageProps) {
   const page = Math.max(1, parseInt(searchParams.page || "1") || 1);
   const pageSize = 10;
 
-  const searchQuery = (searchParams.q || "").trim().toLowerCase();
+  const searchQuery = (searchParams.q || "").trim();
   const statusFilter = searchParams.status || "";
   const sellerTypeFilter = searchParams.sellerType || "";
   const dateFilter = searchParams.date || "";
 
-  // Filter listings
-  let filtered = db.listings.filter(listing => {
-    // Search query
-    if (searchQuery) {
-      const matchMake = listing.make?.toLowerCase().includes(searchQuery);
-      const matchModel = listing.model?.toLowerCase().includes(searchQuery);
-      const matchTitle = listing.title?.toLowerCase().includes(searchQuery);
-      const matchSeller = listing.seller?.name?.toLowerCase().includes(searchQuery);
-      const matchId = listing.id?.toLowerCase().includes(searchQuery);
-      if (!matchMake && !matchModel && !matchTitle && !matchSeller && !matchId) {
-        return false;
-      }
+  await connectToDatabase();
+  const query: Record<string, any> = {};
+
+  if (statusFilter) {
+    query.status = statusFilter;
+  }
+
+  if (sellerTypeFilter) {
+    query["seller.type"] = sellerTypeFilter;
+  }
+
+  if (dateFilter) {
+    const now = Date.now();
+    let msAgo = 0;
+    if (dateFilter === "today") msAgo = 24 * 3600000;
+    else if (dateFilter === "thisWeek") msAgo = 7 * 24 * 3600000;
+    else if (dateFilter === "thisMonth") msAgo = 30 * 24 * 3600000;
+    if (msAgo > 0) {
+      const minIso = new Date(now - msAgo).toISOString();
+      query.createdAt = { $gte: minIso };
     }
+  }
 
-    // Status filter
-    if (statusFilter && listing.status !== statusFilter) {
-      return false;
+  if (searchQuery) {
+    const sRegex = new RegExp(searchQuery, "i");
+    const orConditions: any[] = [
+      { title: sRegex },
+      { make: sRegex },
+      { model: sRegex },
+      { "seller.name": sRegex },
+    ];
+    if (mongoose.Types.ObjectId.isValid(searchQuery)) {
+      orConditions.push({ _id: searchQuery });
     }
+    query.$or = orConditions;
+  }
 
-    // Seller type filter
-    if (sellerTypeFilter && listing.seller?.type !== sellerTypeFilter) {
-      return false;
-    }
-
-    // Date range filter
-    if (dateFilter) {
-      const listingDate = new Date(listing.createdAt).getTime();
-      const now = Date.now();
-      if (dateFilter === "today" && now - listingDate > 24 * 3600000) return false;
-      if (dateFilter === "thisWeek" && now - listingDate > 7 * 24 * 3600000) return false;
-      if (dateFilter === "thisMonth" && now - listingDate > 30 * 24 * 3600000) return false;
-    }
-
-    return true;
-  });
-
-  // Sort: Pending review first, then newest
-  filtered.sort((a, b) => {
-    if (a.status === "PENDING_REVIEW" && b.status !== "PENDING_REVIEW") return -1;
-    if (b.status === "PENDING_REVIEW" && a.status !== "PENDING_REVIEW") return 1;
-    return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
-  });
-
-  const totalCount = filtered.length;
+  const totalCount = await ListingModel.countDocuments(query);
   const totalPages = Math.ceil(totalCount / pageSize);
-  const listings = filtered.slice((page - 1) * pageSize, page * pageSize);
+  const skip = (page - 1) * pageSize;
+
+  const docs = await ListingModel.find(query)
+    .sort({ createdAt: -1 })
+    .skip(skip)
+    .limit(pageSize)
+    .lean();
+
+  const listings = docs.map(formatListing);
+  // Prioritize pending reviews if not filtered by specific status
+  if (!statusFilter) {
+    listings.sort((a, b) => {
+      if (a.status === "PENDING_REVIEW" && b.status !== "PENDING_REVIEW") return -1;
+      if (b.status === "PENDING_REVIEW" && a.status !== "PENDING_REVIEW") return 1;
+      return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+    });
+  }
 
   return (
     <div className="space-y-6">

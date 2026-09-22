@@ -1,19 +1,24 @@
 import { getCurrentUser } from "@/lib/auth";
-import { db } from "@/lib/db";
 import { redirect } from "next/navigation";
 import DealerProfileView from "@/components/dashboard/DealerProfileView";
+import { connectToDatabase } from "@/lib/mongodb";
+import { ListingModel } from "@/lib/models/Listing";
+import { formatListing } from "@/lib/data";
 
 export default async function ProfilePage() {
   const user = await getCurrentUser();
   if (!user) return redirect("/signin");
 
-  // Fetch listings owned by this user
-  const activeListings = db.listings.filter(
-    l => l.ownerId === user.id && l.status === "PUBLISHED"
-  );
-  const soldListings = db.listings.filter(
-    l => l.ownerId === user.id && l.status === "SOLD"
-  );
+  await connectToDatabase();
+
+  // Fetch listings owned by this user from MongoDB
+  const [activeDocs, soldDocs] = await Promise.all([
+    ListingModel.find({ ownerId: user.id, status: "PUBLISHED" }).sort({ createdAt: -1 }).lean(),
+    ListingModel.find({ ownerId: user.id, status: "SOLD" }).sort({ createdAt: -1 }).lean(),
+  ]);
+
+  const activeListings = activeDocs.map(formatListing);
+  const soldListings = soldDocs.map(formatListing);
 
   return (
     <div className="max-w-6xl mx-auto space-y-6">

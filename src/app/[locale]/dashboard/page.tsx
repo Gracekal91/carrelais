@@ -1,5 +1,7 @@
 import { getCurrentUser } from "@/lib/auth";
-import { db } from "@/lib/db";
+import { connectToDatabase } from "@/lib/mongodb";
+import { ListingModel } from "@/lib/models/Listing";
+import { formatListing } from "@/lib/data";
 import Link from "next/link";
 import { PlusCircle } from "lucide-react";
 import DashboardPerformanceChart from "@/components/dashboard/DashboardPerformanceChart";
@@ -8,15 +10,18 @@ export default async function DashboardPage() {
   const user = await getCurrentUser();
   if (!user) return null;
 
-  const myListings = db.listings.filter(l => l.ownerId === user.id);
+  await connectToDatabase();
+  const listingDocs = await ListingModel.find({ ownerId: user.id }).lean();
+  const myListings = listingDocs.map(formatListing);
+
   const activeCount = myListings.filter(l => l.status === "PUBLISHED").length;
   const pendingCount = myListings.filter(l => l.status === "PENDING_REVIEW").length;
   
-  const totalViews = myListings.reduce((acc, curr) => acc + curr.views, 0);
-  const totalContacts = myListings.reduce((acc, curr) => acc + curr.contacts, 0);
+  const totalViews = myListings.reduce((acc, curr) => acc + (curr.views || 0), 0);
+  const totalContacts = myListings.reduce((acc, curr) => acc + (curr.contacts || 0), 0);
 
   // Simple aggregation for chart (last 7 days)
-  const last7Days = Array.from({length: 7}).map((_, i) => {
+  const last7Days = Array.from({ length: 7 }).map((_, i) => {
     const d = new Date();
     d.setDate(d.getDate() - (6 - i));
     return d.toISOString().split("T")[0];
@@ -25,7 +30,7 @@ export default async function DashboardPage() {
   const aggregatedStats = last7Days.map(date => {
     let views = 0, contacts = 0;
     myListings.forEach(l => {
-      const stat = l.dailyStats.find(s => s.date === date);
+      const stat = (l.dailyStats || []).find(s => s.date === date);
       if (stat) {
         views += stat.views;
         contacts += stat.contacts;

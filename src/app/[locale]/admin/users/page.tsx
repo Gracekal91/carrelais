@@ -1,9 +1,12 @@
 import Link from "next/link";
-import { db } from "@/lib/db";
+import { connectToDatabase } from "@/lib/mongodb";
+import { UserModel } from "@/lib/models/User";
+import { ListingModel } from "@/lib/models/Listing";
 import { Users } from "lucide-react";
 import UserFilters from "@/components/admin/UserFilters";
 import UsersTableClient from "@/components/admin/UsersTableClient";
 import PaginationControls from "@/components/admin/PaginationControls";
+import { formatUser } from "@/lib/data";
 
 interface AdminUsersPageProps {
   searchParams: Promise<{
@@ -19,55 +22,69 @@ export default async function AdminUsersPage(props: AdminUsersPageProps) {
   const page = Math.max(1, parseInt(searchParams.page || "1") || 1);
   const pageSize = 10;
 
-  const searchQuery = (searchParams.q || "").trim().toLowerCase();
+  const searchQuery = (searchParams.q || "").trim();
   const accountTypeFilter = searchParams.accountType || "";
   const statusFilter = searchParams.status || "";
 
-  // Filter users
-  let filtered = db.users.filter(user => {
-    // Search query
-    if (searchQuery) {
-      const matchName = `${user.firstName} ${user.lastName}`.toLowerCase().includes(searchQuery);
-      const matchEmail = user.email.toLowerCase().includes(searchQuery);
-      const matchPhone = user.phone?.toLowerCase().includes(searchQuery);
-      const matchDealer = user.dealershipName?.toLowerCase().includes(searchQuery);
-      if (!matchName && !matchEmail && !matchPhone && !matchDealer) {
-        return false;
-      }
+  await connectToDatabase();
+  const query: Record<string, any> = {};
+
+  if (accountTypeFilter) {
+    if (accountTypeFilter === "ADMIN") {
+      query.role = { $in: ["ADMIN", "SUPER_ADMIN"] };
+    } else {
+      query.role = "USER";
+      query.accountType = accountTypeFilter;
     }
+  }
 
-    // Account Type
-    if (accountTypeFilter) {
-      if (accountTypeFilter === "ADMIN" && user.role !== "ADMIN") return false;
-      if (accountTypeFilter !== "ADMIN" && (user.role === "ADMIN" || user.accountType !== accountTypeFilter)) return false;
-    }
+  if (statusFilter) {
+    query.status = statusFilter;
+  }
 
-    // Status
-    if (statusFilter) {
-      const currentStatus = user.status || "ACTIVE";
-      if (currentStatus !== statusFilter) return false;
-    }
+  if (searchQuery) {
+    const sRegex = new RegExp(searchQuery, "i");
+    query.$or = [
+      { firstName: sRegex },
+      { lastName: sRegex },
+      { email: sRegex },
+      { phone: sRegex },
+      { dealershipName: sRegex },
+    ];
+  }
 
-    return true;
-  });
-
-  const totalCount = filtered.length;
+  const totalCount = await UserModel.countDocuments(query);
   const totalPages = Math.ceil(totalCount / pageSize);
-  const paginatedUsers = filtered.slice((page - 1) * pageSize, page * pageSize);
+  const skip = (page - 1) * pageSize;
+
+  const userDocs = await UserModel.find(query)
+    .sort({ createdAt: -1 })
+    .skip(skip)
+    .limit(pageSize)
+    .lean();
+
+  const paginatedUsers = userDocs.map(formatUser);
 
   // Compute listing statistics for each user
-  const usersWithStats = paginatedUsers.map(user => {
-    const userListings = db.listings.filter(l => l.ownerId === user.id);
-    return {
-      user,
-      stats: {
-        total: userListings.length,
-        active: userListings.filter(l => l.status === "PUBLISHED").length,
-        sold: userListings.filter(l => l.status === "SOLD").length,
-        rejected: userListings.filter(l => l.status === "REJECTED").length,
-      },
-    };
-  });
+  const usersWithStats = await Promise.all(
+    paginatedUsers.map(async (user) => {
+      const [total, active, sold, rejected] = await Promise.all([
+        ListingModel.countDocuments({ ownerId: user.id }),
+        ListingModel.countDocuments({ ownerId: user.id, status: "PUBLISHED" }),
+        ListingModel.countDocuments({ ownerId: user.id, status: "SOLD" }),
+        ListingModel.countDocuments({ ownerId: user.id, status: "REJECTED" }),
+      ]);
+      return {
+        user,
+        stats: {
+          total,
+          active,
+          sold,
+          rejected,
+        },
+      };
+    })
+  );
 
   return (
     <div className="space-y-6">

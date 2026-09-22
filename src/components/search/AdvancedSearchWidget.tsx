@@ -6,6 +6,7 @@ import { useRouter } from "@/i18n/routing";
 import { cn } from "@/lib/utils";
 
 import { PROVINCES, MAKES_AND_MODELS, PRICE_OPTIONS_CASH, YEAR_OPTIONS } from "@/lib/search-constants";
+import { getMatchingListingsCount } from "@/lib/actions";
 import { Select } from "@/components/ui/Select";
 import { useTranslations } from "next-intl";
 
@@ -22,7 +23,11 @@ function getMinOptions(options: { value: string; label: string }[], maxVal: stri
   return options.filter((o) => Number(o.value) < Number(maxVal));
 }
 
-export function AdvancedSearchWidget() {
+interface AdvancedSearchWidgetProps {
+  initialCount?: number;
+}
+
+export function AdvancedSearchWidget({ initialCount = 0 }: AdvancedSearchWidgetProps) {
   const router = useRouter();
   const t = useTranslations("SearchHero");
   const tVehicles = useTranslations("Vehicles");
@@ -46,8 +51,8 @@ export function AdvancedSearchWidget() {
 
   const containerRef = useRef<HTMLDivElement>(null);
 
-  // Total items logic
-  const totalInventory = 4987; // Base dummy total
+  // Live real count from MongoDB Atlas
+  const [resultsCount, setResultsCount] = useState<number>(initialCount);
 
   // Close dropdown on click outside
   useEffect(() => {
@@ -60,29 +65,35 @@ export function AdvancedSearchWidget() {
     return () => document.removeEventListener("mousedown", handleOutsideClick);
   }, []);
 
-  // Calculate results purely as derived state (memoized for performance)
-  const resultsCount = React.useMemo(() => {
-    let count = totalInventory;
-    if (selectedProvince) {
-      const p = PROVINCES.find((p) => p.name === selectedProvince);
-      if (p) count = p.count;
-    }
-    if (selectedMake) {
-      const m = MAKES_AND_MODELS.find((m) => m.make === selectedMake);
-      if (m) {
-        if (selectedModel) {
-          const mod = m.models.find((md) => md.name === selectedModel);
-          if (mod) count = Math.min(count, mod.count);
-        } else {
-          count = Math.min(count, m.count);
+  // Fetch real matching count from MongoDB whenever search filters change
+  useEffect(() => {
+    let isCancelled = false;
+    const fetchCount = async () => {
+      try {
+        const count = await getMatchingListingsCount({
+          q: searchQuery,
+          make: selectedMake,
+          model: selectedModel,
+          province: selectedProvince,
+          minPrice,
+          maxPrice,
+          minYear,
+          maxYear,
+        });
+        if (!isCancelled) {
+          setResultsCount(count);
         }
+      } catch {
+        if (!isCancelled) setResultsCount(0);
       }
-    }
-    if (minPrice || maxPrice || minYear || maxYear || searchQuery) {
-      count = Math.max(0, Math.floor(count * 0.4)); // Just a visual dummy reduction
-    }
-    return count;
-  }, [totalInventory, selectedProvince, selectedMake, selectedModel, minPrice, maxPrice, minYear, maxYear, searchQuery]);
+    };
+
+    const timer = setTimeout(fetchCount, 200);
+    return () => {
+      isCancelled = true;
+      clearTimeout(timer);
+    };
+  }, [searchQuery, selectedMake, selectedModel, selectedProvince, minPrice, maxPrice, minYear, maxYear]);
 
   const handleReset = () => {
     setSearchQuery("");
@@ -178,7 +189,6 @@ export function AdvancedSearchWidget() {
                         {!selectedMake ? <CheckCircle2 className="w-5 h-5 text-primary" /> : <Circle className="w-5 h-5 text-zinc-300" />}
                         <span className="font-medium">{t("allMakes")}</span>
                       </div>
-                      <span className="text-sm text-zinc-500">({totalInventory})</span>
                     </div>
                     {MAKES_AND_MODELS.map((m) => (
                       <div
@@ -197,9 +207,6 @@ export function AdvancedSearchWidget() {
                         <div className="flex items-center gap-3">
                           {selectedMake === m.make && !selectedModel ? <CheckCircle2 className="w-5 h-5 text-primary" /> : <Circle className="w-5 h-5 text-zinc-300" />}
                           <span className={selectedMake === m.make ? "font-semibold" : ""}>{m.make}</span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <span className="text-sm text-zinc-500">({m.count})</span>
                         </div>
                       </div>
                     ))}
@@ -236,7 +243,6 @@ export function AdvancedSearchWidget() {
                               {selectedMake === expandedMake && selectedModel === mod.name ? <CheckCircle2 className="w-5 h-5 text-primary" /> : <Circle className="w-5 h-5 text-zinc-300" />}
                               <span>{mod.name}</span>
                             </div>
-                            <span className="text-sm text-zinc-500">({mod.count})</span>
                           </div>
                         ))}
                       </>
@@ -276,7 +282,6 @@ export function AdvancedSearchWidget() {
                     )}
                   >
                     <span className="font-semibold text-zinc-900 dark:text-white">{t("all")}</span>
-                    <span className="text-sm font-medium text-zinc-500">({totalInventory})</span>
                   </div>
                   {PROVINCES.map((prov) => (
                     <div
@@ -291,7 +296,6 @@ export function AdvancedSearchWidget() {
                       )}
                     >
                       <span>{prov.name}</span>
-                      <span className="text-sm text-zinc-500">({prov.count})</span>
                     </div>
                   ))}
                 </div>
@@ -364,7 +368,9 @@ export function AdvancedSearchWidget() {
               type="submit"
               className="flex-1 h-12 rounded-xl bg-primary hover:bg-primary/90 text-white font-bold text-lg transition-colors w-full flex items-center justify-center gap-2 shadow-lg shadow-primary/20"
             >
-              {t("search", { count: resultsCount.toLocaleString() })}
+              {resultsCount > 0
+                ? t("search", { count: resultsCount.toLocaleString() })
+                : "Rechercher des véhicules"}
             </button>
           </div>
         </form>

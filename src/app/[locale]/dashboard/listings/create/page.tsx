@@ -1,26 +1,17 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "@/i18n/routing";
 import { createListing } from "@/lib/actions";
 import { 
   Check, ChevronLeft, ChevronRight, Upload, X, Star, 
-  Image as ImageIcon, AlertCircle, Info, Sparkles 
+  Image as ImageIcon, AlertCircle, Info, Sparkles, Loader2 
 } from "lucide-react";
 import { ExtendedVehicleListing } from "@/lib/db/schema";
 import { Select } from "@/components/ui/Select";
 import { useTranslations } from "next-intl";
 import { MAKES_AND_MODELS } from "@/lib/search-constants";
 import Image from "next/image";
-
-// Preset sample photos for easy demonstration
-const DEMO_CAR_PHOTOS = [
-  "https://images.unsplash.com/photo-1542362567-b07e54358753?auto=format&fit=crop&w=800&q=80",
-  "https://images.unsplash.com/photo-1494976388531-d1058494cdd8?auto=format&fit=crop&w=800&q=80",
-  "https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&w=800&q=80",
-  "https://images.unsplash.com/photo-1555215695-3004980ad54e?auto=format&fit=crop&w=800&q=80",
-  "https://images.unsplash.com/photo-1546614042-7df3c24c9e5d?auto=format&fit=crop&w=800&q=80",
-];
 
 // Categorized features definitions matching requirements
 const CATEGORIZED_FEATURES = [
@@ -73,11 +64,14 @@ export default function PostCarPage() {
 
   const [step, setStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isUploadingPhotos, setIsUploadingPhotos] = useState(false);
+  const [uploadProgressText, setUploadProgressText] = useState("");
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [customMake, setCustomMake] = useState("");
   const [customModel, setCustomModel] = useState("");
   const [customCity, setCustomCity] = useState("");
   const [photoUrlInput, setPhotoUrlInput] = useState("");
+  const [showUrlInput, setShowUrlInput] = useState(false);
 
   const currentYear = new Date().getFullYear();
 
@@ -104,7 +98,7 @@ export default function PostCarPage() {
     engineSize: "2.0",
     horsepower: 150,
     features: [],
-    images: [DEMO_CAR_PHOTOS[0]],
+    images: [],
     serviceHistory: "FULL",
     accidentHistory: "NONE",
     isImported: false,
@@ -152,38 +146,80 @@ export default function PostCarPage() {
       images: [...(prev.images || []), trimmed],
     }));
     setPhotoUrlInput("");
-    if (errors.images) {
+    setErrors(prev => {
+      if (!prev.images) return prev;
+      const next = { ...prev };
+      delete next.images;
+      return next;
+    });
+  };
+
+  // Automatically clear photo validation error as soon as at least one photo exists
+  useEffect(() => {
+    if (formData.images && formData.images.length > 0) {
       setErrors(prev => {
+        if (!prev.images) return prev;
         const next = { ...prev };
         delete next.images;
         return next;
       });
     }
-  };
+  }, [formData.images?.length]);
 
-  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (!files || files.length === 0) return;
 
-    Array.from(files).forEach(file => {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        if (typeof reader.result === "string") {
-          setFormData(prev => ({
-            ...prev,
-            images: [...(prev.images || []), reader.result as string],
-          }));
-          if (errors.images) {
-            setErrors(prev => {
-              const next = { ...prev };
-              delete next.images;
-              return next;
-            });
-          }
+    setIsUploadingPhotos(true);
+    const fileList = Array.from(files);
+
+    try {
+      for (let i = 0; i < fileList.length; i++) {
+        const file = fileList[i];
+        setUploadProgressText(`Téléversement de la photo ${i + 1}/${fileList.length}...`);
+
+        // Upload through same-origin API route to Cloudflare R2 (avoiding browser CORS)
+        const uploadFormData = new FormData();
+        uploadFormData.append("file", file);
+        uploadFormData.append("folder", "vehicles");
+
+        const uploadRes = await fetch("/api/upload", {
+          method: "POST",
+          body: uploadFormData,
+        });
+
+        if (!uploadRes.ok) {
+          const errData = await uploadRes.json().catch(() => ({}));
+          throw new Error(errData.error || `Échec du téléversement (HTTP ${uploadRes.status})`);
         }
-      };
-      reader.readAsDataURL(file);
-    });
+
+        const data = await uploadRes.json();
+        const publicUrl = data.publicUrl;
+
+        // Append persistent R2 public URL
+        setFormData(prev => ({
+          ...prev,
+          images: [...(prev.images || []), publicUrl],
+        }));
+
+        setErrors(prev => {
+          if (!prev.images) return prev;
+          const next = { ...prev };
+          delete next.images;
+          return next;
+        });
+      }
+    } catch (err: any) {
+      console.error("Photo upload error:", err);
+      setErrors(prev => ({
+        ...prev,
+        images: err.message || "Erreur lors du téléversement de la photo",
+      }));
+    } finally {
+      setIsUploadingPhotos(false);
+      setUploadProgressText("");
+      e.target.value = "";
+    }
   };
 
   const handleSetCoverPhoto = (index: number) => {
@@ -201,20 +237,6 @@ export default function PostCarPage() {
       imgs.splice(index, 1);
       return { ...prev, images: imgs };
     });
-  };
-
-  const handleAddSamplePhotos = () => {
-    setFormData(prev => ({
-      ...prev,
-      images: Array.from(new Set([...(prev.images || []), ...DEMO_CAR_PHOTOS])),
-    }));
-    if (errors.images) {
-      setErrors(prev => {
-        const next = { ...prev };
-        delete next.images;
-        return next;
-      });
-    }
   };
 
   // Step Validation
@@ -258,6 +280,7 @@ export default function PostCarPage() {
 
   const nextStep = (e: React.FormEvent) => {
     e.preventDefault();
+    if (isUploadingPhotos) return;
     if (!validateStep(step)) return;
 
     if (step < 7) {
@@ -872,47 +895,84 @@ export default function PostCarPage() {
                 </p>
 
                 <div className="flex flex-wrap items-center justify-center gap-3">
-                  <label className="cursor-pointer bg-primary text-white text-xs sm:text-sm font-semibold px-4 py-2.5 rounded-lg hover:bg-primary/90 transition-colors shadow-sm">
-                    {t("step5.chooseFiles")}
+                  <label className={`cursor-pointer bg-primary text-white text-xs sm:text-sm font-semibold px-5 py-2.5 rounded-lg hover:bg-primary/90 transition-colors shadow-sm flex items-center gap-2 ${isUploadingPhotos ? "opacity-60 pointer-events-none" : ""}`}>
+                    {isUploadingPhotos ? (
+                      <>
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                        <span>{uploadProgressText || "Téléversement en cours..."}</span>
+                      </>
+                    ) : (
+                      <>
+                        <Upload className="w-4 h-4" />
+                        <span>{t("step5.chooseFiles")}</span>
+                      </>
+                    )}
                     <input
                       type="file"
                       multiple
                       accept="image/*"
+                      disabled={isUploadingPhotos}
                       onChange={handleFileUpload}
                       className="hidden"
                     />
                   </label>
-
-                  <button
-                    type="button"
-                    onClick={handleAddSamplePhotos}
-                    className="flex items-center gap-1.5 bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 text-xs sm:text-sm font-medium px-4 py-2.5 rounded-lg hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-colors"
-                  >
-                    <Sparkles className="w-4 h-4 text-amber-500" />
-                    {t("step5.useDemoImages")}
-                  </button>
                 </div>
               </div>
 
-              {/* URL photo adder */}
-              <div className="flex items-center gap-2">
-                <input
-                  type="url"
-                  value={photoUrlInput}
-                  onChange={e => setPhotoUrlInput(e.target.value)}
-                  placeholder={t("step5.addUrlPlaceholder")}
-                  className="flex-1 h-10 px-3.5 border border-zinc-300 dark:border-zinc-700 rounded-lg dark:bg-zinc-800 text-xs sm:text-sm"
-                />
-                <button
-                  type="button"
-                  onClick={handleAddPhotoUrl}
-                  className="h-10 px-4 bg-zinc-800 dark:bg-zinc-700 text-white rounded-lg text-xs sm:text-sm font-medium hover:bg-zinc-700 dark:hover:bg-zinc-600 transition-colors"
-                >
-                  {t("step5.addUrlButton")}
-                </button>
+              {/* Optional URL photo adder (hidden by default unless user clicks to add via URL) */}
+              <div className="pt-1">
+                {!showUrlInput ? (
+                  <button
+                    type="button"
+                    onClick={() => setShowUrlInput(true)}
+                    className="text-xs text-zinc-500 hover:text-zinc-800 dark:text-zinc-400 dark:hover:text-zinc-200 underline underline-offset-4 inline-flex items-center gap-1.5 transition-colors cursor-pointer"
+                  >
+                    <span>{t("step5.addUrlTitle")}</span>
+                  </button>
+                ) : (
+                  <div className="space-y-2.5 p-3.5 bg-zinc-50 dark:bg-zinc-900/60 rounded-xl border border-zinc-200 dark:border-zinc-800 animate-in fade-in duration-150">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-medium text-zinc-700 dark:text-zinc-300">
+                        {t("step5.addUrlTitle")}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => setShowUrlInput(false)}
+                        className="text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 p-1 cursor-pointer"
+                        title="Fermer"
+                      >
+                        <X className="w-4 h-4" />
+                      </button>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="url"
+                        value={photoUrlInput}
+                        onChange={e => setPhotoUrlInput(e.target.value)}
+                        placeholder={t("step5.addUrlPlaceholder")}
+                        className="flex-1 h-10 px-3.5 border border-zinc-300 dark:border-zinc-700 rounded-lg dark:bg-zinc-800 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-primary/20"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => {
+                          handleAddPhotoUrl();
+                          setShowUrlInput(false);
+                        }}
+                        className="h-10 px-4 bg-zinc-800 dark:bg-zinc-700 text-white rounded-lg text-xs sm:text-sm font-medium hover:bg-zinc-700 dark:hover:bg-zinc-600 transition-colors cursor-pointer"
+                      >
+                        {t("step5.addUrlButton")}
+                      </button>
+                    </div>
+                  </div>
+                )}
               </div>
 
-              {errors.images && <p className="text-red-500 text-xs">{errors.images}</p>}
+              {errors.images && (!formData.images || formData.images.length === 0) && (
+                <div className="flex items-center gap-2 p-3 bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-900/40 rounded-xl text-red-600 dark:text-red-400 text-xs sm:text-sm animate-in fade-in">
+                  <AlertCircle className="w-4 h-4 shrink-0" />
+                  <span>{errors.images}</span>
+                </div>
+              )}
 
               {/* Photos Grid Preview */}
               {formData.images && formData.images.length > 0 && (
@@ -1416,10 +1476,15 @@ export default function PostCarPage() {
 
             <button
               type="submit"
-              disabled={isSubmitting}
+              disabled={isSubmitting || isUploadingPhotos}
               className="flex items-center gap-2 bg-primary hover:bg-primary/90 text-white px-7 py-2.5 rounded-xl font-semibold text-sm transition-all shadow-sm hover:shadow disabled:opacity-50 cursor-pointer"
             >
-              {step === 7 ? (
+              {isUploadingPhotos ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  <span>{uploadProgressText || "Téléversement..."}</span>
+                </>
+              ) : step === 7 ? (
                 isSubmitting ? t("buttons.submitting") : t("buttons.submit")
               ) : (
                 <>

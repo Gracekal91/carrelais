@@ -1,17 +1,30 @@
 import { getCurrentUser } from "@/lib/auth";
-import { db } from "@/lib/db";
+import { connectToDatabase } from "@/lib/mongodb";
+import { ListingModel } from "@/lib/models/Listing";
+import { formatListing } from "@/lib/data";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { ChevronLeft, Eye, MessageSquare, Phone } from "lucide-react";
 import Image from "next/image";
 import ListingAnalyticsChart from "@/components/dashboard/ListingAnalyticsChart";
+import mongoose from "mongoose";
 
 export default async function ListingAnalyticsPage({ params }: { params: any }) {
   const user = await getCurrentUser();
   if (!user) return redirect("/signin");
 
   const { id } = await params;
-  const listing = db.listings.find(l => l.id === id && l.ownerId === user.id);
+  await connectToDatabase();
+
+  const query: any = { ownerId: user.id };
+  if (mongoose.Types.ObjectId.isValid(id)) {
+    query.$or = [{ _id: id }, { slug: id }];
+  } else {
+    query.slug = id;
+  }
+
+  const doc = await ListingModel.findOne(query).lean();
+  const listing = doc ? formatListing(doc) : null;
   
   if (!listing) {
     return (

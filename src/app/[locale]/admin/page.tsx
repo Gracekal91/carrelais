@@ -1,5 +1,9 @@
 import Link from "next/link";
-import { db } from "@/lib/db";
+import { connectToDatabase } from "@/lib/mongodb";
+import { UserModel } from "@/lib/models/User";
+import { ListingModel } from "@/lib/models/Listing";
+import { ReportModel } from "@/lib/models/Report";
+import { AuditLogModel } from "@/lib/models/AuditLog";
 import { 
   Users, 
   CarFront, 
@@ -18,22 +22,41 @@ import ListingStatusBadge from "@/components/admin/ListingStatusBadge";
 import { VehicleStatus } from "@/types";
 
 export default async function AdminDashboardPage() {
-  const totalUsers = db.users.length;
-  const dealers = db.users.filter(u => u.accountType === "DEALERSHIP").length;
-  const individuals = totalUsers - dealers;
+  await connectToDatabase();
 
-  const totalListings = db.listings.length;
-  const pendingListings = db.listings.filter(l => l.status === "PENDING_REVIEW").length;
-  const publishedListings = db.listings.filter(l => l.status === "PUBLISHED").length;
-  const soldListings = db.listings.filter(l => l.status === "SOLD").length;
-  const rejectedListings = db.listings.filter(l => l.status === "REJECTED").length;
-  const suspendedListings = db.listings.filter(l => l.status === "SUSPENDED").length;
-  const draftListings = db.listings.filter(l => l.status === "DRAFT").length;
+  const [
+    totalUsers,
+    dealers,
+    totalListings,
+    pendingListings,
+    publishedListings,
+    soldListings,
+    rejectedListings,
+    suspendedListings,
+    draftListings,
+    newReports,
+    unverifiedDealers,
+    auditLogDocs,
+  ] = await Promise.all([
+    UserModel.countDocuments(),
+    UserModel.countDocuments({ accountType: "DEALERSHIP" }),
+    ListingModel.countDocuments(),
+    ListingModel.countDocuments({ status: "PENDING_REVIEW" }),
+    ListingModel.countDocuments({ status: "PUBLISHED" }),
+    ListingModel.countDocuments({ status: "SOLD" }),
+    ListingModel.countDocuments({ status: "REJECTED" }),
+    ListingModel.countDocuments({ status: "SUSPENDED" }),
+    ListingModel.countDocuments({ status: "DRAFT" }),
+    ReportModel.countDocuments({ status: "NEW" }),
+    UserModel.countDocuments({ accountType: "DEALERSHIP", isVerified: false }),
+    AuditLogModel.find().sort({ createdAt: -1 }).limit(6).lean(),
+  ]);
 
-  const newReports = (db.reports || []).filter(r => r.status === "NEW").length;
-  const unverifiedDealers = db.users.filter(u => u.accountType === "DEALERSHIP" && !u.isVerified).length;
-
-  const auditLogs = (db.auditLogs || []).slice(0, 6);
+  const individuals = Math.max(0, totalUsers - dealers);
+  const auditLogs = auditLogDocs.map(log => ({
+    ...log,
+    id: log._id ? log._id.toString() : (log as any).id,
+  }));
 
   // Status breakdown list
   const statusesList: { status: VehicleStatus; count: number }[] = [

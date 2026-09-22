@@ -44,7 +44,7 @@ export default function UsersTableClient({ usersWithStats }: UsersTableClientPro
                   <td className="p-4">
                     <div className="flex items-center gap-3">
                       <div className="w-9 h-9 rounded-xl bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center shrink-0 border border-zinc-200 dark:border-zinc-700">
-                        {user.role === "ADMIN" ? (
+                        {(user.role === "ADMIN" || user.role === "SUPER_ADMIN") ? (
                           <Shield className="w-4 h-4 text-primary" />
                         ) : user.accountType === "DEALERSHIP" ? (
                           <Store className="w-4 h-4 text-blue-500" />
@@ -69,7 +69,9 @@ export default function UsersTableClient({ usersWithStats }: UsersTableClientPro
 
                   <td className="p-4">
                     <span className="inline-flex items-center gap-1.5 font-medium text-zinc-700 dark:text-zinc-300">
-                      {user.role === "ADMIN" ? (
+                      {user.role === "SUPER_ADMIN" ? (
+                        <span className="text-primary font-bold">Super Administrateur</span>
+                      ) : user.role === "ADMIN" ? (
                         <span className="text-primary font-bold">Administrateur</span>
                       ) : user.accountType === "DEALERSHIP" ? (
                         <span>Concessionnaire</span>

@@ -1,9 +1,11 @@
 import Link from "next/link";
-import { db } from "@/lib/db";
+import { connectToDatabase } from "@/lib/mongodb";
+import { ReportModel } from "@/lib/models/Report";
 import { AlertTriangle, Clock, CheckCircle2 } from "lucide-react";
 import ReportFilters from "@/components/admin/ReportFilters";
 import ReportsTableClient from "@/components/admin/ReportsTableClient";
 import PaginationControls from "@/components/admin/PaginationControls";
+import { formatReport } from "@/lib/data";
 
 interface AdminReportsPageProps {
   searchParams: Promise<{
@@ -19,41 +21,56 @@ export default async function AdminReportsPage(props: AdminReportsPageProps) {
   const page = Math.max(1, parseInt(searchParams.page || "1") || 1);
   const pageSize = 10;
 
-  const searchQuery = (searchParams.q || "").trim().toLowerCase();
+  const searchQuery = (searchParams.q || "").trim();
   const statusFilter = searchParams.status || "";
   const typeFilter = searchParams.type || "";
 
-  const allReports = db.reports || [];
+  await connectToDatabase();
 
-  const totalReportsCount = allReports.length;
-  const newReportsCount = allReports.filter(r => r.status === "NEW").length;
-  const resolvedReportsCount = allReports.filter(r => r.status === "RESOLVED").length;
+  const [totalReportsCount, newReportsCount, resolvedReportsCount] = await Promise.all([
+    ReportModel.countDocuments(),
+    ReportModel.countDocuments({ status: "NEW" }),
+    ReportModel.countDocuments({ status: "RESOLVED" }),
+  ]);
 
-  // Filter reports
-  let filtered = allReports.filter(report => {
-    if (searchQuery) {
-      const matchTitle = (report.targetTitle || "").toLowerCase().includes(searchQuery);
-      const matchReason = (report.reason || "").toLowerCase().includes(searchQuery);
-      const matchEmail = (report.reporterEmail || "").toLowerCase().includes(searchQuery);
-      if (!matchTitle && !matchReason && !matchEmail) return false;
-    }
+  const query: Record<string, any> = {};
 
-    if (statusFilter && report.status !== statusFilter) return false;
-    if (typeFilter && report.type !== typeFilter) return false;
+  if (statusFilter) {
+    query.status = statusFilter;
+  }
 
-    return true;
-  });
+  if (typeFilter) {
+    query.type = typeFilter;
+  }
 
-  // Sort: NEW first, then newest
-  filtered.sort((a, b) => {
-    if (a.status === "NEW" && b.status !== "NEW") return -1;
-    if (b.status === "NEW" && a.status !== "NEW") return 1;
-    return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
-  });
+  if (searchQuery) {
+    const sRegex = new RegExp(searchQuery, "i");
+    query.$or = [
+      { targetTitle: sRegex },
+      { reason: sRegex },
+      { reporterEmail: sRegex },
+    ];
+  }
 
-  const totalCount = filtered.length;
+  const totalCount = await ReportModel.countDocuments(query);
   const totalPages = Math.ceil(totalCount / pageSize);
-  const paginatedReports = filtered.slice((page - 1) * pageSize, page * pageSize);
+  const skip = (page - 1) * pageSize;
+
+  const docs = await ReportModel.find(query)
+    .sort({ createdAt: -1 })
+    .skip(skip)
+    .limit(pageSize)
+    .lean();
+
+  const paginatedReports = docs.map(formatReport);
+
+  if (!statusFilter) {
+    paginatedReports.sort((a, b) => {
+      if (a.status === "NEW" && b.status !== "NEW") return -1;
+      if (b.status === "NEW" && a.status !== "NEW") return 1;
+      return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+    });
+  }
 
   return (
     <div className="space-y-6">

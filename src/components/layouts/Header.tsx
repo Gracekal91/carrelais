@@ -62,15 +62,21 @@ export function Header() {
           
           {user ? (
             <>
-              <Link href={user.role === "ADMIN" ? "/admin" : "/dashboard"} className="hidden md:block text-sm font-medium hover:text-white/80 transition-colors">
-                {user.role === "ADMIN" ? "Admin" : "Dashboard"}
-              </Link>
+              {(user.role === "ADMIN" || user.role === "SUPER_ADMIN") ? (
+                <Link href="/admin" className="hidden md:block text-sm font-semibold text-amber-300 hover:text-white transition-colors">
+                  Administration
+                </Link>
+              ) : (
+                <Link href="/dashboard" className="hidden md:block text-sm font-medium hover:text-white/80 transition-colors">
+                  Dashboard
+                </Link>
+              )}
               <form action={async () => {
                 await logout();
                 setUser(null);
                 router.push("/");
               }}>
-                <button type="submit" className="hidden md:block text-sm font-medium hover:text-white/80 transition-colors">
+                <button type="submit" className="hidden md:block text-sm font-medium hover:text-white/80 transition-colors cursor-pointer">
                   Sign Out
                 </button>
               </form>

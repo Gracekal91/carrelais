@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 import { getCurrentUser } from "@/lib/auth";
 import Link from "next/link";
-import { LayoutDashboard, CarFront, User, LogOut } from "lucide-react";
+import { LayoutDashboard, CarFront, User, LogOut, ShieldCheck } from "lucide-react";
 import { logout } from "@/lib/actions";
 
 export default async function DashboardLayout({ children, params }: { children: React.ReactNode, params: any }) {
@@ -20,6 +20,15 @@ export default async function DashboardLayout({ children, params }: { children: 
           {user.accountType === "DEALERSHIP" && <p className="text-xs font-semibold text-primary mt-1">{user.dealershipName}</p>}
         </div>
         <nav className="p-4 space-y-2">
+          {(user.role === "ADMIN" || user.role === "SUPER_ADMIN") && (
+            <Link 
+              href="/admin" 
+              className="flex items-center gap-3 px-4 py-3 rounded-xl bg-amber-500/10 text-amber-600 dark:text-amber-400 hover:bg-amber-500/20 font-bold transition-colors mb-2"
+            >
+              <ShieldCheck className="w-5 h-5 text-amber-600 dark:text-amber-400" />
+              <span>Administration</span>
+            </Link>
+          )}
           <Link href="/dashboard" className="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors">
             <LayoutDashboard className="w-5 h-5" />
             <span className="font-medium">Overview</span>

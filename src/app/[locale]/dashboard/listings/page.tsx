@@ -1,5 +1,7 @@
 import { getCurrentUser } from "@/lib/auth";
-import { db } from "@/lib/db";
+import { connectToDatabase } from "@/lib/mongodb";
+import { ListingModel } from "@/lib/models/Listing";
+import { formatListing } from "@/lib/data";
 import Link from "next/link";
 import { PlusCircle, Edit, Trash2, Eye, BarChart2 } from "lucide-react";
 import Image from "next/image";
@@ -8,7 +10,11 @@ export default async function MyListingsPage() {
   const user = await getCurrentUser();
   if (!user) return null;
 
-  const myListings = db.listings.filter(l => l.ownerId === user.id).sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+  await connectToDatabase();
+  const listingDocs = await ListingModel.find({ ownerId: user.id })
+    .sort({ createdAt: -1 })
+    .lean();
+  const myListings = listingDocs.map(formatListing);
 
   return (
     <div className="space-y-6">

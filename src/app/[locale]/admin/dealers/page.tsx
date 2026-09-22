@@ -1,9 +1,12 @@
 import Link from "next/link";
-import { db } from "@/lib/db";
+import { connectToDatabase } from "@/lib/mongodb";
+import { UserModel } from "@/lib/models/User";
+import { ListingModel } from "@/lib/models/Listing";
 import { Store, ShieldCheck, ShieldAlert } from "lucide-react";
 import DealerFilters from "@/components/admin/DealerFilters";
 import DealersTableClient from "@/components/admin/DealersTableClient";
 import PaginationControls from "@/components/admin/PaginationControls";
+import { formatUser } from "@/lib/data";
 
 interface AdminDealersPageProps {
   searchParams: Promise<{
@@ -18,45 +21,64 @@ export default async function AdminDealersPage(props: AdminDealersPageProps) {
   const page = Math.max(1, parseInt(searchParams.page || "1") || 1);
   const pageSize = 10;
 
-  const searchQuery = (searchParams.q || "").trim().toLowerCase();
+  const searchQuery = (searchParams.q || "").trim();
   const verificationFilter = searchParams.verification || "";
 
-  // Get all dealerships
-  const allDealers = db.users.filter(u => u.accountType === "DEALERSHIP");
+  await connectToDatabase();
 
-  const totalDealersCount = allDealers.length;
-  const verifiedDealersCount = allDealers.filter(d => d.isVerified).length;
-  const unverifiedDealersCount = allDealers.filter(d => !d.isVerified).length;
+  const [totalDealersCount, verifiedDealersCount, unverifiedDealersCount] = await Promise.all([
+    UserModel.countDocuments({ accountType: "DEALERSHIP" }),
+    UserModel.countDocuments({ accountType: "DEALERSHIP", isVerified: true }),
+    UserModel.countDocuments({ accountType: "DEALERSHIP", isVerified: false }),
+  ]);
 
-  // Filter dealerships
-  let filtered = allDealers.filter(dealer => {
-    if (searchQuery) {
-      const matchName = (dealer.dealershipName || "").toLowerCase().includes(searchQuery);
-      const matchContact = `${dealer.firstName} ${dealer.lastName}`.toLowerCase().includes(searchQuery);
-      const matchCity = (dealer.city || "").toLowerCase().includes(searchQuery);
-      const matchPhone = (dealer.phone || "").toLowerCase().includes(searchQuery);
-      if (!matchName && !matchContact && !matchCity && !matchPhone) return false;
-    }
+  const query: Record<string, any> = {
+    accountType: "DEALERSHIP",
+  };
 
-    if (verificationFilter === "verifiedOnly" && !dealer.isVerified) return false;
-    if (verificationFilter === "unverifiedOnly" && dealer.isVerified) return false;
+  if (verificationFilter === "verifiedOnly") {
+    query.isVerified = true;
+  } else if (verificationFilter === "unverifiedOnly") {
+    query.isVerified = false;
+  }
 
-    return true;
-  });
+  if (searchQuery) {
+    const sRegex = new RegExp(searchQuery, "i");
+    query.$or = [
+      { dealershipName: sRegex },
+      { firstName: sRegex },
+      { lastName: sRegex },
+      { city: sRegex },
+      { phone: sRegex },
+    ];
+  }
 
-  const totalCount = filtered.length;
+  const totalCount = await UserModel.countDocuments(query);
   const totalPages = Math.ceil(totalCount / pageSize);
-  const paginatedDealers = filtered.slice((page - 1) * pageSize, page * pageSize);
+  const skip = (page - 1) * pageSize;
+
+  const dealerDocs = await UserModel.find(query)
+    .sort({ createdAt: -1 })
+    .skip(skip)
+    .limit(pageSize)
+    .lean();
+
+  const paginatedDealers = dealerDocs.map(formatUser);
 
   // Compute listing stats for each dealership
-  const dealersWithStats = paginatedDealers.map(dealer => {
-    const dealerListings = db.listings.filter(l => l.ownerId === dealer.id);
-    return {
-      dealer,
-      activeCount: dealerListings.filter(l => l.status === "PUBLISHED").length,
-      totalCount: dealerListings.length,
-    };
-  });
+  const dealersWithStats = await Promise.all(
+    paginatedDealers.map(async (dealer) => {
+      const [totalCount, activeCount] = await Promise.all([
+        ListingModel.countDocuments({ ownerId: dealer.id }),
+        ListingModel.countDocuments({ ownerId: dealer.id, status: "PUBLISHED" }),
+      ]);
+      return {
+        dealer,
+        activeCount,
+        totalCount,
+      };
+    })
+  );
 
   return (
     <div className="space-y-6">

@@ -16,7 +16,7 @@ import { getTranslations } from "next-intl/server";
 
 export default async function VehicleDetailPage(props: { params: Promise<{ slug: string }> }) {
   const params = await props.params;
-  const vehicle = getVehicleBySlug(params.slug);
+  const vehicle = await getVehicleBySlug(params.slug);
 
   if (!vehicle || vehicle.status !== "PUBLISHED") {
     notFound();

@@ -1,6 +1,6 @@
 import { SellerType, VehicleAvailability, VehicleStatus, FuelType, Transmission, BodyType, Seller, VehicleListing } from "@/types";
 
-export type Role = "USER" | "ADMIN";
+export type Role = "USER" | "ADMIN" | "SUPER_ADMIN";
 export type UserStatus = "ACTIVE" | "SUSPENDED" | "DISABLED";
 
 export interface User {

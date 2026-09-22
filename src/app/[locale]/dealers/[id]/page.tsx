@@ -1,8 +1,29 @@
-import { db } from "@/lib/db";
 import { notFound } from "next/navigation";
 import DealerProfileView from "@/components/dashboard/DealerProfileView";
 import { getCurrentUser } from "@/lib/auth";
+import { connectToDatabase } from "@/lib/mongodb";
+import { UserModel } from "@/lib/models/User";
+import { ListingModel } from "@/lib/models/Listing";
+import { formatListing } from "@/lib/data";
 import type { Metadata } from "next";
+import mongoose from "mongoose";
+
+async function getDealerUser(id: string) {
+  try {
+    await connectToDatabase();
+    const query = mongoose.Types.ObjectId.isValid(id) ? { _id: id } : { id };
+    const user = await UserModel.findOne(query).lean();
+    if (!user) return null;
+    return {
+      ...user,
+      id: user._id.toString(),
+      _id: undefined,
+    } as any;
+  } catch (err) {
+    console.error("Error fetching dealer:", err);
+    return null;
+  }
+}
 
 export async function generateMetadata({
   params,
@@ -10,7 +31,7 @@ export async function generateMetadata({
   params: Promise<{ id: string; locale: string }>;
 }): Promise<Metadata> {
   const { id } = await params;
-  const user = db.users.find(u => u.id === id);
+  const user = await getDealerUser(id);
 
   if (!user) {
     return {
@@ -33,7 +54,7 @@ export default async function PublicDealerPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const dealerUser = db.users.find(u => u.id === id);
+  const dealerUser = await getDealerUser(id);
 
   if (!dealerUser) {
     notFound();
@@ -42,12 +63,13 @@ export default async function PublicDealerPage({
   const currentUser = await getCurrentUser();
   const isOwner = currentUser?.id === dealerUser.id;
 
-  const activeListings = db.listings.filter(
-    l => l.ownerId === dealerUser.id && l.status === "PUBLISHED"
-  );
-  const soldListings = db.listings.filter(
-    l => l.ownerId === dealerUser.id && l.status === "SOLD"
-  );
+  const [activeDocs, soldDocs] = await Promise.all([
+    ListingModel.find({ ownerId: dealerUser.id, status: "PUBLISHED" }).sort({ createdAt: -1 }).lean(),
+    ListingModel.find({ ownerId: dealerUser.id, status: "SOLD" }).sort({ createdAt: -1 }).lean(),
+  ]);
+
+  const activeListings = activeDocs.map(formatListing);
+  const soldListings = soldDocs.map(formatListing);
 
   return (
     <div className="container mx-auto px-4 py-8 max-w-6xl">

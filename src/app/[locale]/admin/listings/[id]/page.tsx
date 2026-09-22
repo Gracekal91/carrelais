@@ -1,6 +1,10 @@
 import { redirect } from "next/navigation";
 import Link from "next/link";
-import { db } from "@/lib/db";
+import { connectToDatabase } from "@/lib/mongodb";
+import { ListingModel } from "@/lib/models/Listing";
+import { UserModel } from "@/lib/models/User";
+import { formatListing, formatUser } from "@/lib/data";
+import mongoose from "mongoose";
 import { 
   ChevronLeft, 
   Store, 
@@ -21,15 +25,24 @@ import ListingReviewActions from "@/components/admin/ListingReviewActions";
 
 export default async function AdminListingReviewPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const listing = db.listings.find(l => l.id === id);
+  await connectToDatabase();
 
-  if (!listing) {
+  const listingDoc = mongoose.Types.ObjectId.isValid(id)
+    ? await ListingModel.findById(id).lean()
+    : await ListingModel.findOne({ slug: id }).lean();
+
+  if (!listingDoc) {
     return redirect("/admin/listings");
   }
 
+  const listing = formatListing(listingDoc);
+
   // Find owner user details
-  const owner = db.users.find(u => u.id === listing.ownerId);
-  const ownerListingsCount = db.listings.filter(l => l.ownerId === listing.ownerId && l.status === "PUBLISHED").length;
+  const ownerDoc = mongoose.Types.ObjectId.isValid(listing.ownerId)
+    ? await UserModel.findById(listing.ownerId).lean()
+    : await UserModel.findOne({ _id: listing.ownerId }).lean();
+  const owner = ownerDoc ? formatUser(ownerDoc) : null;
+  const ownerListingsCount = await ListingModel.countDocuments({ ownerId: listing.ownerId, status: "PUBLISHED" });
 
   return (
     <div className="max-w-6xl mx-auto space-y-6 pb-12">

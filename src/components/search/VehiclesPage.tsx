@@ -19,14 +19,18 @@ function RadioOption({ label, value, selected, onChange }: {
   label: string; value: string; selected: boolean; onChange: (v: string) => void;
 }) {
   return (
-    <button type="button" onClick={() => onChange(value)} className="flex items-center gap-3 w-full py-2 group">
+    <button
+      type="button"
+      onClick={() => onChange(value)}
+      className="flex items-start justify-start text-left gap-3 w-full py-2 group cursor-pointer"
+    >
       <span className={cn(
-        "w-4 h-4 rounded-full border-2 flex items-center justify-center flex-shrink-0 transition-colors",
+        "w-4 h-4 rounded-full border-2 flex items-center justify-center shrink-0 mt-0.5 transition-colors",
         selected ? "border-primary bg-primary" : "border-zinc-300 dark:border-zinc-600 group-hover:border-primary/60"
       )}>
         {selected && <span className="w-1.5 h-1.5 rounded-full bg-white" />}
       </span>
-      <span className={cn("text-sm", selected ? "font-medium text-primary" : "text-zinc-700 dark:text-zinc-300")}>
+      <span className={cn("text-sm text-left leading-normal", selected ? "font-semibold text-primary" : "text-zinc-700 dark:text-zinc-300")}>
         {label}
       </span>
     </button>
@@ -37,14 +41,18 @@ function CheckboxOption({ label, checked, onChange }: {
   label: string; checked: boolean; onChange: () => void;
 }) {
   return (
-    <button type="button" onClick={onChange} className="flex items-center gap-3 w-full py-2 group">
+    <button
+      type="button"
+      onClick={onChange}
+      className="flex items-start justify-start text-left gap-3 w-full py-2 group cursor-pointer"
+    >
       <span className={cn(
-        "w-4 h-4 rounded border-2 flex items-center justify-center flex-shrink-0 transition-colors",
+        "w-4 h-4 rounded border-2 flex items-center justify-center shrink-0 mt-0.5 transition-colors",
         checked ? "border-primary bg-primary" : "border-zinc-300 dark:border-zinc-600 group-hover:border-primary/60"
       )}>
         {checked && <Check className="w-2.5 h-2.5 text-white stroke-[3]" />}
       </span>
-      <span className={cn("text-sm", checked ? "font-medium text-primary" : "text-zinc-700 dark:text-zinc-300")}>
+      <span className={cn("text-sm text-left leading-normal", checked ? "font-semibold text-primary" : "text-zinc-700 dark:text-zinc-300")}>
         {label}
       </span>
     </button>
@@ -56,12 +64,18 @@ function FilterSection({ title, children, defaultOpen = true }: {
 }) {
   const [open, setOpen] = useState(defaultOpen);
   return (
-    <div className="border-b border-zinc-200 dark:border-zinc-800 py-4 last:border-0">
-      <button type="button" onClick={() => setOpen(!open)} className="flex items-center justify-between w-full mb-1">
-        <span className="font-semibold text-sm text-zinc-900 dark:text-white">{title}</span>
-        <ChevronDown className={cn("w-4 h-4 text-zinc-400 transition-transform", open && "rotate-180")} />
+    <div className="border-b border-zinc-200 dark:border-zinc-800 py-3.5 last:border-0 text-left">
+      <button
+        type="button"
+        onClick={() => setOpen(!open)}
+        className="flex items-center justify-between w-full mb-1 text-left cursor-pointer group"
+      >
+        <span className="font-semibold text-sm text-zinc-900 dark:text-white text-left group-hover:text-primary transition-colors">
+          {title}
+        </span>
+        <ChevronDown className={cn("w-4 h-4 text-zinc-400 transition-transform shrink-0", open && "rotate-180")} />
       </button>
-      {open && <div className="mt-2">{children}</div>}
+      {open && <div className="mt-2 space-y-0.5 text-left">{children}</div>}
     </div>
   );
 }
@@ -191,7 +205,7 @@ export function VehiclesPage({
   };
 
   const FilterBody = (
-    <div>
+    <div className="text-left space-y-0.5">
       <FilterSection title={t("availability")}>
         {AVAILABILITY_OPTIONS_KEYS.map(({ value, labelKey }) => (
           <RadioOption key={value} value={value} label={t(labelKey as any)}
@@ -352,11 +366,11 @@ export function VehiclesPage({
       {/* Body: sidebar + results */}
       <div className="flex gap-8 items-start">
         {/* Desktop sidebar */}
-        <aside className="hidden lg:block w-60 shrink-0 sticky top-20 max-h-[calc(100vh-6rem)] overflow-y-auto bg-white dark:bg-zinc-900 rounded-xl border border-zinc-200 dark:border-zinc-800 p-4">
-          <div className="flex items-center justify-between mb-3">
-            <h2 className="font-bold text-zinc-900 dark:text-white">{t("filters")}</h2>
+        <aside className="hidden lg:block w-64 xl:w-72 shrink-0 sticky top-20 max-h-[calc(100vh-6rem)] overflow-y-auto bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 p-5 text-left shadow-xs">
+          <div className="flex items-center justify-between mb-3 text-left">
+            <h2 className="font-bold text-base text-zinc-900 dark:text-white text-left">{t("filters")}</h2>
             {activeFilterCount > 0 && (
-              <button type="button" onClick={clearFilters} className="text-xs text-primary hover:underline">
+              <button type="button" onClick={clearFilters} className="text-xs text-primary hover:underline cursor-pointer font-medium">
                 {t("clearFilters")} ({activeFilterCount})
               </button>
             )}
@@ -368,11 +382,11 @@ export function VehiclesPage({
         {mobileOpen && (
           <div className="fixed inset-0 z-[200] lg:hidden flex">
             <div className="fixed inset-0 bg-black/50 backdrop-blur-sm" onClick={() => setMobileOpen(false)} />
-            <div className="relative ml-auto h-full w-[85%] max-w-sm bg-white dark:bg-zinc-900 p-5 shadow-2xl flex flex-col overflow-y-auto">
-              <div className="flex items-center justify-between mb-5">
-                <h2 className="font-bold text-lg">{t("filters")}</h2>
+            <div className="relative ml-auto h-full w-[85%] max-w-sm bg-white dark:bg-zinc-900 p-5 shadow-2xl flex flex-col overflow-y-auto text-left">
+              <div className="flex items-center justify-between mb-5 text-left">
+                <h2 className="font-bold text-lg text-left">{t("filters")}</h2>
                 <button type="button" onClick={() => setMobileOpen(false)}
-                  className="p-2 rounded-full hover:bg-zinc-100 dark:hover:bg-zinc-800">
+                  className="p-2 rounded-full hover:bg-zinc-100 dark:hover:bg-zinc-800 cursor-pointer">
                   <X className="w-5 h-5" />
                 </button>
               </div>
