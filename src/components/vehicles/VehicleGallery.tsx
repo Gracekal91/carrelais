@@ -41,13 +41,15 @@ export function VehicleGallery({ images, title, isLocal }: { images: string[], t
           
           <div className="absolute top-4 left-4 flex gap-2 z-10">
             {isLocal ? (
-              <Badge variant="success" className="bg-white/95 text-sm px-3 py-1 backdrop-blur-sm border border-green-200">
-                ✓ {t("availableInCongo")}
-              </Badge>
+              <span className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs sm:text-sm font-bold bg-emerald-600 text-white shadow-md border border-emerald-500/40">
+                <span>✓</span>
+                <span>{t("availableInCongo")}</span>
+              </span>
             ) : (
-              <Badge variant="import" className="bg-white/95 text-sm px-3 py-1 backdrop-blur-sm border border-blue-200">
-                🚢 {t("availableForImport")}
-              </Badge>
+              <span className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs sm:text-sm font-bold bg-blue-600 text-white shadow-md border border-blue-500/40">
+                <span>🚢</span>
+                <span>{t("availableForImport")}</span>
+              </span>
             )}
           </div>
 

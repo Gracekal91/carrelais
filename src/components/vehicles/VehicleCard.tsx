@@ -26,15 +26,17 @@ export function VehicleCard({ vehicle }: VehicleCardProps) {
           className="object-cover group-hover:scale-105 transition-transform duration-500"
           sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
         />
-        <div className="absolute top-3 left-3 flex flex-col gap-2">
+        <div className="absolute top-3 left-3 flex flex-col gap-2 z-10">
           {isLocal ? (
-            <Badge variant="success" className="bg-white/90 backdrop-blur-sm border border-green-200">
-              ✓ {t("availableInCongo")}
-            </Badge>
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-emerald-600 text-white shadow-md border border-emerald-500/40">
+              <span>✓</span>
+              <span>{t("availableInCongo")}</span>
+            </span>
           ) : (
-            <Badge variant="import" className="bg-white/90 backdrop-blur-sm border border-blue-200">
-              🚢 {t("availableForImport")}
-            </Badge>
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-blue-600 text-white shadow-md border border-blue-500/40">
+              <span>🚢</span>
+              <span>{t("availableForImport")}</span>
+            </span>
           )}
         </div>
       </div>

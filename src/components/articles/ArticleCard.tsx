@@ -62,7 +62,7 @@ export default function ArticleCard({
         {/* Category Badge overlay */}
         <div className="absolute top-3 left-3 z-10">
           <span
-            className={`px-3 py-1 rounded-full text-xs font-bold shadow-xs backdrop-blur-md ${categoryConfig.badgeColor}`}
+            className={`px-3 py-1 rounded-full text-xs font-bold shadow-md ${categoryConfig.badgeColor}`}
           >
             {isEn ? categoryConfig.labelEn : categoryConfig.labelFr}
           </span>

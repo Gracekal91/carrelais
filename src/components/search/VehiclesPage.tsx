@@ -539,10 +539,16 @@ function VehicleCardList({ vehicle }: { vehicle: VehicleListing }) {
       {/* Image */}
       <div className="relative w-full aspect-[4/3] sm:aspect-auto sm:w-52 shrink-0 bg-zinc-100 dark:bg-zinc-800 overflow-hidden">
         <Image src={vehicle.images[0]} alt={vehicle.title} fill className="object-cover group-hover:scale-105 transition-transform duration-500" sizes="(max-width: 640px) 100vw, 208px" />
-        <div className="absolute top-2 left-2">
-          <Badge variant={isLocal ? "success" : "import"} className="text-xs font-semibold">
-            {isLocal ? t("congoShort") : t("importShort")}
-          </Badge>
+        <div className="absolute top-2 left-2 z-10">
+          <span
+            className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold text-white shadow-md ${
+              isLocal
+                ? "bg-emerald-600 border border-emerald-500/40"
+                : "bg-blue-600 border border-blue-500/40"
+            }`}
+          >
+            {isLocal ? `✓ ${t("congoShort")}` : `🚢 ${t("importShort")}`}
+          </span>
         </div>
       </div>
 
