@@ -23,7 +23,7 @@ const geistMono = Geist_Mono({
 const BASE_URL =
   process.env.NEXT_PUBLIC_APP_URL && !process.env.NEXT_PUBLIC_APP_URL.includes("localhost")
     ? process.env.NEXT_PUBLIC_APP_URL
-    : "https://carrelais.cd";
+    : "https://carrelais.com";
 
 export async function generateMetadata(props: {
   params: Promise<{ locale: string }>;

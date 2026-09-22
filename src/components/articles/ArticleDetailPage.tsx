@@ -4,14 +4,10 @@ import Image from "next/image";
 import {
   Clock,
   Calendar,
-  User,
   ArrowLeft,
   Globe,
   Tag,
-  Share2,
-  Sparkles,
   ChevronRight,
-  ShieldAlert,
 } from "lucide-react";
 import { Article, ARTICLE_CATEGORIES } from "@/types/article";
 import ArticleCard from "./ArticleCard";
@@ -64,7 +60,7 @@ export default function ArticleDetailPage({
   const currentUrl =
     typeof window !== "undefined"
       ? window.location.href
-      : `https://carrelais.cd${learnBasePath}/${article.slug}`;
+      : `https://carrelais.com${learnBasePath}/${article.slug}`;
 
   return (
     <article className="min-h-screen bg-zinc-50/60 dark:bg-zinc-950 pb-20">

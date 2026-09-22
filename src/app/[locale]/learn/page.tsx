@@ -10,7 +10,7 @@ export async function generateMetadata(): Promise<Metadata> {
   const description =
     "Discover expert car buying advice, vehicle pricing benchmarks in DRC, maintenance tips, customs importation, and automotive news.";
 
-  const canonicalUrl = "https://carrelais.cd/en/learn";
+  const canonicalUrl = "https://carrelais.com/en/learn";
 
   return {
     title,
@@ -18,8 +18,8 @@ export async function generateMetadata(): Promise<Metadata> {
     alternates: {
       canonical: canonicalUrl,
       languages: {
-        en: "https://carrelais.cd/en/learn",
-        fr: "https://carrelais.cd/apprendre",
+        en: "https://carrelais.com/en/learn",
+        fr: "https://carrelais.com/apprendre",
       },
     },
     openGraph: {

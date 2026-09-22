@@ -24,7 +24,7 @@ export async function generateMetadata(props: {
   const article = result.article;
   const title = article.seoTitle || `${article.title} - Car Relais`;
   const description = article.seoDescription || article.excerpt;
-  const canonicalUrl = `https://carrelais.cd/apprendre/${article.slug}`;
+  const canonicalUrl = `https://carrelais.com/apprendre/${article.slug}`;
 
   // Find translation for hreflang
   const translated = await getConnectedTranslation(
@@ -36,7 +36,7 @@ export async function generateMetadata(props: {
     fr: canonicalUrl,
   };
   if (translated) {
-    languages.en = `https://carrelais.cd/en/learn/${translated.slug}`;
+    languages.en = `https://carrelais.com/en/learn/${translated.slug}`;
   }
 
   return {
@@ -95,7 +95,7 @@ export default async function FrenchArticleDetailPage(props: {
     getConnectedTranslation(article.id, article.translationId),
   ]);
 
-  const canonicalUrl = `https://carrelais.cd/apprendre/${article.slug}`;
+  const canonicalUrl = `https://carrelais.com/apprendre/${article.slug}`;
 
   // JSON-LD Structured Data for Article / BlogPosting
   const jsonLd = {
@@ -117,7 +117,7 @@ export default async function FrenchArticleDetailPage(props: {
       name: "Car Relais",
       logo: {
         "@type": "ImageObject",
-        url: "https://carrelais.cd/icon.png",
+        url: "https://carrelais.com/icon.png",
       },
     },
     mainEntityOfPage: {

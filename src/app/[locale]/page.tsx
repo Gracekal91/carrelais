@@ -24,7 +24,7 @@ export async function generateMetadata(props: {
     ? "Browse verified new and used cars in the Democratic Republic of Congo. Vehicles available in Kinshasa and Lubumbashi, or ready for import from Dubai and Europe."
     : "Achetez et vendez des voitures neuves et d'occasion en République Démocratique du Congo. Véhicules disponibles à Kinshasa et Lubumbashi ou prêts pour importation.";
 
-  const canonicalUrl = isEn ? "https://carrelais.cd/en" : "https://carrelais.cd";
+  const canonicalUrl = isEn ? "https://carrelais.com/en" : "https://carrelais.com";
 
   return {
     title,
@@ -32,8 +32,8 @@ export async function generateMetadata(props: {
     alternates: {
       canonical: canonicalUrl,
       languages: {
-        fr: "https://carrelais.cd",
-        en: "https://carrelais.cd/en",
+        fr: "https://carrelais.com",
+        en: "https://carrelais.com/en",
       },
     },
     openGraph: {
@@ -64,12 +64,12 @@ export default async function Home(props: { params: Promise<{ locale: string }> 
     "@context": "https://schema.org",
     "@type": "WebSite",
     name: "Car Relais",
-    url: isEn ? "https://carrelais.cd/en" : "https://carrelais.cd",
+    url: isEn ? "https://carrelais.com/en" : "https://carrelais.com",
     potentialAction: {
       "@type": "SearchAction",
       target: {
         "@type": "EntryPoint",
-        urlTemplate: "https://carrelais.cd/vehicles?q={search_term_string}",
+        urlTemplate: "https://carrelais.com/vehicles?q={search_term_string}",
       },
       "query-input": "required name=search_term_string",
     },
@@ -79,8 +79,8 @@ export default async function Home(props: { params: Promise<{ locale: string }> 
     "@context": "https://schema.org",
     "@type": "AutoMarketplace",
     name: "Car Relais",
-    url: "https://carrelais.cd",
-    logo: "https://carrelais.cd/icon.png",
+    url: "https://carrelais.com",
+    logo: "https://carrelais.com/icon.png",
     description: isEn
       ? "The premier automotive marketplace in the Democratic Republic of Congo."
       : "Le premier marché automobile en République Démocratique du Congo.",

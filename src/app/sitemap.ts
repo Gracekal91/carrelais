@@ -10,7 +10,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl =
     process.env.NEXT_PUBLIC_APP_URL && !process.env.NEXT_PUBLIC_APP_URL.includes("localhost")
       ? process.env.NEXT_PUBLIC_APP_URL
-      : "https://carrelais.cd";
+      : "https://carrelais.com";
 
   const now = new Date();
 
