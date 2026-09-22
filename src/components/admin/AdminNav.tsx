@@ -14,7 +14,8 @@ import {
   Menu, 
   X,
   ExternalLink,
-  PlusCircle
+  PlusCircle,
+  BookOpen
 } from "lucide-react";
 import { logout } from "@/lib/actions";
 
@@ -88,6 +89,14 @@ export default function AdminNav({
       exact: false,
       badge: newReportsCount > 0 ? newReportsCount : null,
       badgeColor: "bg-red-500 text-white font-bold",
+    },
+    {
+      href: "/admin/articles",
+      label: "Articles (CMS)",
+      icon: BookOpen,
+      exact: false,
+      badge: null,
+      badgeColor: undefined,
     },
   ];
 

@@ -1,8 +1,10 @@
 import { Link } from "@/i18n/routing";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
 
 export function Footer() {
   const t = useTranslations("Footer");
+  const locale = useLocale();
+  const learnHref = locale === "en" ? "/learn" : "/apprendre";
 
   return (
     <footer className="border-t border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 py-12 pb-24 lg:pb-12">
@@ -38,7 +40,7 @@ export function Footer() {
           <ul className="space-y-2 text-sm text-zinc-600 dark:text-zinc-400">
             <li><Link href="/about">{t("aboutUs")}</Link></li>
             <li><Link href="/contact">{t("contact")}</Link></li>
-            <li><Link href="/articles">{t("guidesNews")}</Link></li>
+            <li><Link href={learnHref}>{t("learn")}</Link></li>
           </ul>
         </div>
       </div>

@@ -4,6 +4,7 @@
     "findVehicle": "Trouver un véhicule",
     "importCar": "Importer une voiture",
     "guides": "Guides",
+    "learn": "Apprendre",
     "signIn": "Se connecter",
     "sellCar": "Vendre votre voiture"
   },
@@ -66,6 +67,7 @@
     "aboutUs": "À propos de nous",
     "contact": "Contact",
     "guidesNews": "Guides & Actualités",
+    "learn": "Apprendre",
     "rights": "Tous droits réservés."
   },
   "Vehicles": {
@@ -569,6 +571,7 @@
       "users": "Utilisateurs",
       "dealerships": "Concessionnaires",
       "reports": "Signalements",
+      "articles": "Articles (CMS)",
       "logout": "Déconnexion"
     },
     "dashboard": {

@@ -1,11 +1,13 @@
 import mongoose from "mongoose";
 import dns from "node:dns";
 
-// Ensure reliable and fast resolution of MongoDB Atlas replica set hosts
-try {
-  dns.setServers(["8.8.8.8", "1.1.1.1"]);
-} catch {
-  // fallback to system default
+// Only set custom DNS in local development (Vercel serverless requires default AWS Lambda DNS)
+if (!process.env.VERCEL) {
+  try {
+    dns.setServers(["8.8.8.8", "1.1.1.1"]);
+  } catch {
+    // fallback to system default
+  }
 }
 
 const MONGODB_URI = process.env.MONGODB_URI;
@@ -38,7 +40,8 @@ export async function connectToDatabase(): Promise<typeof mongoose> {
     const opts = {
       bufferCommands: false,
       maxPoolSize: 10,
-      serverSelectionTimeoutMS: 10000,
+      serverSelectionTimeoutMS: 15000,
+      socketTimeoutMS: 45000,
     };
 
     cached.promise = mongoose.connect(MONGODB_URI!, opts).then((m) => {

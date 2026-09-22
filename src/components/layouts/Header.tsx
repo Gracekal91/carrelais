@@ -43,8 +43,11 @@ export function Header() {
             <Link href="/vehicles?availability=IMPORT" className="text-sm font-medium hover:text-white/80 transition-colors">
               {t("importCar")}
             </Link>
-            <Link href="/articles" className="text-sm font-medium hover:text-white/80 transition-colors">
-              {t("guides")}
+            <Link 
+              href={locale === "en" ? "/learn" : "/apprendre"} 
+              className="text-sm font-medium hover:text-white/80 transition-colors"
+            >
+              {t("learn")}
             </Link>
           </nav>
         </div>
