@@ -16,7 +16,7 @@ export async function generateMetadata(props: {
     ? "Expert automotive guides, car prices, maintenance advice, and market insights in DRC."
     : "Guides automobiles d'experts, prix des véhicules, conseils d'entretien, démarches d'importation et actualités du marché en RDC.";
 
-  const canonicalUrl = isEn ? "https://carrelais.cd/en/learn" : "https://carrelais.cd/fr/apprendre";
+  const canonicalUrl = isEn ? "https://carrelais.cd/en/learn" : "https://carrelais.cd/apprendre";
 
   return {
     title,
@@ -24,7 +24,7 @@ export async function generateMetadata(props: {
     alternates: {
       canonical: canonicalUrl,
       languages: {
-        fr: "https://carrelais.cd/fr/apprendre",
+        fr: "https://carrelais.cd/apprendre",
         en: "https://carrelais.cd/en/learn",
       },
     },

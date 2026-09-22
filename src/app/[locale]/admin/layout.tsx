@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { getCurrentUser } from "@/lib/auth";
 import { connectToDatabase } from "@/lib/mongodb";
@@ -6,11 +7,19 @@ import { ReportModel } from "@/lib/models/Report";
 import { UserModel } from "@/lib/models/User";
 import AdminNav from "@/components/admin/AdminNav";
 
+export const metadata: Metadata = {
+  title: "Administration | Car Relais",
+  robots: {
+    index: false,
+    follow: false,
+  },
+};
+
 export default async function AdminLayout({
   children,
 }: {
   children: React.ReactNode;
-  params: Promise<any>;
+  params?: Promise<{ locale?: string }>;
 }) {
   const user = await getCurrentUser();
   if (!user || (user.role !== "ADMIN" && user.role !== "SUPER_ADMIN")) {

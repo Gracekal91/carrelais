@@ -20,11 +20,101 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-export const metadata: Metadata = {
-  title: "CarRelais - The Premier Automotive Marketplace in DRC",
-  description: "Find your next vehicle. Browse thousands of cars available locally in Congo or ready for import. Connect directly with verified dealerships and individual sellers.",
-  keywords: ["cars", "congo", "drc", "kinshasa", "lubumbashi", "import cars", "buy cars drc"],
-};
+const BASE_URL =
+  process.env.NEXT_PUBLIC_APP_URL && !process.env.NEXT_PUBLIC_APP_URL.includes("localhost")
+    ? process.env.NEXT_PUBLIC_APP_URL
+    : "https://carrelais.cd";
+
+export async function generateMetadata(props: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+  const { locale } = await props.params;
+  const isEn = locale === "en";
+
+  const titleDefault = isEn
+    ? "Car Relais — Premier Automotive Marketplace in DRC"
+    : "Car Relais — #1 Marché Automobile en RDC | Voitures d'occasion & neuves";
+
+  const description = isEn
+    ? "Buy, sell, and import verified vehicles in the Democratic Republic of Congo. Discover cars for sale in Kinshasa and Lubumbashi from verified dealers."
+    : "Le premier marché automobile en RDC. Achetez, vendez et importez des véhicules vérifiés à Kinshasa et Lubumbashi. Voitures disponibles localement ou prêtes pour importation.";
+
+  return {
+    metadataBase: new URL(BASE_URL),
+    title: {
+      default: titleDefault,
+      template: isEn ? "%s | Car Relais DRC" : "%s | Car Relais RDC",
+    },
+    description,
+    keywords: [
+      "voiture occasion kinshasa",
+      "vente voiture rdc",
+      "achat voiture congo",
+      "car relais",
+      "importation voiture congo",
+      "toyota occasion kinshasa",
+      "concessionnaire kinshasa",
+      "cars for sale drc",
+      "kinshasa auto marketplace",
+      "lubumbashi car sales",
+    ],
+    authors: [{ name: "Car Relais", url: BASE_URL }],
+    creator: "Car Relais",
+    publisher: "Car Relais",
+    formatDetection: {
+      telephone: true,
+      email: true,
+      address: true,
+    },
+    alternates: {
+      canonical: isEn ? `${BASE_URL}/en` : `${BASE_URL}`,
+      languages: {
+        fr: `${BASE_URL}`,
+        en: `${BASE_URL}/en`,
+        "x-default": `${BASE_URL}`,
+      },
+    },
+    openGraph: {
+      type: "website",
+      locale: isEn ? "en_US" : "fr_FR",
+      url: isEn ? `${BASE_URL}/en` : `${BASE_URL}`,
+      siteName: "Car Relais",
+      title: titleDefault,
+      description,
+      images: [
+        {
+          url: "https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?auto=format&fit=crop&w=1200&h=630&q=85",
+          width: 1200,
+          height: 630,
+          alt: "Car Relais - Marché Automobile en RDC",
+        },
+      ],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: titleDefault,
+      description,
+      images: ["https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?auto=format&fit=crop&w=1200&h=630&q=85"],
+    },
+    robots: {
+      index: true,
+      follow: true,
+      googleBot: {
+        index: true,
+        follow: true,
+        "max-video-preview": -1,
+        "max-image-preview": "large",
+        "max-snippet": -1,
+      },
+    },
+    other: {
+      "geo.region": "CD-KN",
+      "geo.placename": "Kinshasa, République Démocratique du Congo",
+      "geo.position": "-4.322447;15.307045",
+      "ICBM": "-4.322447, 15.307045",
+    },
+  };
+}
 
 export default async function RootLayout(props: {
   children: React.ReactNode;
@@ -33,7 +123,7 @@ export default async function RootLayout(props: {
   const params = await props.params;
   const { locale } = params;
   
-  if (!routing.locales.includes(locale as any)) {
+  if (!(routing.locales as readonly string[]).includes(locale)) {
     notFound();
   }
 

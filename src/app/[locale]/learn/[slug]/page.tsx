@@ -36,7 +36,7 @@ export async function generateMetadata(props: {
     en: canonicalUrl,
   };
   if (translated) {
-    languages.fr = `https://carrelais.cd/fr/apprendre/${translated.slug}`;
+    languages.fr = `https://carrelais.cd/apprendre/${translated.slug}`;
   }
 
   return {
@@ -47,7 +47,7 @@ export async function generateMetadata(props: {
       languages,
     },
     openGraph: {
-      title: article.title,
+      title,
       description,
       url: canonicalUrl,
       siteName: "Car Relais",
@@ -60,7 +60,7 @@ export async function generateMetadata(props: {
     },
     twitter: {
       card: "summary_large_image",
-      title: article.title,
+      title,
       description,
       images: article.featuredImage ? [article.featuredImage] : [],
     },
@@ -74,7 +74,7 @@ export default async function EnglishArticleDetailPage(props: {
 
   // If locale is french, redirect to french route
   if (params.locale === "fr") {
-    redirect(`/fr/apprendre/${params.slug}`);
+    redirect(`/apprendre/${params.slug}`);
   }
 
   const result = await getArticleBySlug(params.slug, "en");

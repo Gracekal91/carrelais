@@ -1,4 +1,4 @@
-import { redirect } from "next/navigation";
+import { permanentRedirect } from "next/navigation";
 
 export default async function ArticlesRedirectPage(props: {
   params: Promise<{ locale: string }>;
@@ -9,5 +9,5 @@ export default async function ArticlesRedirectPage(props: {
   const query = new URLSearchParams(searchParams).toString();
 
   const destination = locale === "en" ? "/en/learn" : "/fr/apprendre";
-  redirect(query ? `${destination}?${query}` : destination);
+  permanentRedirect(query ? `${destination}?${query}` : destination);
 }

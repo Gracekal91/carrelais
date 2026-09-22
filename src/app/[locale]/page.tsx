@@ -8,7 +8,48 @@ import { Link } from "@/i18n/routing";
 import { ArrowRight, ShieldCheck, Globe2, Clock } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 
-export default async function Home() {
+import type { Metadata } from "next";
+
+export async function generateMetadata(props: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+  const { locale } = await props.params;
+  const isEn = locale === "en";
+
+  const title = isEn
+    ? "Car Relais — #1 Automotive Marketplace in DRC | Cars for Sale in Kinshasa"
+    : "Car Relais — #1 Marché Automobile en RDC | Voitures d'occasion & neuves à Kinshasa";
+
+  const description = isEn
+    ? "Browse verified new and used cars in the Democratic Republic of Congo. Vehicles available in Kinshasa and Lubumbashi, or ready for import from Dubai and Europe."
+    : "Achetez et vendez des voitures neuves et d'occasion en République Démocratique du Congo. Véhicules disponibles à Kinshasa et Lubumbashi ou prêts pour importation.";
+
+  const canonicalUrl = isEn ? "https://carrelais.cd/en" : "https://carrelais.cd";
+
+  return {
+    title,
+    description,
+    alternates: {
+      canonical: canonicalUrl,
+      languages: {
+        fr: "https://carrelais.cd",
+        en: "https://carrelais.cd/en",
+      },
+    },
+    openGraph: {
+      title,
+      description,
+      url: canonicalUrl,
+      type: "website",
+      locale: isEn ? "en_US" : "fr_FR",
+    },
+  };
+}
+
+export default async function Home(props: { params: Promise<{ locale: string }> }) {
+  const { locale } = await props.params;
+  const isEn = locale === "en";
+
   await connectToDatabase();
   const [featuredVehicles, localVehicles, totalPublishedCount, tHome, tFeatures, tHero] = await Promise.all([
     getFeaturedVehicles(4),
@@ -19,8 +60,52 @@ export default async function Home() {
     getTranslations("Hero"),
   ]);
 
+  const jsonLdWebsite = {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    name: "Car Relais",
+    url: isEn ? "https://carrelais.cd/en" : "https://carrelais.cd",
+    potentialAction: {
+      "@type": "SearchAction",
+      target: {
+        "@type": "EntryPoint",
+        urlTemplate: "https://carrelais.cd/vehicles?q={search_term_string}",
+      },
+      "query-input": "required name=search_term_string",
+    },
+  };
+
+  const jsonLdOrganization = {
+    "@context": "https://schema.org",
+    "@type": "AutoMarketplace",
+    name: "Car Relais",
+    url: "https://carrelais.cd",
+    logo: "https://carrelais.cd/icon.png",
+    description: isEn
+      ? "The premier automotive marketplace in the Democratic Republic of Congo."
+      : "Le premier marché automobile en République Démocratique du Congo.",
+    areaServed: {
+      "@type": "Country",
+      name: "Democratic Republic of the Congo",
+    },
+    address: {
+      "@type": "PostalAddress",
+      addressLocality: "Kinshasa",
+      addressCountry: "CD",
+    },
+  };
+
   return (
-    <div className="flex flex-col min-h-screen">
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLdWebsite) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLdOrganization) }}
+      />
+      <div className="flex flex-col min-h-screen">
       {/* Hero Section */}
       <section className="relative h-auto md:h-[60vh] min-h-[460px] md:min-h-[550px] flex items-center">
         {/* Background car image */}
@@ -119,7 +204,7 @@ export default async function Home() {
           </div>
         </section>
       )}
-    </div>
+      </div>
+    </>
   );
 }
-

@@ -24,7 +24,7 @@ export async function generateMetadata(props: {
   const article = result.article;
   const title = article.seoTitle || `${article.title} - Car Relais`;
   const description = article.seoDescription || article.excerpt;
-  const canonicalUrl = `https://carrelais.cd/fr/apprendre/${article.slug}`;
+  const canonicalUrl = `https://carrelais.cd/apprendre/${article.slug}`;
 
   // Find translation for hreflang
   const translated = await getConnectedTranslation(
@@ -81,7 +81,7 @@ export default async function FrenchArticleDetailPage(props: {
 
   // If slug was changed, redirect 301 permanently to new canonical slug
   if (result.isRedirect && result.canonicalSlug) {
-    permanentRedirect(`/fr/apprendre/${result.canonicalSlug}`);
+    permanentRedirect(`/apprendre/${result.canonicalSlug}`);
   }
 
   if (!result.article) {
@@ -95,7 +95,7 @@ export default async function FrenchArticleDetailPage(props: {
     getConnectedTranslation(article.id, article.translationId),
   ]);
 
-  const canonicalUrl = `https://carrelais.cd/fr/apprendre/${article.slug}`;
+  const canonicalUrl = `https://carrelais.cd/apprendre/${article.slug}`;
 
   // JSON-LD Structured Data for Article / BlogPosting
   const jsonLd = {

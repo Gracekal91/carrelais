@@ -1,10 +1,24 @@
+import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { getCurrentUser } from "@/lib/auth";
 import Link from "next/link";
 import { LayoutDashboard, CarFront, User, LogOut, ShieldCheck } from "lucide-react";
 import { logout } from "@/lib/actions";
 
-export default async function DashboardLayout({ children, params }: { children: React.ReactNode, params: any }) {
+export const metadata: Metadata = {
+  title: "Tableau de bord | Car Relais",
+  robots: {
+    index: false,
+    follow: false,
+  },
+};
+
+export default async function DashboardLayout({
+  children,
+}: {
+  children: React.ReactNode;
+  params?: Promise<{ locale?: string }>;
+}) {
   const user = await getCurrentUser();
   if (!user) {
     redirect("/signin");

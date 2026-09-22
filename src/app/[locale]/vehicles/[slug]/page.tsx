@@ -1,11 +1,9 @@
-import { getVehicleBySlug } from "@/lib/data";
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import Image from "next/image";
-import { Badge } from "@/components/ui/Badge";
+import { getVehicleBySlug } from "@/lib/data";
 import { formatPrice, formatListingDate } from "@/lib/utils";
-import { Button } from "@/components/ui/Button";
 import {
-  MapPin, CheckCircle2, MessageCircle, Phone,
+  MapPin, CheckCircle2,
   Settings, Fuel, Calendar, Gauge, Car, ShieldAlert,
   Check, Clock
 } from "lucide-react";
@@ -17,8 +15,88 @@ import { getCurrentUser } from "@/lib/auth";
 import { connectToDatabase } from "@/lib/mongodb";
 import { UserModel } from "@/lib/models/User";
 
+const BASE_URL =
+  process.env.NEXT_PUBLIC_APP_URL && !process.env.NEXT_PUBLIC_APP_URL.includes("localhost")
+    ? process.env.NEXT_PUBLIC_APP_URL
+    : "https://carrelais.cd";
+
+export async function generateMetadata(props: {
+  params: Promise<{ slug: string; locale?: string }>;
+}): Promise<Metadata> {
+  const { slug, locale } = await props.params;
+  const isEn = locale === "en";
+
+  const vehicle = await getVehicleBySlug(slug);
+
+  if (!vehicle || vehicle.status !== "PUBLISHED") {
+    return {
+      title: isEn ? "Vehicle Not Found | Car Relais" : "Véhicule introuvable | Car Relais",
+      robots: { index: false, follow: false },
+    };
+  }
+
+  const locationText = vehicle.city || vehicle.location || (isEn ? "DRC" : "RDC");
+  const priceFormatted = formatPrice(vehicle.price);
+
+  const title = isEn
+    ? `${vehicle.year} ${vehicle.make} ${vehicle.model} for Sale in ${locationText} (${priceFormatted}) | Car Relais`
+    : `${vehicle.year} ${vehicle.make} ${vehicle.model} à vendre à ${locationText} (${priceFormatted}) | Car Relais`;
+
+  const conditionText = isEn
+    ? vehicle.condition === "NEW" ? "New" : "Used"
+    : vehicle.condition === "NEW" ? "Neuf" : "Occasion";
+
+  const description = isEn
+    ? `${vehicle.title} — ${conditionText} vehicle for sale in ${locationText}. ${vehicle.mileage ? vehicle.mileage.toLocaleString() + " km, " : ""}${vehicle.transmission} transmission, ${vehicle.fuelType} fuel. Price: ${priceFormatted}. Verified seller on Car Relais.`
+    : `${vehicle.title} — Véhicule ${conditionText.toLowerCase()} à vendre à ${locationText}. ${vehicle.mileage ? vehicle.mileage.toLocaleString() + " km, " : ""}boîte ${vehicle.transmission}, moteur ${vehicle.fuelType}. Prix : ${priceFormatted}. Vendeur vérifié sur Car Relais.`;
+
+  const canonicalUrl = isEn
+    ? `${BASE_URL}/en/vehicles/${vehicle.slug}`
+    : `${BASE_URL}/vehicles/${vehicle.slug}`;
+
+  const ogImages = vehicle.images && vehicle.images.length > 0
+    ? [
+        {
+          url: vehicle.images[0],
+          width: 1200,
+          height: 800,
+          alt: vehicle.title,
+        },
+      ]
+    : undefined;
+
+  return {
+    title,
+    description,
+    alternates: {
+      canonical: canonicalUrl,
+      languages: {
+        fr: `${BASE_URL}/vehicles/${vehicle.slug}`,
+        en: `${BASE_URL}/en/vehicles/${vehicle.slug}`,
+        "x-default": `${BASE_URL}/vehicles/${vehicle.slug}`,
+      },
+    },
+    openGraph: {
+      title,
+      description,
+      url: canonicalUrl,
+      type: "article",
+      locale: isEn ? "en_US" : "fr_FR",
+      siteName: "Car Relais",
+      images: ogImages,
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+      images: ogImages?.map((i) => i.url),
+    },
+  };
+}
+
 export default async function VehicleDetailPage(props: { params: Promise<{ slug: string; locale?: string }> }) {
   const params = await props.params;
+  const isEn = params.locale === "en";
   const vehicle = await getVehicleBySlug(params.slug);
 
   if (!vehicle || vehicle.status !== "PUBLISHED") {
@@ -30,8 +108,18 @@ export default async function VehicleDetailPage(props: { params: Promise<{ slug:
     connectToDatabase(),
   ]);
 
-  const ownerUser = vehicle.ownerId ? await UserModel.findById(vehicle.ownerId).select("role").lean() : null;
-  const isOwnerAdmin = (ownerUser as any)?.role === "ADMIN" || (ownerUser as any)?.role === "SUPER_ADMIN" || Boolean(vehicle.source) || vehicle.seller?.role === "ADMIN" || vehicle.seller?.role === "SUPER_ADMIN";
+  interface OwnerUserDoc {
+    role?: string;
+  }
+  const ownerUser = (vehicle.ownerId
+    ? await UserModel.findById(vehicle.ownerId).select("role").lean()
+    : null) as OwnerUserDoc | null;
+  const isOwnerAdmin =
+    ownerUser?.role === "ADMIN" ||
+    ownerUser?.role === "SUPER_ADMIN" ||
+    Boolean(vehicle.source) ||
+    vehicle.seller?.role === "ADMIN" ||
+    vehicle.seller?.role === "SUPER_ADMIN";
   const isViewerAdmin = currentUser?.role === "ADMIN" || currentUser?.role === "SUPER_ADMIN";
   const hidePublisher = isOwnerAdmin || isViewerAdmin;
 
@@ -39,40 +127,121 @@ export default async function VehicleDetailPage(props: { params: Promise<{ slug:
   const t = await getTranslations("VehicleDetail");
   const tVehicles = await getTranslations("Vehicles");
 
+  const canonicalUrl = isEn
+    ? `${BASE_URL}/en/vehicles/${vehicle.slug}`
+    : `${BASE_URL}/vehicles/${vehicle.slug}`;
+
+  const jsonLdBreadcrumb = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      {
+        "@type": "ListItem",
+        position: 1,
+        name: isEn ? "Home" : "Accueil",
+        item: isEn ? `${BASE_URL}/en` : `${BASE_URL}`,
+      },
+      {
+        "@type": "ListItem",
+        position: 2,
+        name: isEn ? "Vehicles" : "Véhicules",
+        item: isEn ? `${BASE_URL}/en/vehicles` : `${BASE_URL}/vehicles`,
+      },
+      {
+        "@type": "ListItem",
+        position: 3,
+        name: vehicle.title,
+        item: canonicalUrl,
+      },
+    ],
+  };
+
+  const jsonLdCar = {
+    "@context": "https://schema.org",
+    "@type": "Car",
+    name: vehicle.title,
+    description: vehicle.description || vehicle.title,
+    image: vehicle.images,
+    brand: {
+      "@type": "Brand",
+      name: vehicle.make,
+    },
+    model: vehicle.model,
+    vehicleModelDate: vehicle.year?.toString(),
+    mileageFromOdometer: vehicle.mileage
+      ? {
+          "@type": "QuantitativeValue",
+          value: vehicle.mileage,
+          unitCode: "KMT",
+        }
+      : undefined,
+    vehicleTransmission: vehicle.transmission,
+    fuelType: vehicle.fuelType,
+    bodyType: vehicle.bodyType,
+    color: vehicle.color || undefined,
+    itemCondition:
+      vehicle.condition === "NEW"
+        ? "https://schema.org/NewCondition"
+        : "https://schema.org/UsedCondition",
+    offers: {
+      "@type": "Offer",
+      price: vehicle.price,
+      priceCurrency: "USD",
+      availability:
+        vehicle.status === "PUBLISHED"
+          ? "https://schema.org/InStock"
+          : "https://schema.org/OutOfStock",
+      url: canonicalUrl,
+      seller: {
+        "@type": vehicle.seller?.type === "DEALERSHIP" ? "AutoDealer" : "Person",
+        name: vehicle.seller?.name || "Car Relais",
+      },
+    },
+  };
+
   return (
-    <div className="container mx-auto px-4 py-8 max-w-6xl">
-      <VehicleViewTracker listingId={vehicle.id} />
-      {/* Breadcrumbs */}
-      <div className="text-sm text-zinc-500 mb-6 flex gap-2 items-center">
-        <Link href="/" className="hover:text-primary">{t("home")}</Link>
-        <span>/</span>
-        <Link href="/vehicles" className="hover:text-primary">{t("vehicles")}</Link>
-        <span>/</span>
-        <span className="text-zinc-900 dark:text-zinc-100">{vehicle.title}</span>
-      </div>
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLdBreadcrumb) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLdCar) }}
+      />
+      <div className="container mx-auto px-4 py-8 max-w-6xl">
+        <VehicleViewTracker listingId={vehicle.id} />
+        {/* Breadcrumbs */}
+        <div className="text-sm text-zinc-500 mb-6 flex gap-2 items-center">
+          <Link href="/" className="hover:text-primary">{t("home")}</Link>
+          <span>/</span>
+          <Link href="/vehicles" className="hover:text-primary">{t("vehicles")}</Link>
+          <span>/</span>
+          <span className="text-zinc-900 dark:text-zinc-100">{vehicle.title}</span>
+        </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
 
-        {/* Left Column: Images & Details */}
-        <div className="lg:col-span-2 space-y-8">
-          {/* Main Image Gallery */}
-          <VehicleGallery
-            images={vehicle.images}
-            title={vehicle.title}
-            isLocal={isLocal}
-          />
+          {/* Left Column: Images & Details */}
+          <div className="lg:col-span-2 space-y-8">
+            {/* Main Image Gallery */}
+            <VehicleGallery
+              images={vehicle.images}
+              title={vehicle.title}
+              isLocal={isLocal}
+            />
 
-          {/* Mobile title & price (shown on mobile, hidden on desktop) */}
-          <div className="lg:hidden">
-            <h1 className="text-2xl sm:text-3xl font-bold mb-2">{vehicle.title}</h1>
-            <div className="text-3xl font-bold text-primary mb-3">{formatPrice(vehicle.price)}</div>
-            <div className="flex flex-wrap items-center justify-between gap-2 text-zinc-600 dark:text-zinc-300">
-              <div className="flex items-center gap-1.5">
-                <MapPin className="w-4 h-4 text-zinc-400" />
-                <span>{vehicle.location}</span>
-              </div>
-              {vehicle.createdAt && (
-                <div className="flex items-center gap-1.5 text-xs text-zinc-500 dark:text-zinc-400">
+            {/* Mobile title & price (shown on mobile, hidden on desktop - use p to avoid dual H1) */}
+            <div className="lg:hidden">
+              <p className="text-2xl sm:text-3xl font-bold mb-2 text-zinc-900 dark:text-zinc-50">{vehicle.title}</p>
+              <div className="text-3xl font-bold text-primary mb-3">{formatPrice(vehicle.price)}</div>
+              <div className="flex flex-wrap items-center justify-between gap-2 text-zinc-600 dark:text-zinc-300">
+                <div className="flex items-center gap-1.5">
+                  <MapPin className="w-4 h-4 text-zinc-400" />
+                  <span>{vehicle.location}</span>
+                </div>
+                {vehicle.createdAt && (
+                  <div className="flex items-center gap-1.5 text-xs text-zinc-500 dark:text-zinc-400">
                   <Clock className="w-3.5 h-3.5 text-zinc-400" />
                   <span>{formatListingDate(vehicle.createdAt, params.locale)}</span>
                 </div>
@@ -96,11 +265,11 @@ export default async function VehicleDetailPage(props: { params: Promise<{ slug:
               </div>
               <div className="flex flex-col gap-1">
                 <span className="text-zinc-500 text-sm flex items-center gap-1.5"><Settings className="w-4 h-4" /> {t("transmission")}</span>
-                <span className="font-semibold">{tVehicles(vehicle.transmission as any)}</span>
+                <span className="font-semibold">{(tVehicles as unknown as (k: string) => string)(vehicle.transmission)}</span>
               </div>
               <div className="flex flex-col gap-1">
                 <span className="text-zinc-500 text-sm flex items-center gap-1.5"><Fuel className="w-4 h-4" /> {t("fuel")}</span>
-                <span className="font-semibold">{tVehicles(vehicle.fuelType as any)}</span>
+                <span className="font-semibold">{(tVehicles as unknown as (k: string) => string)(vehicle.fuelType)}</span>
               </div>
               <div className="flex flex-col gap-1">
                 <span className="text-zinc-500 text-sm flex items-center gap-1.5"><Car className="w-4 h-4" /> {t("bodyType")}</span>
@@ -108,7 +277,7 @@ export default async function VehicleDetailPage(props: { params: Promise<{ slug:
               </div>
               <div className="flex flex-col gap-1">
                 <span className="text-zinc-500 text-sm">{t("condition")}</span>
-                <span className="font-semibold">{tVehicles(vehicle.condition as any)}</span>
+                <span className="font-semibold">{(tVehicles as unknown as (k: string) => string)(vehicle.condition)}</span>
               </div>
               <div className="flex flex-col gap-1">
                 <span className="text-zinc-500 text-sm">{t("color")}</span>
@@ -240,5 +409,6 @@ export default async function VehicleDetailPage(props: { params: Promise<{ slug:
 
       </div>
     </div>
+    </>
   );
 }
