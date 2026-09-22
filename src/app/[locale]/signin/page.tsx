@@ -1,22 +1,25 @@
 "use client";
 
 import { useState } from "react";
-import { login } from "@/lib/actions";
+import { login, resendVerificationOtp } from "@/lib/actions";
 import { useRouter } from "@/i18n/routing";
 import Link from "next/link";
-import { Loader2 } from "lucide-react";
+import { Loader2, AlertCircle, Mail, ArrowRight } from "lucide-react";
 
 export default function SignInPage() {
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [unverifiedEmail, setUnverifiedEmail] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [isSendingVerification, setIsSendingVerification] = useState(false);
   
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     setError("");
+    setUnverifiedEmail(null);
     
     try {
       const res = await login(email, password);
@@ -26,6 +29,9 @@ export default function SignInPage() {
         } else {
           router.push("/dashboard");
         }
+      } else if (res.unverified) {
+        setUnverifiedEmail(res.email || email);
+        setError("Veuillez vérifier votre adresse email pour vous connecter.");
       } else {
         setError(res.error || "Identifiants invalides");
       }
@@ -36,17 +42,62 @@ export default function SignInPage() {
     }
   };
 
+  const handleVerifyNow = async () => {
+    if (!unverifiedEmail) return;
+    setIsSendingVerification(true);
+    try {
+      await resendVerificationOtp(unverifiedEmail);
+    } catch (err) {
+      console.error("Resend error:", err);
+    } finally {
+      setIsSendingVerification(false);
+      router.push(`/verify-email?email=${encodeURIComponent(unverifiedEmail)}`);
+    }
+  };
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-zinc-50 dark:bg-zinc-950 p-4">
-      <div className="w-full max-w-md bg-white dark:bg-zinc-900 rounded-2xl shadow-lg border border-zinc-200 dark:border-zinc-800 p-8">
-        <h1 className="text-2xl font-bold mb-2 text-center text-zinc-900 dark:text-zinc-100">Connexion</h1>
+      <div className="w-full max-w-md bg-white dark:bg-zinc-900 rounded-2xl shadow-xl border border-zinc-200 dark:border-zinc-800 p-8">
+        <h1 className="text-2xl font-bold mb-1.5 text-center text-zinc-900 dark:text-zinc-100">Connexion</h1>
         <p className="text-xs text-zinc-500 dark:text-zinc-400 text-center mb-6">Accédez à votre espace Car Relais</p>
         
-        {error && (
-          <div className="p-3 mb-4 bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-900/40 rounded-xl text-red-600 dark:text-red-400 text-xs font-medium">
-            {error}
+        {/* Unverified Email Alert Banner with 'Verify Now' Button */}
+        {unverifiedEmail ? (
+          <div className="p-4 mb-6 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900/40 rounded-xl space-y-3">
+            <div className="flex items-start gap-2.5 text-amber-800 dark:text-amber-300">
+              <Mail className="w-5 h-5 shrink-0 text-amber-600 mt-0.5" />
+              <div>
+                <p className="text-xs font-semibold">Compte non vérifié</p>
+                <p className="text-xs text-amber-700 dark:text-amber-400 mt-0.5 leading-relaxed">
+                  Veuillez confirmer votre adresse email ({unverifiedEmail}) pour activer votre compte.
+                </p>
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={handleVerifyNow}
+              disabled={isSendingVerification}
+              className="w-full h-10 bg-amber-600 hover:bg-amber-700 text-white font-semibold text-xs rounded-lg transition-colors flex items-center justify-center gap-2 cursor-pointer shadow-xs"
+            >
+              {isSendingVerification ? (
+                <>
+                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                  <span>Envoi du lien...</span>
+                </>
+              ) : (
+                <>
+                  <span>Vérifier maintenant</span>
+                  <ArrowRight className="w-3.5 h-3.5" />
+                </>
+              )}
+            </button>
           </div>
-        )}
+        ) : error ? (
+          <div className="p-3 mb-4 bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-900/40 rounded-xl text-red-600 dark:text-red-400 text-xs font-medium flex items-center gap-2">
+            <AlertCircle className="w-4 h-4 shrink-0" />
+            <span>{error}</span>
+          </div>
+        ) : null}
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
@@ -61,7 +112,12 @@ export default function SignInPage() {
             />
           </div>
           <div>
-            <label className="block text-xs font-semibold uppercase tracking-wider text-zinc-600 dark:text-zinc-400 mb-1.5">Mot de passe</label>
+            <div className="flex items-center justify-between mb-1.5">
+              <label className="block text-xs font-semibold uppercase tracking-wider text-zinc-600 dark:text-zinc-400">Mot de passe</label>
+              <Link href="/forgot-password" className="text-xs text-primary hover:underline font-medium">
+                Mot de passe oublié ?
+              </Link>
+            </div>
             <input 
               type="password" 
               value={password} 
@@ -74,7 +130,7 @@ export default function SignInPage() {
           <button 
             type="submit" 
             disabled={isLoading}
-            className="w-full h-11 bg-primary text-white font-semibold rounded-xl hover:bg-primary/90 transition-colors shadow-sm disabled:opacity-60 flex items-center justify-center gap-2 cursor-pointer"
+            className="w-full h-11 bg-primary text-white font-semibold rounded-xl hover:bg-primary/90 transition-colors shadow-sm disabled:opacity-60 flex items-center justify-center gap-2 cursor-pointer mt-2"
           >
             {isLoading && <Loader2 className="w-4 h-4 animate-spin" />}
             <span>{isLoading ? "Connexion en cours..." : "Se connecter"}</span>

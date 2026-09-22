@@ -3,7 +3,7 @@ import Image from "next/image";
 import { connectToDatabase } from "@/lib/mongodb";
 import { ListingModel } from "@/lib/models/Listing";
 import { formatListing } from "@/lib/data";
-import { Eye, CarFront, Store, User as UserIcon } from "lucide-react";
+import { Eye, CarFront, Store, User as UserIcon, Plus } from "lucide-react";
 import ListingFilters from "@/components/admin/ListingFilters";
 import ListingStatusBadge from "@/components/admin/ListingStatusBadge";
 import PaginationControls from "@/components/admin/PaginationControls";
@@ -89,13 +89,22 @@ export default async function AdminListingsPage(props: AdminListingsPageProps) {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div>
-        <h1 className="text-2xl md:text-3xl font-extrabold tracking-tight text-zinc-900 dark:text-zinc-100">
-          Gestion des annonces
-        </h1>
-        <p className="text-sm text-zinc-500 mt-1">
-          Examinez, filtrez et modérez les véhicules soumis sur le marketplace
-        </p>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <h1 className="text-2xl md:text-3xl font-extrabold tracking-tight text-zinc-900 dark:text-zinc-100">
+            Gestion des annonces
+          </h1>
+          <p className="text-sm text-zinc-500 mt-1">
+            Examinez, filtrez et modérez les véhicules soumis sur le marketplace
+          </p>
+        </div>
+        <Link
+          href="/admin/dashboard/listings/create"
+          className="inline-flex items-center gap-2 px-4 py-2.5 bg-primary text-white rounded-xl font-semibold hover:bg-primary/90 shadow-sm transition-all text-sm w-fit"
+        >
+          <Plus className="w-4 h-4" />
+          <span>Nouvelle annonce</span>
+        </Link>
       </div>
 
       {/* Filter Component */}

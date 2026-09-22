@@ -5,7 +5,7 @@ export function Footer() {
   const t = useTranslations("Footer");
 
   return (
-    <footer className="border-t border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 py-12">
+    <footer className="border-t border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 py-12 pb-24 lg:pb-12">
       <div className="container mx-auto px-4 grid grid-cols-1 md:grid-cols-4 gap-8">
         <div>
           <span className="text-2xl font-bold text-primary block mb-4">CarRelais</span>

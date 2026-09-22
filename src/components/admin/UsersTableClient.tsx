@@ -2,8 +2,9 @@
 
 import * as React from "react";
 import { User } from "@/lib/db/schema";
-import { Store, User as UserIcon, Shield, Eye } from "lucide-react";
+import { Store, User as UserIcon, Shield, Eye, Trash2 } from "lucide-react";
 import UserDetailsModal from "./UserDetailsModal";
+import DeleteUserModal from "./DeleteUserModal";
 
 interface UserWithListingStats {
   user: User;
@@ -17,10 +18,17 @@ interface UserWithListingStats {
 
 interface UsersTableClientProps {
   usersWithStats: UserWithListingStats[];
+  isSuperAdmin?: boolean;
+  currentUserId?: string;
 }
 
-export default function UsersTableClient({ usersWithStats }: UsersTableClientProps) {
+export default function UsersTableClient({
+  usersWithStats,
+  isSuperAdmin = false,
+  currentUserId,
+}: UsersTableClientProps) {
   const [selectedUserStats, setSelectedUserStats] = React.useState<UserWithListingStats | null>(null);
+  const [deletingUserStats, setDeletingUserStats] = React.useState<UserWithListingStats | null>(null);
 
   return (
     <>
@@ -101,14 +109,28 @@ export default function UsersTableClient({ usersWithStats }: UsersTableClientPro
                   </td>
 
                   <td className="p-4 text-right">
-                    <button
-                      type="button"
-                      onClick={() => setSelectedUserStats({ user, stats })}
-                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 text-zinc-800 dark:text-zinc-200 text-xs font-semibold transition-colors cursor-pointer shadow-xs"
-                    >
-                      <Eye className="w-3.5 h-3.5" />
-                      <span>Détails</span>
-                    </button>
+                    <div className="flex items-center justify-end gap-2">
+                      <button
+                        type="button"
+                        onClick={() => setSelectedUserStats({ user, stats })}
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 text-zinc-800 dark:text-zinc-200 text-xs font-semibold transition-colors cursor-pointer shadow-xs"
+                      >
+                        <Eye className="w-3.5 h-3.5" />
+                        <span>Détails</span>
+                      </button>
+
+                      {isSuperAdmin && user.id !== currentUserId && (
+                        <button
+                          type="button"
+                          onClick={() => setDeletingUserStats({ user, stats })}
+                          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-red-50 dark:bg-red-950/40 hover:bg-red-100 dark:hover:bg-red-900/50 text-red-600 dark:text-red-400 text-xs font-semibold transition-colors cursor-pointer shadow-xs border border-red-200/50 dark:border-red-900/40"
+                          title="Supprimer définitivement cet utilisateur de la base"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                          <span className="hidden sm:inline">Supprimer</span>
+                        </button>
+                      )}
+                    </div>
                   </td>
                 </tr>
               );
@@ -124,6 +146,23 @@ export default function UsersTableClient({ usersWithStats }: UsersTableClientPro
           isOpen={true}
           onClose={() => setSelectedUserStats(null)}
           stats={selectedUserStats.stats}
+          isSuperAdmin={isSuperAdmin}
+          currentUserId={currentUserId}
+          onDeleteClick={() => {
+            const current = selectedUserStats;
+            setSelectedUserStats(null);
+            setDeletingUserStats(current);
+          }}
+        />
+      )}
+
+      {/* Delete User Modal (Super Admin only) */}
+      {deletingUserStats && (
+        <DeleteUserModal
+          user={deletingUserStats.user}
+          stats={deletingUserStats.stats}
+          isOpen={true}
+          onClose={() => setDeletingUserStats(null)}
         />
       )}
     </>

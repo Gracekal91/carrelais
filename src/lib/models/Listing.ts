@@ -19,6 +19,7 @@ export interface ISeller {
   id: string;
   type: SellerType;
   name: string;
+  role?: string;
   isVerified: boolean;
   phone?: string;
   whatsapp?: string;
@@ -36,7 +37,7 @@ export interface IListing {
   year: number;
   price: number;
   currency: string;
-  mileage: number;
+  mileage?: number;
   fuelType: FuelType;
   transmission: Transmission;
   bodyType: BodyType;
@@ -76,6 +77,13 @@ export interface IListing {
   approvedAt?: string;
   approvedBy?: string;
   approvalHistory?: IApprovalHistory[];
+  source?: string;
+  sourceUrl?: string;
+  contactOptions?: {
+    allowCalls?: boolean;
+    allowWhatsapp?: boolean;
+    allowDirectMessage?: boolean;
+  };
   views: number;
   contacts: number;
   chats: number;
@@ -113,7 +121,7 @@ const ListingSchema = new Schema<IListing>(
     year: { type: Number, required: true, index: true },
     price: { type: Number, required: true, min: 0, index: true },
     currency: { type: String, default: "USD" },
-    mileage: { type: Number, required: true, min: 0 },
+    mileage: { type: Number, required: false, min: 0 },
     fuelType: { type: String, required: true },
     transmission: { type: String, required: true },
     bodyType: { type: String, required: true },
@@ -129,6 +137,7 @@ const ListingSchema = new Schema<IListing>(
       id: { type: String, required: true },
       type: { type: String, required: true },
       name: { type: String, required: true },
+      role: { type: String },
       isVerified: { type: Boolean, default: false },
       phone: { type: String },
       whatsapp: { type: String },
@@ -165,6 +174,13 @@ const ListingSchema = new Schema<IListing>(
     approvedAt: { type: String },
     approvedBy: { type: String },
     approvalHistory: { type: [ApprovalHistorySchema], default: [] },
+    source: { type: String },
+    sourceUrl: { type: String },
+    contactOptions: {
+      allowCalls: { type: Boolean, default: true },
+      allowWhatsapp: { type: Boolean, default: true },
+      allowDirectMessage: { type: Boolean, default: false },
+    },
     views: { type: Number, default: 0 },
     contacts: { type: Number, default: 0 },
     chats: { type: Number, default: 0 },

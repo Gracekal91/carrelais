@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "../globals.css";
 import { Header } from "@/components/layouts/Header";
 import { Footer } from "@/components/layouts/Footer";
+import { MobileBottomNav } from "@/components/layouts/MobileBottomNav";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { NextIntlClientProvider } from 'next-intl';
 import { getMessages } from 'next-intl/server';
@@ -49,10 +50,11 @@ export default async function RootLayout(props: {
             disableTransitionOnChange
           >
             <Header />
-            <main className="flex-1 flex flex-col">
+            <main className="flex-1 flex flex-col pb-16 lg:pb-0">
               {props.children}
             </main>
             <Footer />
+            <MobileBottomNav />
           </ThemeProvider>
         </NextIntlClientProvider>
       </body>

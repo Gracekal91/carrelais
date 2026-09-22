@@ -135,26 +135,26 @@ export function AdvancedSearchWidget({ initialCount = 0 }: AdvancedSearchWidgetP
     <div className="w-full max-w-4xl mx-auto bg-white dark:bg-zinc-900 rounded-2xl shadow-xl border border-zinc-200 dark:border-zinc-800" ref={containerRef}>
 
       {/* Header */}
-      <div className="px-6 py-8 text-center bg-zinc-50 dark:bg-zinc-950/50 border-b border-zinc-200 dark:border-zinc-800 rounded-t-2xl">
-        <h1 className="text-3xl font-bold text-zinc-900 dark:text-white mb-2">{t("title")}</h1>
-        <p className="text-zinc-600 dark:text-zinc-400">{t("subtitle")}</p>
+      <div className="px-4 py-4 md:px-6 md:py-8 text-center bg-zinc-50 dark:bg-zinc-950/50 border-b border-zinc-200 dark:border-zinc-800 rounded-t-2xl">
+        <h1 className="text-xl md:text-3xl font-bold text-zinc-900 dark:text-white mb-1 md:mb-2">{t("title")}</h1>
+        <p className="text-xs md:text-sm text-zinc-600 dark:text-zinc-400">{t("subtitle")}</p>
       </div>
 
-      <div className="p-6">
-        <form onSubmit={handleSubmit} className="space-y-4">
+      <div className="p-4 md:p-6">
+        <form onSubmit={handleSubmit} className="space-y-3 md:space-y-4">
 
           {/* Search Bar (Top) */}
           <div className="relative">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-zinc-400" />
+            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 md:w-5 h-4 md:h-5 text-zinc-400" />
             <input
               type="text"
               placeholder={t("placeholder")}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full h-14 pl-12 pr-12 bg-white dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-700 rounded-xl focus:ring-2 focus:ring-primary focus:border-primary outline-none text-lg placeholder:text-zinc-400"
+              className="w-full h-12 md:h-14 pl-10 md:pl-12 pr-10 md:pr-12 bg-white dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-700 rounded-xl focus:ring-2 focus:ring-primary focus:border-primary outline-none text-base md:text-lg placeholder:text-zinc-400"
             />
-            <button type="button" className="absolute right-4 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 transition-colors">
-              <History className="w-5 h-5" />
+            <button type="button" className="absolute right-3.5 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 transition-colors">
+              <History className="w-4 md:w-5 h-4 md:h-5" />
             </button>
           </div>
 
@@ -355,22 +355,25 @@ export function AdvancedSearchWidget({ initialCount = 0 }: AdvancedSearchWidgetP
           </div>
 
           {/* Filter Row 4: Actions */}
-          <div className="flex flex-col sm:flex-row items-center gap-4 pt-2">
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 sm:gap-4 pt-2">
+            <button
+              type="submit"
+              className="order-1 sm:order-2 w-full sm:flex-1 h-12 rounded-xl bg-primary hover:bg-primary/90 text-white font-bold text-sm sm:text-base transition-colors flex items-center justify-center gap-2 shadow-lg shadow-primary/20 active:scale-98 cursor-pointer px-4 min-w-0"
+            >
+              <Search className="w-4 h-4 shrink-0" />
+              <span className="truncate">
+                {resultsCount > 0
+                  ? t("search", { count: resultsCount.toLocaleString() })
+                  : "Rechercher des véhicules"}
+              </span>
+            </button>
             <button
               type="button"
               onClick={handleReset}
-              className="flex items-center justify-center gap-2 px-6 h-12 rounded-xl border-2 border-primary/20 dark:border-primary/30 text-primary hover:bg-primary/10 dark:hover:bg-primary/20 font-bold transition-colors shrink-0 w-full sm:w-auto"
+              className="order-2 sm:order-1 flex items-center justify-center gap-2 h-12 rounded-xl border-2 border-primary/20 dark:border-primary/30 text-primary hover:bg-primary/10 dark:hover:bg-primary/20 font-bold transition-colors w-full sm:w-auto sm:px-6 active:scale-98 cursor-pointer text-sm sm:text-base shrink-0"
             >
-              <RefreshCw className="w-4 h-4" />
-              {t("reset")}
-            </button>
-            <button
-              type="submit"
-              className="flex-1 h-12 rounded-xl bg-primary hover:bg-primary/90 text-white font-bold text-lg transition-colors w-full flex items-center justify-center gap-2 shadow-lg shadow-primary/20"
-            >
-              {resultsCount > 0
-                ? t("search", { count: resultsCount.toLocaleString() })
-                : "Rechercher des véhicules"}
+              <RefreshCw className="w-4 h-4 shrink-0" />
+              <span>{t("reset")}</span>
             </button>
           </div>
         </form>

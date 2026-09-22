@@ -20,6 +20,7 @@ export interface User {
   logo?: string;
   joinedAt: string;
   isVerified?: boolean;
+  isEmailVerified?: boolean;
   whatsapp?: string;
   city?: string;
   commune?: string;
@@ -99,6 +100,7 @@ export type AuditAction =
   | "LISTING_UNPUBLISHED" 
   | "USER_SUSPENDED" 
   | "USER_REACTIVATED" 
+  | "USER_DELETED"
   | "DEALER_VERIFIED" 
   | "DEALER_UNVERIFIED" 
   | "REPORT_RESOLVED" 

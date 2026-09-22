@@ -5,11 +5,12 @@ import Image from "next/image";
 import { 
   CheckCircle2, MapPin, Phone, MessageSquare, Mail, Globe, 
   Clock, ShieldCheck, Calendar, Store, Edit3, Share2, AlertTriangle, 
-  Eye, Check, ExternalLink, Shield
+  Eye, Check, ExternalLink, Shield, Lock
 } from "lucide-react";
 import { User, ExtendedVehicleListing } from "@/lib/db/schema";
 import { useTranslations } from "next-intl";
 import EditProfileModal from "./EditProfileModal";
+import ChangePasswordModal from "./ChangePasswordModal";
 import ReportDealerModal from "./ReportDealerModal";
 import DealerInventorySection from "./DealerInventorySection";
 import { Link } from "@/i18n/routing";
@@ -41,6 +42,7 @@ export default function DealerProfileView({
   const tDays = useTranslations("DealerProfile.hours.days");
 
   const [isEditOpen, setIsEditOpen] = React.useState(false);
+  const [isChangePasswordOpen, setIsChangePasswordOpen] = React.useState(false);
   const [isReportOpen, setIsReportOpen] = React.useState(false);
   const [copied, setCopied] = React.useState(false);
 
@@ -167,14 +169,26 @@ export default function DealerProfileView({
             </button>
 
             {isOwner && (
-              <button
-                type="button"
-                onClick={() => setIsEditOpen(true)}
-                className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-zinc-900 hover:bg-zinc-800 dark:bg-zinc-100 dark:hover:bg-white text-white dark:text-zinc-900 text-sm font-semibold transition-all shadow-xs"
-              >
-                <Edit3 className="w-4 h-4" />
-                {t("editProfile")}
-              </button>
+              <>
+                <button
+                  type="button"
+                  onClick={() => setIsChangePasswordOpen(true)}
+                  className="flex items-center gap-1.5 px-3.5 py-2.5 rounded-xl border border-zinc-200 dark:border-zinc-700 hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-700 dark:text-zinc-300 text-xs font-semibold transition-all cursor-pointer"
+                  title="Modifier le mot de passe"
+                >
+                  <Lock className="w-3.5 h-3.5 text-zinc-500" />
+                  <span>Sécurité</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setIsEditOpen(true)}
+                  className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-zinc-900 hover:bg-zinc-800 dark:bg-zinc-100 dark:hover:bg-white text-white dark:text-zinc-900 text-sm font-semibold transition-all shadow-xs cursor-pointer"
+                >
+                  <Edit3 className="w-4 h-4" />
+                  {t("editProfile")}
+                </button>
+              </>
             )}
           </div>
         </div>
@@ -493,11 +507,18 @@ export default function DealerProfileView({
 
       {/* Edit Profile Modal */}
       {isOwner && (
-        <EditProfileModal
-          user={user}
-          isOpen={isEditOpen}
-          onClose={() => setIsEditOpen(false)}
-        />
+        <>
+          <EditProfileModal
+            user={user}
+            isOpen={isEditOpen}
+            onClose={() => setIsEditOpen(false)}
+          />
+          <ChangePasswordModal
+            isOpen={isChangePasswordOpen}
+            onClose={() => setIsChangePasswordOpen(false)}
+            userEmail={user.email}
+          />
+        </>
       )}
 
       {/* Report Dealer Modal */}

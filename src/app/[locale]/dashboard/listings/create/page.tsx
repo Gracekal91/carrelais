@@ -1,8 +1,8 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useRouter } from "@/i18n/routing";
-import { createListing } from "@/lib/actions";
+import { useRouter, Link } from "@/i18n/routing";
+import { createListing, getAuthUser } from "@/lib/actions";
 import { 
   Check, ChevronLeft, ChevronRight, Upload, X, Star, 
   Image as ImageIcon, AlertCircle, Info, Sparkles, Loader2 
@@ -58,11 +58,20 @@ const CATEGORIZED_FEATURES = [
   },
 ];
 
-export default function PostCarPage() {
+interface PostCarPageProps {
+  isAdminPortal?: boolean;
+  redirectOnSuccess?: string;
+}
+
+export default function PostCarPage({
+  isAdminPortal = false,
+  redirectOnSuccess,
+}: PostCarPageProps = {}) {
   const router = useRouter();
   const t = useTranslations("VehicleWizard");
 
   const [step, setStep] = useState(1);
+  const [currentUser, setCurrentUser] = useState<{ id: string; role: string; name: string } | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isUploadingPhotos, setIsUploadingPhotos] = useState(false);
   const [uploadProgressText, setUploadProgressText] = useState("");
@@ -70,8 +79,21 @@ export default function PostCarPage() {
   const [customMake, setCustomMake] = useState("");
   const [customModel, setCustomModel] = useState("");
   const [customCity, setCustomCity] = useState("");
+  const [customExteriorColor, setCustomExteriorColor] = useState("");
+  const [customInteriorColor, setCustomInteriorColor] = useState("");
   const [photoUrlInput, setPhotoUrlInput] = useState("");
   const [showUrlInput, setShowUrlInput] = useState(false);
+
+  useEffect(() => {
+    getAuthUser().then(user => {
+      setCurrentUser(user);
+      if (user && (user.role === "ADMIN" || user.role === "SUPER_ADMIN") && !isAdminPortal) {
+        router.replace("/admin/dashboard/listings/create");
+      }
+    }).catch(() => setCurrentUser(null));
+  }, [isAdminPortal, router]);
+
+  const isSuperAdmin = isAdminPortal || currentUser?.role === "SUPER_ADMIN" || currentUser?.role === "ADMIN";
 
   const currentYear = new Date().getFullYear();
 
@@ -80,7 +102,7 @@ export default function PostCarPage() {
     model: "",
     year: currentYear,
     condition: "EXCELLENT",
-    mileage: 0,
+    mileage: undefined,
     transmission: "Automatic",
     fuelType: "Petrol",
     availability: "IN_CONGO",
@@ -108,6 +130,13 @@ export default function PostCarPage() {
     city: "Kinshasa",
     commune: "Gombe",
     description: "",
+    source: "OTHER",
+    sourceUrl: "",
+    contactOptions: {
+      allowCalls: true,
+      allowWhatsapp: true,
+      allowDirectMessage: false,
+    },
   });
 
   const update = (key: keyof ExtendedVehicleListing, value: any) => {
@@ -250,13 +279,18 @@ export default function PostCarPage() {
       const modelVal = (formData.model === "Autre" || formData.make === "Autre") ? customModel.trim() : formData.model;
       if (!modelVal) newErrors.model = t("validation.requiredModel");
 
-      if (!formData.year || formData.year < 1970 || formData.year > currentYear + 1) {
-        newErrors.year = t("validation.requiredYear", { maxYear: currentYear + 1 });
+      const yearNum = Number(formData.year);
+      if (!formData.year || isNaN(yearNum) || yearNum < 1950 || yearNum > currentYear + 1) {
+        newErrors.year = `Veuillez indiquer une année valide (entre 1950 et ${currentYear + 1})`;
       }
 
       if (!formData.condition) newErrors.condition = t("validation.requiredCondition");
-      if (formData.mileage === undefined || formData.mileage < 0 || isNaN(formData.mileage)) {
-        newErrors.mileage = t("validation.requiredMileage");
+      // Mileage is optional: only validate if a value is provided
+      if (formData.mileage !== undefined && formData.mileage !== null && (formData.mileage as any) !== "") {
+        const mileageNum = Number(formData.mileage);
+        if (isNaN(mileageNum) || mileageNum < 0) {
+          newErrors.mileage = "Le kilométrage doit être un nombre positif";
+        }
       }
       if (!formData.transmission) newErrors.transmission = t("validation.requiredTransmission");
       if (!formData.fuelType) newErrors.fuelType = t("validation.requiredFuel");
@@ -305,18 +339,27 @@ export default function PostCarPage() {
     const resolvedMake = formData.make === "Autre" ? customMake.trim() : (formData.make || "");
     const resolvedModel = (formData.model === "Autre" || formData.make === "Autre") ? customModel.trim() : (formData.model || "");
     const resolvedCity = formData.city === "Autre" ? customCity.trim() : (formData.city || "Kinshasa");
+    const resolvedColor = formData.color === "Autre" ? (customExteriorColor.trim() || "Autre") : (formData.color || "Blanc");
+    const resolvedInteriorColor = formData.interiorColor === "Autre" ? (customInteriorColor.trim() || "Autre") : (formData.interiorColor || "Noir");
+    const resolvedMileage = (formData.mileage !== undefined && formData.mileage !== null && (formData.mileage as any) !== "")
+      ? Math.max(0, Number(formData.mileage))
+      : undefined;
 
     const payload: Partial<ExtendedVehicleListing> = {
       ...formData,
       make: resolvedMake,
       model: resolvedModel,
       city: resolvedCity,
-      title: `${formData.year} ${resolvedMake} ${resolvedModel}`,
+      color: resolvedColor,
+      interiorColor: resolvedInteriorColor,
+      mileage: resolvedMileage,
+      year: Number(formData.year) || currentYear,
+      title: `${formData.year || currentYear} ${resolvedMake} ${resolvedModel}`,
     };
 
     const res = await createListing(payload);
     if (res.success) {
-      router.push("/dashboard/listings");
+      router.push(redirectOnSuccess || (isAdminPortal ? "/admin/listings" : "/dashboard/listings"));
     }
     setIsSubmitting(false);
   };
@@ -331,8 +374,19 @@ export default function PostCarPage() {
     <div className="max-w-4xl mx-auto space-y-6 pb-20 px-4">
       {/* Wizard Header & Progress */}
       <div className="space-y-3 mb-6">
+        <div className="flex items-center gap-2 text-sm text-zinc-500 mb-1">
+          <Link
+            href={isAdminPortal ? "/admin/listings" : "/dashboard/listings"}
+            className="hover:text-primary flex items-center gap-1 font-medium transition-colors"
+          >
+            <ChevronLeft className="w-4 h-4" />
+            {isAdminPortal ? "Retour aux annonces admin" : "Retour à mes annonces"}
+          </Link>
+        </div>
         <div className="flex items-center justify-between">
-          <h1 className="text-2xl sm:text-3xl font-bold text-zinc-900 dark:text-zinc-100">{t("pageTitle")}</h1>
+          <h1 className="text-2xl sm:text-3xl font-bold text-zinc-900 dark:text-zinc-100">
+            {isAdminPortal ? "Publier un véhicule (Portail Admin)" : t("pageTitle")}
+          </h1>
           <span className="text-sm font-semibold text-primary bg-primary/10 px-3 py-1 rounded-full">
             {t("stepCounter", { step })}
           </span>
@@ -432,13 +486,24 @@ export default function PostCarPage() {
                     <label className="block text-sm font-medium mb-1.5 text-zinc-700 dark:text-zinc-300">
                       {t("step1.yearLabel")} <span className="text-red-500">*</span>
                     </label>
-                    <input
-                      type="number"
-                      min={1970}
-                      max={currentYear + 1}
-                      value={formData.year || ""}
-                      onChange={e => update("year", Math.max(1970, parseInt(e.target.value) || 1970))}
-                      className="w-full h-[48px] px-3.5 border border-zinc-300 dark:border-zinc-700 rounded-lg dark:bg-zinc-800 text-sm"
+                    <Select
+                      value={formData.year ? String(formData.year) : ""}
+                      onChange={val => {
+                        update("year", parseInt(val));
+                        if (errors.year) {
+                          setErrors(prev => {
+                            const n = { ...prev };
+                            delete n.year;
+                            return n;
+                          });
+                        }
+                      }}
+                      placeholder="Sélectionner l'année..."
+                      options={Array.from({ length: currentYear - 1970 + 2 }, (_, i) => currentYear + 1 - i).map(y => ({
+                        value: String(y),
+                        label: String(y)
+                      }))}
+                      className="h-[48px] w-full"
                     />
                     {errors.year && <p className="text-red-500 text-xs mt-1.5">{errors.year}</p>}
                   </div>
@@ -466,16 +531,34 @@ export default function PostCarPage() {
 
                   {/* Kilométrage */}
                   <div>
-                    <label className="block text-sm font-medium mb-1.5 text-zinc-700 dark:text-zinc-300">
-                      {t("step1.mileageLabel")} <span className="text-red-500">*</span>
-                    </label>
-                    <input
-                      type="number"
-                      min={0}
-                      value={formData.mileage ?? 0}
-                      onChange={e => update("mileage", Math.max(0, parseInt(e.target.value) || 0))}
-                      className="w-full h-[48px] px-3.5 border border-zinc-300 dark:border-zinc-700 rounded-lg dark:bg-zinc-800 text-sm"
-                    />
+                    <div className="flex items-center justify-between mb-1.5">
+                      <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300">
+                        {t("step1.mileageLabel")} <span className="text-xs font-normal text-zinc-400">(Optionnel)</span>
+                      </label>
+                      {formData.mileage !== undefined && formData.mileage !== null && (formData.mileage as any) !== "" && Number(formData.mileage) > 0 ? (
+                        <button
+                          type="button"
+                          onClick={() => update("mileage", "")}
+                          className="text-[11px] text-zinc-400 hover:text-red-500 transition-colors cursor-pointer"
+                        >
+                          Effacer
+                        </button>
+                      ) : null}
+                    </div>
+                    <div className="relative">
+                      <input
+                        type="text"
+                        inputMode="numeric"
+                        placeholder="Ex: 45000 (ou laisser vide)"
+                        value={formData.mileage === undefined || formData.mileage === null ? "" : String(formData.mileage)}
+                        onChange={e => {
+                          const val = e.target.value.replace(/[^0-9]/g, "");
+                          update("mileage", val === "" ? "" : parseInt(val));
+                        }}
+                        className="w-full h-[48px] px-3.5 pr-12 border border-zinc-300 dark:border-zinc-700 rounded-lg dark:bg-zinc-800 text-sm font-medium"
+                      />
+                      <span className="absolute right-3.5 top-1/2 -translate-y-1/2 text-sm text-zinc-400 font-medium pointer-events-none">km</span>
+                    </div>
                     {errors.mileage && <p className="text-red-500 text-xs mt-1.5">{errors.mileage}</p>}
                   </div>
 
@@ -724,6 +807,15 @@ export default function PostCarPage() {
                       ]}
                       className="h-[48px]"
                     />
+                    {formData.color === "Autre" && (
+                      <input
+                        type="text"
+                        value={customExteriorColor}
+                        onChange={e => setCustomExteriorColor(e.target.value)}
+                        placeholder="Précisez la couleur extérieure (ex: Bleu Nuit, Bordeaux...)"
+                        className="mt-2 w-full h-[46px] px-3.5 border border-zinc-300 dark:border-zinc-700 rounded-lg dark:bg-zinc-800 text-sm animate-in fade-in"
+                      />
+                    )}
                   </div>
 
                   {/* Couleur intérieure */}
@@ -744,6 +836,15 @@ export default function PostCarPage() {
                       ]}
                       className="h-[48px]"
                     />
+                    {formData.interiorColor === "Autre" && (
+                      <input
+                        type="text"
+                        value={customInteriorColor}
+                        onChange={e => setCustomInteriorColor(e.target.value)}
+                        placeholder="Précisez la couleur intérieure (ex: Camel, Rouge Cuir...)"
+                        className="mt-2 w-full h-[46px] px-3.5 border border-zinc-300 dark:border-zinc-700 rounded-lg dark:bg-zinc-800 text-sm animate-in fade-in"
+                      />
+                    )}
                   </div>
                 </div>
               </div>
@@ -1271,6 +1372,94 @@ export default function PostCarPage() {
                   placeholder={t("step6.placeholder")}
                 />
               </div>
+
+              {/* Super Admin: Source et Canaux de Contact */}
+              {isSuperAdmin && (
+                <div className="pt-6 border-t border-zinc-100 dark:border-zinc-800 bg-amber-50/60 dark:bg-amber-950/20 p-5 rounded-2xl border border-amber-200 dark:border-amber-800/50 space-y-5">
+                  <div className="flex items-center gap-2 text-amber-700 dark:text-amber-400">
+                    <Sparkles className="w-5 h-5 shrink-0" />
+                    <h3 className="font-bold text-base">Configuration Super Admin : Source & Moyens de contact</h3>
+                  </div>
+                  <p className="text-xs text-zinc-600 dark:text-zinc-400">
+                    Indiquez la provenance de cette annonce si elle est importée depuis un réseau social. Vous pouvez également contrôler les canaux de contact disponibles pour les acheteurs.
+                  </p>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    {/* Plateforme source */}
+                    <div>
+                      <label className="block text-sm font-medium mb-1.5 text-zinc-700 dark:text-zinc-300">
+                        Plateforme Source
+                      </label>
+                      <Select
+                        value={formData.source || "OTHER"}
+                        onChange={val => update("source", val)}
+                        options={[
+                          { value: "FACEBOOK", label: "Facebook" },
+                          { value: "TIKTOK", label: "TikTok" },
+                          { value: "WHATSAPP", label: "WhatsApp" },
+                          { value: "INSTAGRAM", label: "Instagram" },
+                          { value: "OTHER", label: "Autre / Site Web" },
+                        ]}
+                        className="h-[48px]"
+                      />
+                    </div>
+
+                    {/* URL source */}
+                    <div>
+                      <label className="block text-sm font-medium mb-1.5 text-zinc-700 dark:text-zinc-300">
+                        Lien URL du post original
+                      </label>
+                      <input
+                        type="url"
+                        value={formData.sourceUrl || ""}
+                        onChange={e => update("sourceUrl", e.target.value)}
+                        placeholder="https://facebook.com/... ou https://tiktok.com/@..."
+                        className="w-full h-[48px] px-3.5 border border-zinc-300 dark:border-zinc-700 rounded-lg dark:bg-zinc-800 text-sm"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Options de contact */}
+                  <div>
+                    <label className="block text-sm font-medium mb-2 text-zinc-700 dark:text-zinc-300">
+                      Canaux de contact autorisés pour cette annonce
+                    </label>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <label className="flex items-center gap-3 p-3 bg-white dark:bg-zinc-900 rounded-xl border border-zinc-200 dark:border-zinc-700 cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={formData.contactOptions?.allowCalls !== false}
+                          onChange={e => update("contactOptions", { ...(formData.contactOptions || {}), allowCalls: e.target.checked })}
+                          className="w-4 h-4 text-primary rounded"
+                        />
+                        <div>
+                          <span className="text-sm font-semibold text-zinc-900 dark:text-white block">Appels téléphoniques</span>
+                          <span className="text-xs text-zinc-500">Permettre aux acheteurs d'appeler directement</span>
+                        </div>
+                      </label>
+
+                      <label className="flex items-center gap-3 p-3 bg-white dark:bg-zinc-900 rounded-xl border border-zinc-200 dark:border-zinc-700 cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={formData.contactOptions?.allowWhatsapp !== false}
+                          onChange={e => update("contactOptions", { ...(formData.contactOptions || {}), allowWhatsapp: e.target.checked })}
+                          className="w-4 h-4 text-primary rounded"
+                        />
+                        <div>
+                          <span className="text-sm font-semibold text-zinc-900 dark:text-white block">Messages WhatsApp</span>
+                          <span className="text-xs text-zinc-500">Afficher le bouton de discussion WhatsApp</span>
+                        </div>
+                      </label>
+                    </div>
+                    {formData.sourceUrl && (
+                      <p className="text-xs text-primary font-medium mt-2 flex items-center gap-1.5">
+                        <Check className="w-3.5 h-3.5" />
+                        Un bouton direct vers l'annonce originale sera affiché sur la fiche véhicule pour contacter le vendeur.
+                      </p>
+                    )}
+                  </div>
+                </div>
+              )}
             </div>
           )}
 
@@ -1346,7 +1535,7 @@ export default function PostCarPage() {
                     <div>
                       <span className="text-zinc-500 text-xs block">{t("step7.mileageLabel")}</span>
                       <span className="font-semibold text-zinc-900 dark:text-zinc-100">
-                        {formData.mileage?.toLocaleString()} km
+                        {formData.mileage ? `${formData.mileage.toLocaleString()} km` : "Non spécifié"}
                       </span>
                     </div>
                     <div>
@@ -1374,15 +1563,15 @@ export default function PostCarPage() {
                       </span>
                     </div>
                     <div>
-                      <span className="text-zinc-500 text-xs block">{t("step1.steeringSideLabel")}</span>
+                      <span className="text-zinc-500 text-xs block">{t("step3.exteriorColorLabel")}</span>
                       <span className="font-semibold text-zinc-900 dark:text-zinc-100">
-                        {formData.steeringSide ? t(`step1.steeringSideOptions.${formData.steeringSide}` as any) : "N/A"}
+                        {formData.color === "Autre" ? (customExteriorColor || "Autre") : (formData.color || "N/A")}
                       </span>
                     </div>
                     <div>
-                      <span className="text-zinc-500 text-xs block">{t("step3.exteriorColorLabel")}</span>
+                      <span className="text-zinc-500 text-xs block">{t("step3.interiorColorLabel")}</span>
                       <span className="font-semibold text-zinc-900 dark:text-zinc-100">
-                        {formData.color || "N/A"}
+                        {formData.interiorColor === "Autre" ? (customInteriorColor || "Autre") : (formData.interiorColor || "N/A")}
                       </span>
                     </div>
                     <div>

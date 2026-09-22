@@ -40,6 +40,7 @@ export async function getCurrentUser(): Promise<User | null> {
       description: userDoc.description,
       logo: userDoc.logo,
       isVerified: Boolean(userDoc.isVerified),
+      isEmailVerified: Boolean(userDoc.isEmailVerified ?? userDoc.isVerified),
       whatsapp: userDoc.whatsapp,
       foundedYear: userDoc.foundedYear,
       businessHours: userDoc.businessHours,
@@ -73,3 +74,12 @@ export async function requireAdminUser(): Promise<User> {
   }
   return user;
 }
+
+export async function requireSuperAdminUser(): Promise<User> {
+  const user = await requireAuth();
+  if (user.role !== "SUPER_ADMIN") {
+    throw new Error("Accès non autorisé : droits Super Administrateur requis");
+  }
+  return user;
+}
+

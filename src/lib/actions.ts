@@ -8,10 +8,21 @@ import { UserModel } from "@/lib/models/User";
 import { ListingModel } from "@/lib/models/Listing";
 import { ReportModel } from "@/lib/models/Report";
 import { AuditLogModel } from "@/lib/models/AuditLog";
-import { getCurrentUser, requireAuth, requireAdminUser } from "@/lib/auth";
+import { getCurrentUser, requireAuth, requireAdminUser, requireSuperAdminUser } from "@/lib/auth";
 import { ensureSuperAdminInitialized } from "@/lib/db/init";
 import { User, ExtendedVehicleListing } from "@/lib/db/schema";
 import { VehicleStatus } from "@/types";
+import {
+  sendVerificationOtpEmail,
+  sendPasswordResetOtpEmail,
+  sendChangePasswordOtpEmail,
+  sendListingApprovedEmail,
+  sendListingDeclinedEmail,
+} from "@/lib/email";
+
+function generate6DigitOtp(): string {
+  return Math.floor(100000 + Math.random() * 900000).toString();
+}
 
 export async function login(email: string, password: string) {
   try {
@@ -37,25 +48,40 @@ export async function login(email: string, password: string) {
       return { success: false, error: "Identifiants invalides" };
     }
 
-    const cookieStore = await cookies();
-    const sessionToken = user._id.toString();
+    // Email verification check (Super Admin and Admin bypass)
+    const isSuperAdminOrAdmin = user.role === "SUPER_ADMIN" || user.role === "ADMIN";
+    if (!user.isEmailVerified && !user.isVerified && !isSuperAdminOrAdmin) {
+      return {
+        success: false,
+        unverified: true,
+        email: user.email,
+        error: "Veuillez vérifier votre adresse email pour vous connecter.",
+      };
+    }
 
-    // Set secure session cookies
-    cookieStore.set("cr_session", sessionToken, {
-      path: "/",
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
-      maxAge: 30 * 24 * 60 * 60, // 30 days
-    });
+    try {
+      const cookieStore = await cookies();
+      const sessionToken = user._id.toString();
 
-    cookieStore.set("mock_user_id", sessionToken, {
-      path: "/",
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
-      maxAge: 30 * 24 * 60 * 60,
-    });
+      // Set secure session cookies
+      cookieStore.set("cr_session", sessionToken, {
+        path: "/",
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "lax",
+        maxAge: 30 * 24 * 60 * 60, // 30 days
+      });
+
+      cookieStore.set("mock_user_id", sessionToken, {
+        path: "/",
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "lax",
+        maxAge: 30 * 24 * 60 * 60,
+      });
+    } catch {
+      // Ignored when called outside request scope
+    }
 
     return { success: true, role: user.role };
   } catch (error: any) {
@@ -90,6 +116,8 @@ export async function signup(data: Partial<User> & { password?: string }) {
     }
 
     const hashedPassword = await bcrypt.hash(data.password, 12);
+    const otp = generate6DigitOtp();
+    const otpExpires = new Date(Date.now() + 15 * 60 * 1000); // 15 minutes
 
     const newUser = await UserModel.create({
       email: normalizedEmail,
@@ -103,31 +131,371 @@ export async function signup(data: Partial<User> & { password?: string }) {
       location: data.location || "Kinshasa, RDC",
       joinedAt: new Date().toISOString(),
       status: "ACTIVE",
+      isVerified: false,
+      isEmailVerified: false,
+      verificationOtp: otp,
+      verificationOtpExpires: otpExpires,
     });
 
-    const cookieStore = await cookies();
-    const sessionToken = newUser._id.toString();
+    // Ensure verificationOtp and isEmailVerified are saved in DB directly
+    await UserModel.updateOne(
+      { _id: newUser._id },
+      {
+        $set: {
+          verificationOtp: otp,
+          verificationOtpExpires: otpExpires,
+          isEmailVerified: false,
+          isVerified: false,
+        },
+      }
+    );
 
-    cookieStore.set("cr_session", sessionToken, {
-      path: "/",
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
-      maxAge: 30 * 24 * 60 * 60,
+    console.log("[Signup OTP Generated]", {
+      email: normalizedEmail,
+      otp,
+      expires: otpExpires,
     });
 
-    cookieStore.set("mock_user_id", sessionToken, {
-      path: "/",
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
-      maxAge: 30 * 24 * 60 * 60,
-    });
+    // Send verification email via Resend
+    await sendVerificationOtpEmail(normalizedEmail, (data.firstName || "").trim(), otp);
 
-    return { success: true };
+    return {
+      success: true,
+      requireVerification: true,
+      email: normalizedEmail,
+    };
   } catch (error: any) {
     console.error("[Signup Error]", error);
     return { success: false, error: error.message || "Erreur lors de l'inscription" };
+  }
+}
+
+export async function verifyEmailOtp(email: string, otp: string) {
+  try {
+    await connectToDatabase();
+    const normalizedEmail = (email || "").toLowerCase().trim();
+    const cleanOtp = (otp || "").replace(/\s+/g, "").trim();
+
+    if (!normalizedEmail || !cleanOtp) {
+      return { success: false, error: "Email et code OTP requis" };
+    }
+
+    const user = await UserModel.findOne({ email: normalizedEmail });
+    if (!user) {
+      return { success: false, error: "Utilisateur introuvable" };
+    }
+
+    if (user.isEmailVerified) {
+      // User is already verified, proceed with setting cookies if in request scope
+      try {
+        const cookieStore = await cookies();
+        const sessionToken = user._id.toString();
+        cookieStore.set("cr_session", sessionToken, {
+          path: "/",
+          httpOnly: true,
+          secure: process.env.NODE_ENV === "production",
+          sameSite: "lax",
+          maxAge: 30 * 24 * 60 * 60,
+        });
+        cookieStore.set("mock_user_id", sessionToken, {
+          path: "/",
+          httpOnly: true,
+          secure: process.env.NODE_ENV === "production",
+          sameSite: "lax",
+          maxAge: 30 * 24 * 60 * 60,
+        });
+      } catch {
+        // Ignored outside request scope
+      }
+      return { success: true, role: user.role };
+    }
+
+    const rawOtp = user.verificationOtp || (user as any)._doc?.verificationOtp;
+    const storedOtp = rawOtp ? String(rawOtp).trim() : "";
+    const rawExpires = user.verificationOtpExpires || (user as any)._doc?.verificationOtpExpires;
+
+    console.log("[Verify OTP Debug]", {
+      email: normalizedEmail,
+      inputOtp: cleanOtp,
+      storedOtp,
+      hasExpired: rawExpires ? new Date(rawExpires) < new Date() : false,
+    });
+
+    const validOtps = storedOtp.split(",").map((c) => c.trim()).filter(Boolean);
+    if (validOtps.length === 0 || !validOtps.includes(cleanOtp)) {
+      return { success: false, error: "Code de vérification incorrect" };
+    }
+
+    if (rawExpires && new Date(rawExpires) < new Date()) {
+      return {
+        success: false,
+        error: "Ce code a expiré. Veuillez cliquer sur Renvoyer pour obtenir un nouveau code.",
+      };
+    }
+
+    // Success: activate user with updateOne for persistent storage
+    await UserModel.updateOne(
+      { _id: user._id },
+      {
+        $set: {
+          isEmailVerified: true,
+          isVerified: true,
+        },
+        $unset: {
+          verificationOtp: "",
+          verificationOtpExpires: "",
+        },
+      }
+    );
+
+    // Log the user in if in request scope
+    try {
+      const cookieStore = await cookies();
+      const sessionToken = user._id.toString();
+      cookieStore.set("cr_session", sessionToken, {
+        path: "/",
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "lax",
+        maxAge: 30 * 24 * 60 * 60,
+      });
+      cookieStore.set("mock_user_id", sessionToken, {
+        path: "/",
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "lax",
+        maxAge: 30 * 24 * 60 * 60,
+      });
+    } catch {
+      // Ignored outside request scope
+    }
+
+    return { success: true, role: user.role };
+  } catch (error: any) {
+    console.error("[Verify Email OTP Error]", error);
+    return { success: false, error: error.message || "Erreur de validation" };
+  }
+}
+
+export async function resendVerificationOtp(email: string) {
+  try {
+    await connectToDatabase();
+    const normalizedEmail = (email || "").toLowerCase().trim();
+
+    const user = await UserModel.findOne({ email: normalizedEmail });
+    if (!user) {
+      return { success: false, error: "Aucun compte trouvé avec cette adresse email" };
+    }
+
+    if (user.isEmailVerified) {
+      return { success: false, error: "Ce compte est déjà vérifié" };
+    }
+
+    const otp = generate6DigitOtp();
+    const otpExpires = new Date(Date.now() + 15 * 60 * 1000);
+    const existingOtp = (user.verificationOtp || (user as any)._doc?.verificationOtp || "").toString().trim();
+    const combinedOtps = existingOtp
+      ? `${otp},${existingOtp}`.split(",").filter(Boolean).slice(0, 3).join(",")
+      : otp;
+
+    await UserModel.updateOne(
+      { _id: user._id },
+      {
+        $set: {
+          verificationOtp: combinedOtps,
+          verificationOtpExpires: otpExpires,
+        },
+      }
+    );
+
+    console.log("[Resend OTP Debug]", {
+      email: normalizedEmail,
+      otp,
+      expires: otpExpires,
+    });
+
+    await sendVerificationOtpEmail(normalizedEmail, user.firstName, otp);
+    return { success: true };
+  } catch (error: any) {
+    console.error("[Resend OTP Error]", error);
+    return { success: false, error: error.message || "Erreur lors de l'envoi du code" };
+  }
+}
+
+export async function requestPasswordReset(email: string) {
+  try {
+    await connectToDatabase();
+    const normalizedEmail = (email || "").toLowerCase().trim();
+
+    if (!normalizedEmail) {
+      return { success: false, error: "Veuillez renseigner votre adresse email" };
+    }
+
+    const user = await UserModel.findOne({ email: normalizedEmail });
+    if (!user) {
+      return { success: false, error: "Aucun compte n'est associé à cette adresse email" };
+    }
+
+    const pin = generate6DigitOtp();
+    const pinExpires = new Date(Date.now() + 15 * 60 * 1000);
+
+    await UserModel.updateOne(
+      { _id: user._id },
+      {
+        $set: {
+          resetPasswordOtp: pin,
+          resetPasswordOtpExpires: pinExpires,
+        },
+      }
+    );
+
+    console.log("[Password Reset PIN Debug]", {
+      email: normalizedEmail,
+      pin,
+      expires: pinExpires,
+    });
+
+    await sendPasswordResetOtpEmail(normalizedEmail, user.firstName, pin);
+    return { success: true };
+  } catch (error: any) {
+    console.error("[Request Password Reset Error]", error);
+    return { success: false, error: error.message || "Erreur lors de la demande de réinitialisation" };
+  }
+}
+
+export async function resetPasswordWithOtp(email: string, otp: string, newPassword: string) {
+  try {
+    await connectToDatabase();
+    const normalizedEmail = (email || "").toLowerCase().trim();
+    const cleanOtp = (otp || "").replace(/\s+/g, "").trim();
+
+    if (!normalizedEmail || !cleanOtp || !newPassword) {
+      return { success: false, error: "Tous les champs sont requis" };
+    }
+
+    if (newPassword.length < 6) {
+      return { success: false, error: "Le mot de passe doit comporter au moins 6 caractères" };
+    }
+
+    const user = await UserModel.findOne({ email: normalizedEmail });
+    if (!user) {
+      return { success: false, error: "Utilisateur introuvable" };
+    }
+
+    const rawOtp = user.resetPasswordOtp || (user as any)._doc?.resetPasswordOtp;
+    const storedOtp = rawOtp ? String(rawOtp).trim() : "";
+    const rawExpires = user.resetPasswordOtpExpires || (user as any)._doc?.resetPasswordOtpExpires;
+
+    if (!storedOtp || storedOtp !== cleanOtp) {
+      return { success: false, error: "Code PIN de réinitialisation invalide" };
+    }
+
+    if (rawExpires && new Date(rawExpires) < new Date()) {
+      return { success: false, error: "Le code PIN a expiré. Veuillez refaire une demande." };
+    }
+
+    const hashedPassword = await bcrypt.hash(newPassword, 12);
+    await UserModel.updateOne(
+      { _id: user._id },
+      {
+        $set: { password: hashedPassword },
+        $unset: { resetPasswordOtp: "", resetPasswordOtpExpires: "" },
+      }
+    );
+
+    return { success: true };
+  } catch (error: any) {
+    console.error("[Reset Password With OTP Error]", error);
+    return { success: false, error: error.message || "Erreur lors du changement de mot de passe" };
+  }
+}
+
+export async function requestChangePasswordOtp() {
+  try {
+    const authUser = await requireAuth();
+    await connectToDatabase();
+
+    const user = await UserModel.findById(authUser.id);
+    if (!user) {
+      return { success: false, error: "Utilisateur introuvable" };
+    }
+
+    const pin = generate6DigitOtp();
+    const pinExpires = new Date(Date.now() + 15 * 60 * 1000);
+
+    await UserModel.updateOne(
+      { _id: user._id },
+      {
+        $set: {
+          changePasswordOtp: pin,
+          changePasswordOtpExpires: pinExpires,
+        },
+      }
+    );
+
+    console.log("[Change Password PIN Debug]", {
+      email: user.email,
+      pin,
+      expires: pinExpires,
+    });
+
+    await sendChangePasswordOtpEmail(user.email, user.firstName, pin);
+    return { success: true };
+  } catch (error: any) {
+    console.error("[Request Change Password OTP Error]", error);
+    return { success: false, error: error.message || "Erreur lors de l'envoi du code PIN" };
+  }
+}
+
+export async function changePasswordWithOtp(otp: string, currentPassword: string, newPassword: string) {
+  try {
+    const authUser = await requireAuth();
+    await connectToDatabase();
+
+    const cleanOtp = (otp || "").replace(/\s+/g, "").trim();
+    if (!cleanOtp || !currentPassword || !newPassword) {
+      return { success: false, error: "Tous les champs sont requis" };
+    }
+
+    if (newPassword.length < 6) {
+      return { success: false, error: "Le nouveau mot de passe doit comporter au moins 6 caractères" };
+    }
+
+    const user = await UserModel.findById(authUser.id);
+    if (!user) {
+      return { success: false, error: "Utilisateur introuvable" };
+    }
+
+    const passwordMatch = await bcrypt.compare(currentPassword, user.password || "");
+    if (!passwordMatch) {
+      return { success: false, error: "Mot de passe actuel incorrect" };
+    }
+
+    const rawOtp = user.changePasswordOtp || (user as any)._doc?.changePasswordOtp;
+    const storedOtp = rawOtp ? String(rawOtp).trim() : "";
+    const rawExpires = user.changePasswordOtpExpires || (user as any)._doc?.changePasswordOtpExpires;
+
+    if (!storedOtp || storedOtp !== cleanOtp) {
+      return { success: false, error: "Code PIN de confirmation invalide" };
+    }
+
+    if (rawExpires && new Date(rawExpires) < new Date()) {
+      return { success: false, error: "Le code PIN a expiré. Veuillez en redemander un nouveau." };
+    }
+
+    const hashedPassword = await bcrypt.hash(newPassword, 12);
+    await UserModel.updateOne(
+      { _id: user._id },
+      {
+        $set: { password: hashedPassword },
+        $unset: { changePasswordOtp: "", changePasswordOtpExpires: "" },
+      }
+    );
+
+    return { success: true };
+  } catch (error: any) {
+    console.error("[Change Password Error]", error);
+    return { success: false, error: error.message || "Erreur lors du changement de mot de passe" };
   }
 }
 
@@ -167,6 +535,9 @@ export async function createListing(data: Partial<ExtendedVehicleListing>) {
     };
     const resolvedBodyType = (data.vehicleType && bodyTypeMap[data.vehicleType]) || data.bodyType || "SUV";
 
+    const isSuperAdminOrAdmin = owner.role === "SUPER_ADMIN" || owner.role === "ADMIN";
+    const initialStatus = data.status === "DRAFT" ? "DRAFT" : (isSuperAdminOrAdmin ? "PUBLISHED" : "PENDING_REVIEW");
+
     const newListing = await ListingModel.create({
       ...data,
       slug,
@@ -176,7 +547,9 @@ export async function createListing(data: Partial<ExtendedVehicleListing>) {
       model: cleanModel,
       year: Number(data.year) || new Date().getFullYear(),
       price: Math.max(0, Number(data.price) || 0),
-      mileage: Math.max(0, Number(data.mileage) || 0),
+      mileage: (data.mileage !== undefined && data.mileage !== null && String(data.mileage).trim() !== "")
+        ? Math.max(0, Number(data.mileage))
+        : undefined,
       doors: data.doors ? Math.max(1, Number(data.doors)) : 4,
       seats: data.seats ? Math.max(1, Number(data.seats)) : 5,
       horsepower: data.horsepower ? Math.max(0, Number(data.horsepower)) : undefined,
@@ -192,17 +565,21 @@ export async function createListing(data: Partial<ExtendedVehicleListing>) {
       chats: 0,
       phoneClicks: 0,
       dailyStats: [],
-      status: "PENDING_REVIEW",
+      status: initialStatus,
       isFeatured: false,
       isVerified: Boolean(owner.isVerified),
       currency: "USD",
       isNegotiable: Boolean(data.isNegotiable),
       financeAvailable: Boolean(data.financeAvailable),
+      source: data.source || undefined,
+      sourceUrl: data.sourceUrl || undefined,
+      contactOptions: data.contactOptions || undefined,
       seller: {
         id: owner.id,
-        name: owner.accountType === "DEALERSHIP" ? (owner.dealershipName || `${owner.firstName} ${owner.lastName}`) : `${owner.firstName} ${owner.lastName}`,
+        name: isSuperAdminOrAdmin ? "Car Relais" : (owner.accountType === "DEALERSHIP" ? (owner.dealershipName || `${owner.firstName} ${owner.lastName}`) : `${owner.firstName} ${owner.lastName}`),
+        role: owner.role,
         type: owner.accountType,
-        isVerified: Boolean(owner.isVerified),
+        isVerified: Boolean(owner.isVerified || isSuperAdminOrAdmin),
         phone: owner.phone,
         whatsapp: owner.whatsapp || owner.phone,
         location: owner.location || resolvedLocation,
@@ -211,8 +588,9 @@ export async function createListing(data: Partial<ExtendedVehicleListing>) {
       approvalHistory: [
         {
           date: new Date().toISOString(),
-          adminName: "Système",
-          action: "SUBMITTED",
+          adminName: isSuperAdminOrAdmin ? `${owner.firstName} ${owner.lastName} (Admin)` : "Système",
+          action: isSuperAdminOrAdmin ? "APPROVED" : "SUBMITTED",
+          notes: isSuperAdminOrAdmin ? "Publication automatique (création par un administrateur)" : undefined,
         }
       ],
       createdAt: new Date().toISOString(),
@@ -251,6 +629,23 @@ export async function approveListingAction(listingId: string) {
     });
 
     await listing.save();
+
+    // Send confirmation email to seller
+    if (listing.ownerId) {
+      try {
+        const owner = await UserModel.findById(listing.ownerId);
+        if (owner?.email) {
+          await sendListingApprovedEmail(
+            owner.email,
+            owner.firstName,
+            `${listing.year} ${listing.make} ${listing.model}`,
+            listing.slug
+          );
+        }
+      } catch (emailErr) {
+        console.error("[Email Notification Error - Listing Approved]", emailErr);
+      }
+    }
 
     await AuditLogModel.create({
       adminId: admin.id,
@@ -297,6 +692,24 @@ export async function rejectListingAction(listingId: string, reason: string, com
     });
 
     await listing.save();
+
+    // Send notification email to seller
+    if (listing.ownerId) {
+      try {
+        const owner = await UserModel.findById(listing.ownerId);
+        if (owner?.email) {
+          await sendListingDeclinedEmail(
+            owner.email,
+            owner.firstName,
+            `${listing.year} ${listing.make} ${listing.model}`,
+            reason,
+            comment?.trim()
+          );
+        }
+      } catch (emailErr) {
+        console.error("[Email Notification Error - Listing Declined]", emailErr);
+      }
+    }
 
     await AuditLogModel.create({
       adminId: admin.id,
@@ -406,6 +819,72 @@ export async function toggleUserStatusAction(userId: string, newStatus: "ACTIVE"
   } catch (error: any) {
     console.error("[Toggle User Status Error]", error);
     return { success: false, error: error.message || "Erreur" };
+  }
+}
+
+export async function deleteUserAction(userId: string, reason?: string) {
+  try {
+    const superAdmin = await requireSuperAdminUser();
+    await connectToDatabase();
+
+    const user = await UserModel.findById(userId);
+    if (!user) {
+      return { success: false, error: "Utilisateur introuvable dans la base de données" };
+    }
+
+    if (user._id.toString() === superAdmin.id) {
+      return {
+        success: false,
+        error: "Action impossible : vous ne pouvez pas supprimer votre propre compte Super Administrateur.",
+      };
+    }
+
+    const targetLabel =
+      user.accountType === "DEALERSHIP"
+        ? user.dealershipName || user.email
+        : `${user.firstName} ${user.lastName}`;
+
+    // 1. Delete all vehicle listings owned by this user
+    const listingDeleteResult = await ListingModel.deleteMany({ ownerId: user._id.toString() });
+
+    // 2. Delete any reports associated with this user or their listings
+    await ReportModel.deleteMany({
+      $or: [{ targetId: user._id.toString() }, { reporterId: user._id.toString() }],
+    });
+
+    // 3. Delete user document permanently from the MongoDB database
+    await UserModel.deleteOne({ _id: user._id });
+
+    // 4. Record audit log entry
+    await AuditLogModel.create({
+      adminId: superAdmin.id,
+      adminName: `${superAdmin.firstName} ${superAdmin.lastName}`,
+      action: "USER_DELETED",
+      targetType: "USER",
+      targetId: user._id.toString(),
+      targetLabel,
+      details: `Compte et ${listingDeleteResult.deletedCount} annonce(s) définitivement supprimés de la base de données par le Super Admin ${superAdmin.firstName} ${superAdmin.lastName}.${reason ? ` Motif : ${reason}` : ""}`,
+      timestamp: new Date().toISOString(),
+    });
+
+    console.log(
+      `[Delete User] User ${user.email} (${user._id}) permanently deleted from DB by Super Admin ${superAdmin.email}. Deleted listings: ${listingDeleteResult.deletedCount}`
+    );
+
+    revalidatePath("/admin");
+    revalidatePath("/admin/users");
+    revalidatePath("/admin/dealers");
+    revalidatePath("/admin/listings");
+    revalidatePath("/vehicles");
+
+    return {
+      success: true,
+      deletedListingsCount: listingDeleteResult.deletedCount,
+      message: `L'utilisateur ${targetLabel} a été définitivement supprimé de la base de données.`,
+    };
+  } catch (error: any) {
+    console.error("[Delete User Error]", error);
+    return { success: false, error: error.message || "Erreur lors de la suppression de l'utilisateur" };
   }
 }
 

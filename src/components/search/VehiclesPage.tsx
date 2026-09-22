@@ -2,17 +2,19 @@
 
 import { useState, useMemo } from "react";
 import { useSearchParams } from "next/navigation";
-import { useRouter } from "@/i18n/routing";
-import { cn } from "@/lib/utils";
+import Image from "next/image";
+import { useRouter, Link } from "@/i18n/routing";
+import { cn, formatPrice, formatListingDate } from "@/lib/utils";
 import {
   SlidersHorizontal, X, ChevronDown, Check,
-  LayoutGrid, List,
+  LayoutGrid, List, MapPin, CheckCircle2, Fuel, Settings, Calendar, Clock,
 } from "lucide-react";
 import { Select } from "@/components/ui/Select";
+import { Badge } from "@/components/ui/Badge";
 import { VehicleCard } from "@/components/vehicles/VehicleCard";
 import { VehicleListing } from "@/types";
 import { MAKES_AND_MODELS, PRICE_OPTIONS_CASH, YEAR_OPTIONS } from "@/lib/search-constants";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
 
 // ─── Primitives ────────────────────────────────────────────────────────────────
 function RadioOption({ label, value, selected, onChange }: {
@@ -189,22 +191,28 @@ export function VehiclesPage({
     if (filters.fuelType.length) params.set("fuelType", filters.fuelType.join(","));
     if (filters.condition) params.set("condition", filters.condition);
     if (sort !== "newest") params.set("sort", sort);
-    params.set("page", "1");
     router.push(`/vehicles?${params.toString()}`);
     setMobileOpen(false);
   };
 
   const clearFilters = () => {
     setFilters({
-      make: "", model: "", minPrice: "", maxPrice: "",
-      minYear: "", maxYear: "", availability: "",
-      transmission: [], fuelType: [], condition: "",
+      make: "",
+      model: "",
+      minPrice: "",
+      maxPrice: "",
+      minYear: "",
+      maxYear: "",
+      availability: "",
+      transmission: [],
+      fuelType: [],
+      condition: "",
     });
     router.push("/vehicles");
     setMobileOpen(false);
   };
 
-  const FilterBody = (
+  const FilterSectionsContent = (
     <div className="text-left space-y-0.5">
       <FilterSection title={t("availability")}>
         {AVAILABILITY_OPTIONS_KEYS.map(({ value, labelKey }) => (
@@ -273,94 +281,90 @@ export function VehiclesPage({
             onChange={val => setFilter("condition", val)} />
         ))}
       </FilterSection>
-
-      <div className="flex gap-2 pt-4">
-        <button type="button" onClick={clearFilters}
-          className="flex-1 h-10 rounded-lg border border-zinc-300 dark:border-zinc-700 text-sm font-medium text-zinc-700 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors">
-          {t("clearAll")}
-        </button>
-        <button type="button" onClick={applyFilters}
-          className="flex-1 h-10 rounded-lg bg-primary text-white text-sm font-semibold hover:bg-primary/90 transition-colors shadow-sm shadow-primary/20">
-          {t("apply")}
-        </button>
-      </div>
     </div>
   );
 
   return (
-    <div className="container mx-auto px-4 py-10 max-w-7xl">
+    <div className="container mx-auto px-4 py-6 md:py-10 max-w-7xl pb-28 lg:pb-12">
       {/* Page header */}
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold mb-1">{t("title")}</h1>
-        <p className="text-zinc-500 dark:text-zinc-400 text-sm">
+      <div className="mb-4 md:mb-8">
+        <h1 className="text-2xl md:text-3xl font-bold mb-1">{t("title")}</h1>
+        <p className="text-zinc-500 dark:text-zinc-400 text-xs md:text-sm">
           {totalCount === 1 ? t("resultsFound", { count: totalCount }) : t("resultsFoundPlural", { count: totalCount })}
         </p>
       </div>
 
       {/* Toolbar */}
-      <div className="flex flex-wrap items-center justify-between gap-3 mb-6 pb-4 border-b border-zinc-200 dark:border-zinc-800">
-        <div className="flex items-center gap-3">
+      <div className="flex flex-col gap-3 mb-6 pb-4 border-b border-zinc-200 dark:border-zinc-800">
+        <div className="flex items-center justify-between gap-3">
           {/* Mobile filter trigger */}
-          <button type="button" onClick={() => setMobileOpen(true)}
-            className="lg:hidden flex items-center gap-2 h-10 px-4 rounded-lg border border-zinc-300 dark:border-zinc-700 text-sm font-medium hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors">
-            <SlidersHorizontal className="w-4 h-4" />
-            {t("filters")}
+          <button
+            type="button"
+            onClick={() => setMobileOpen(true)}
+            className="lg:hidden flex items-center gap-2 h-11 px-4 rounded-xl border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-sm font-semibold text-zinc-900 dark:text-white shadow-2xs hover:bg-zinc-50 dark:hover:bg-zinc-800 active:scale-95 transition-all cursor-pointer"
+          >
+            <SlidersHorizontal className="w-4 h-4 text-primary" />
+            <span>{t("filters")}</span>
             {activeFilterCount > 0 && (
-              <span className="w-5 h-5 rounded-full bg-primary text-white text-xs flex items-center justify-center">
+              <span className="w-5 h-5 rounded-full bg-primary text-white text-xs font-bold flex items-center justify-center">
                 {activeFilterCount}
               </span>
             )}
           </button>
 
-          {/* Active filter chips */}
-          <div className="hidden sm:flex flex-wrap gap-2">
-            {filters.availability && (
-              <span className="flex items-center gap-1 text-xs bg-primary/10 text-primary rounded-full px-3 py-1 font-medium">
-                {t(AVAILABILITY_OPTIONS_KEYS.find(o => o.value === filters.availability)?.labelKey as any)}
-                <button onClick={() => setFilter("availability", "")}><X className="w-3 h-3" /></button>
-              </span>
-            )}
-            {filters.make && (
-              <span className="flex items-center gap-1 text-xs bg-primary/10 text-primary rounded-full px-3 py-1 font-medium">
-                {filters.make}{filters.model ? ` › ${filters.model}` : ""}
-                <button onClick={() => { setFilter("make", ""); setFilter("model", ""); }}><X className="w-3 h-3" /></button>
-              </span>
-            )}
-            {filters.transmission.map(tr => (
-              <span key={tr} className="flex items-center gap-1 text-xs bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 rounded-full px-3 py-1">
-                {t(tr as any)}<button onClick={() => toggleMulti("transmission", tr)}><X className="w-3 h-3" /></button>
-              </span>
-            ))}
-            {filters.fuelType.map(f => (
-              <span key={f} className="flex items-center gap-1 text-xs bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 rounded-full px-3 py-1">
-                {t(f as any)}<button onClick={() => toggleMulti("fuelType", f)}><X className="w-3 h-3" /></button>
-              </span>
-            ))}
+          {/* Sort & View Toggle */}
+          <div className="flex items-center gap-2 ml-auto">
+            <div className="w-36 sm:w-48">
+              <Select 
+                value={sort} 
+                onChange={val => { setSort(val); }} 
+                options={SORT_OPTIONS_KEYS.map(s => ({ value: s.value, label: t(s.labelKey as any) }))} 
+                placeholder={t("sortBy")} 
+                className="h-11 text-xs sm:text-sm"
+              />
+            </div>
+            {/* View toggle */}
+            <div className="flex border border-zinc-300 dark:border-zinc-700 rounded-xl overflow-hidden h-11 bg-white dark:bg-zinc-900">
+              {(["grid", "list"] as const).map(v => (
+                <button key={v} type="button" onClick={() => setView(v)}
+                  className={cn(
+                    "h-full w-10 flex items-center justify-center transition-colors cursor-pointer",
+                    view === v ? "bg-primary text-white" : "text-zinc-500 hover:bg-zinc-100 dark:hover:bg-zinc-800"
+                  )}>
+                  {v === "grid" ? <LayoutGrid className="w-4 h-4" /> : <List className="w-4 h-4" />}
+                </button>
+              ))}
+            </div>
           </div>
         </div>
 
-        <div className="flex items-center gap-2">
-          <div className="w-48">
-            <Select 
-              value={sort} 
-              onChange={val => { setSort(val); }} 
-              options={SORT_OPTIONS_KEYS.map(s => ({ value: s.value, label: t(s.labelKey as any) }))} 
-              placeholder={t("sortBy")} 
-            />
-          </div>
-          {/* View toggle */}
-          <div className="flex border border-zinc-300 dark:border-zinc-700 rounded-lg overflow-hidden">
-            {(["grid", "list"] as const).map(v => (
-              <button key={v} type="button" onClick={() => setView(v)}
-                className={cn(
-                  "h-9 w-9 flex items-center justify-center transition-colors",
-                  view === v ? "bg-primary text-white" : "text-zinc-500 hover:bg-zinc-100 dark:hover:bg-zinc-800"
-                )}>
-                {v === "grid" ? <LayoutGrid className="w-4 h-4" /> : <List className="w-4 h-4" />}
-              </button>
+        {/* Active filter chips (Horizontally scrollable on mobile) */}
+        {activeFilterCount > 0 && (
+          <div className="flex overflow-x-auto no-scrollbar gap-1.5 py-1 -mx-4 px-4 sm:mx-0 sm:px-0">
+            {filters.availability && (
+              <span className="flex items-center gap-1 text-xs bg-primary/10 text-primary rounded-full px-3 py-1 font-medium shrink-0">
+                {t(AVAILABILITY_OPTIONS_KEYS.find(o => o.value === filters.availability)?.labelKey as any)}
+                <button onClick={() => setFilter("availability", "")} className="cursor-pointer"><X className="w-3 h-3" /></button>
+              </span>
+            )}
+            {filters.make && (
+              <span className="flex items-center gap-1 text-xs bg-primary/10 text-primary rounded-full px-3 py-1 font-medium shrink-0">
+                {filters.make}{filters.model ? ` › ${filters.model}` : ""}
+                <button onClick={() => { setFilter("make", ""); setFilter("model", ""); }} className="cursor-pointer"><X className="w-3 h-3" /></button>
+              </span>
+            )}
+            {filters.transmission.map(tr => (
+              <span key={tr} className="flex items-center gap-1 text-xs bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 rounded-full px-3 py-1 shrink-0">
+                {t(tr as any)}<button onClick={() => toggleMulti("transmission", tr)} className="cursor-pointer"><X className="w-3 h-3" /></button>
+              </span>
+            ))}
+            {filters.fuelType.map(f => (
+              <span key={f} className="flex items-center gap-1 text-xs bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 rounded-full px-3 py-1 shrink-0">
+                {t(f as any)}<button onClick={() => toggleMulti("fuelType", f)} className="cursor-pointer"><X className="w-3 h-3" /></button>
+              </span>
             ))}
           </div>
-        </div>
+        )}
       </div>
 
       {/* Body: sidebar + results */}
@@ -375,22 +379,71 @@ export function VehiclesPage({
               </button>
             )}
           </div>
-          {FilterBody}
+          {FilterSectionsContent}
+          <div className="flex gap-2 pt-4 border-t border-zinc-200 dark:border-zinc-800 mt-2">
+            <button type="button" onClick={clearFilters}
+              className="flex-1 h-10 rounded-xl border border-zinc-300 dark:border-zinc-700 text-sm font-medium text-zinc-700 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors cursor-pointer">
+              {t("clearAll")}
+            </button>
+            <button type="button" onClick={applyFilters}
+              className="flex-1 h-10 rounded-xl bg-primary text-white text-sm font-semibold hover:bg-primary/90 transition-colors shadow-sm shadow-primary/20 cursor-pointer">
+              {t("apply")}
+            </button>
+          </div>
         </aside>
 
-        {/* Mobile slide-over */}
+        {/* Mobile Filter Bottom Sheet / Modal */}
         {mobileOpen && (
-          <div className="fixed inset-0 z-[200] lg:hidden flex">
-            <div className="fixed inset-0 bg-black/50 backdrop-blur-sm" onClick={() => setMobileOpen(false)} />
-            <div className="relative ml-auto h-full w-[85%] max-w-sm bg-white dark:bg-zinc-900 p-5 shadow-2xl flex flex-col overflow-y-auto text-left">
-              <div className="flex items-center justify-between mb-5 text-left">
-                <h2 className="font-bold text-lg text-left">{t("filters")}</h2>
-                <button type="button" onClick={() => setMobileOpen(false)}
-                  className="p-2 rounded-full hover:bg-zinc-100 dark:hover:bg-zinc-800 cursor-pointer">
+          <div className="fixed inset-0 z-[200] lg:hidden flex flex-col justify-end">
+            <div 
+              className="fixed inset-0 bg-black/60 backdrop-blur-xs transition-opacity" 
+              onClick={() => setMobileOpen(false)} 
+            />
+            <div className="relative w-full max-h-[85vh] bg-white dark:bg-zinc-900 rounded-t-3xl shadow-2xl flex flex-col overflow-hidden text-left z-10 animate-in slide-in-from-bottom duration-250">
+              {/* Sheet Drag Pill */}
+              <div className="w-12 h-1.5 bg-zinc-300 dark:bg-zinc-700 rounded-full mx-auto mt-3 mb-1" />
+              
+              {/* Header */}
+              <div className="flex items-center justify-between px-5 py-3 border-b border-zinc-100 dark:border-zinc-800">
+                <div className="flex items-center gap-2">
+                  <h2 className="font-bold text-lg text-zinc-900 dark:text-white">{t("filters")}</h2>
+                  {activeFilterCount > 0 && (
+                    <span className="w-5 h-5 rounded-full bg-primary text-white text-xs font-bold flex items-center justify-center">
+                      {activeFilterCount}
+                    </span>
+                  )}
+                </div>
+                <button 
+                  type="button" 
+                  onClick={() => setMobileOpen(false)}
+                  className="p-2 rounded-full hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-500 cursor-pointer"
+                >
                   <X className="w-5 h-5" />
                 </button>
               </div>
-              {FilterBody}
+
+              {/* Scrollable Filters */}
+              <div className="flex-1 overflow-y-auto px-5 py-2">
+                {FilterSectionsContent}
+              </div>
+
+              {/* Pinned Bottom Actions */}
+              <div className="border-t border-zinc-200 dark:border-zinc-800 p-4 bg-white dark:bg-zinc-900 flex gap-3 pb-[max(env(safe-area-inset-bottom),1rem)]">
+                <button
+                  type="button"
+                  onClick={clearFilters}
+                  className="flex-1 h-12 rounded-xl border border-zinc-300 dark:border-zinc-700 font-semibold text-sm text-zinc-700 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-800 active:bg-zinc-100 transition-colors cursor-pointer"
+                >
+                  {t("clearAll")}
+                </button>
+                <button
+                  type="button"
+                  onClick={applyFilters}
+                  className="flex-1 h-12 rounded-xl bg-primary text-white font-bold text-sm hover:bg-primary/90 active:scale-[0.99] transition-all shadow-md shadow-primary/20 cursor-pointer flex items-center justify-center"
+                >
+                  {t("apply")}
+                </button>
+              </div>
             </div>
           </div>
         )}
@@ -473,25 +526,21 @@ export function VehiclesPage({
 }
 
 // ─── List view card ────────────────────────────────────────────────────────────
-import Image from "next/image";
-import { Link } from "@/i18n/routing";
-import { Badge } from "@/components/ui/Badge";
-import { formatPrice } from "@/lib/utils";
-import { MapPin, CheckCircle2, Fuel, Settings, Calendar } from "lucide-react";
-
 function VehicleCardList({ vehicle }: { vehicle: VehicleListing }) {
   const isLocal = vehicle.availability === "IN_CONGO";
   const t = useTranslations("Vehicles");
+  const locale = useLocale();
+  const isAdminOrSourced = Boolean(vehicle.source) || (vehicle.seller as any)?.role === "ADMIN" || (vehicle.seller as any)?.role === "SUPER_ADMIN" || vehicle.seller?.name === "Car Relais";
   return (
     <Link
       href={`/vehicles/${vehicle.slug}`}
-      className="group flex bg-white dark:bg-zinc-900 rounded-xl border border-zinc-100 dark:border-zinc-800/30 hover:border-primary/40 shadow-sm hover:shadow-md transition-all overflow-hidden"
+      className="group flex flex-col sm:flex-row bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-100 dark:border-zinc-800/50 hover:border-primary/40 shadow-xs hover:shadow-md transition-all overflow-hidden active:scale-[0.99]"
     >
       {/* Image */}
-      <div className="relative w-52 shrink-0 bg-zinc-100 dark:bg-zinc-800">
-        <Image src={vehicle.images[0]} alt={vehicle.title} fill className="object-cover group-hover:scale-105 transition-transform duration-500" sizes="208px" />
+      <div className="relative w-full aspect-[4/3] sm:aspect-auto sm:w-52 shrink-0 bg-zinc-100 dark:bg-zinc-800 overflow-hidden">
+        <Image src={vehicle.images[0]} alt={vehicle.title} fill className="object-cover group-hover:scale-105 transition-transform duration-500" sizes="(max-width: 640px) 100vw, 208px" />
         <div className="absolute top-2 left-2">
-          <Badge variant={isLocal ? "success" : "import"} className="text-xs">
+          <Badge variant={isLocal ? "success" : "import"} className="text-xs font-semibold">
             {isLocal ? t("congoShort") : t("importShort")}
           </Badge>
         </div>
@@ -508,7 +557,15 @@ function VehicleCardList({ vehicle }: { vehicle: VehicleListing }) {
             <span className="flex items-center gap-1"><Calendar className="w-3.5 h-3.5" /> {vehicle.year}</span>
             <span className="flex items-center gap-1"><Settings className="w-3.5 h-3.5" /> {t(vehicle.transmission as any)}</span>
             <span className="flex items-center gap-1"><Fuel className="w-3.5 h-3.5" /> {t(vehicle.fuelType as any)}</span>
-            <span>{vehicle.mileage.toLocaleString()} km</span>
+            {vehicle.mileage !== undefined && vehicle.mileage !== null && (
+              <span>{vehicle.mileage.toLocaleString()} km</span>
+            )}
+            {vehicle.createdAt && (
+              <span className="flex items-center gap-1 text-zinc-400">
+                <Clock className="w-3.5 h-3.5" />
+                {formatListingDate(vehicle.createdAt, locale)}
+              </span>
+            )}
           </div>
         </div>
         <div className="flex items-center justify-between mt-4 pt-4 border-t border-zinc-100 dark:border-zinc-800">
@@ -517,8 +574,10 @@ function VehicleCardList({ vehicle }: { vehicle: VehicleListing }) {
             <span>{vehicle.location}</span>
           </div>
           <div className="flex items-center gap-1.5 text-sm">
-            <span className="font-medium">{vehicle.seller.name}</span>
-            {vehicle.seller.isVerified && <CheckCircle2 className="w-4 h-4 text-primary" />}
+            <span className="font-medium">
+              {isAdminOrSourced ? "Car Relais" : vehicle.seller.name}
+            </span>
+            {(vehicle.seller.isVerified || isAdminOrSourced) && <CheckCircle2 className="w-4 h-4 text-primary" />}
           </div>
         </div>
       </div>

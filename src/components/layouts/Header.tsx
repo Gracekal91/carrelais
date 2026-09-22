@@ -31,10 +31,10 @@ export function Header() {
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-primary-foreground/10 bg-primary text-white backdrop-blur supports-[backdrop-filter]:bg-primary/95">
-      <div className="container mx-auto px-4 h-16 flex items-center justify-between">
+      <div className="container mx-auto px-4 h-14 md:h-16 flex items-center justify-between">
         <div className="flex items-center gap-6">
           <Link href="/" className="flex items-center gap-2">
-            <span className="text-2xl font-bold">{t("title")}</span>
+            <span className="text-xl md:text-2xl font-black tracking-tight">{t("title")}</span>
           </Link>
           <nav className="hidden md:flex gap-6">
             <Link href="/vehicles" className="text-sm font-medium hover:text-white/80 transition-colors">
@@ -49,7 +49,18 @@ export function Header() {
           </nav>
         </div>
         
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-2.5 md:gap-4">
+          {/* Mobile One-Tap Language Switcher */}
+          <button
+            type="button"
+            onClick={() => handleLanguageChange(locale === "fr" ? "en" : "fr")}
+            className="md:hidden px-2.5 py-1 rounded-lg bg-white/10 hover:bg-white/20 active:bg-white/30 text-white font-bold text-xs uppercase tracking-wider transition-colors cursor-pointer"
+            title="Changer de langue"
+          >
+            {locale === "fr" ? "EN" : "FR"}
+          </button>
+
+          {/* Desktop Language Selector */}
           <div className="relative hidden md:block w-20">
             <Select
               value={locale}
@@ -58,6 +69,7 @@ export function Header() {
               className="bg-primary-foreground/10 text-white border-transparent hover:bg-primary-foreground/20 focus:ring-white/20 h-9"
             />
           </div>
+
           <ThemeToggle />
           
           {user ? (
@@ -87,7 +99,11 @@ export function Header() {
             </Link>
           )}
 
-          <Link href="/dashboard/listings/create">
+          {/* Sell Car Button (Desktop only; on mobile, it is the primary bottom nav center action) */}
+          <Link
+            href={(user?.role === "ADMIN" || user?.role === "SUPER_ADMIN") ? "/admin/dashboard/listings/create" : "/dashboard/listings/create"}
+            className="hidden md:inline-flex"
+          >
             <Button className="bg-white text-primary hover:bg-white/90">{t("sellCar")}</Button>
           </Link>
         </div>

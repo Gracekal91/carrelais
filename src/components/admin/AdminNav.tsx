@@ -13,7 +13,8 @@ import {
   LogOut, 
   Menu, 
   X,
-  ExternalLink
+  ExternalLink,
+  PlusCircle
 } from "lucide-react";
 import { logout } from "@/lib/actions";
 
@@ -45,6 +46,14 @@ export default function AdminNav({
       label: t("dashboard"),
       icon: Shield,
       exact: true,
+      badge: null,
+      badgeColor: undefined,
+    },
+    {
+      href: "/admin/dashboard/listings/create",
+      label: "Publier une annonce",
+      icon: PlusCircle,
+      exact: false,
       badge: null,
       badgeColor: undefined,
     },

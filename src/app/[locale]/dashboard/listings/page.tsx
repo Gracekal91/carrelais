@@ -1,4 +1,5 @@
 import { getCurrentUser } from "@/lib/auth";
+import { redirect } from "next/navigation";
 import { connectToDatabase } from "@/lib/mongodb";
 import { ListingModel } from "@/lib/models/Listing";
 import { formatListing } from "@/lib/data";
@@ -9,6 +10,9 @@ import Image from "next/image";
 export default async function MyListingsPage() {
   const user = await getCurrentUser();
   if (!user) return null;
+  if (user.role === "ADMIN" || user.role === "SUPER_ADMIN") {
+    redirect("/admin/listings");
+  }
 
   await connectToDatabase();
   const listingDocs = await ListingModel.find({ ownerId: user.id })

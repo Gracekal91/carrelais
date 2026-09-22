@@ -20,12 +20,25 @@ export async function ensureSuperAdminInitialized(): Promise<void> {
       role: "SUPER_ADMIN",
       accountType: "INDIVIDUAL",
       status: "ACTIVE",
+      isVerified: true,
+      isEmailVerified: true,
       location: "Kinshasa, RDC",
       joinedAt: new Date().toISOString(),
     });
     console.log(`[Production Init] Super Admin ${adminEmail} initialized successfully.`);
-  } else if (existing.role !== "SUPER_ADMIN") {
-    existing.role = "SUPER_ADMIN";
-    await existing.save();
+  } else {
+    let updated = false;
+    if (existing.role !== "SUPER_ADMIN") {
+      existing.role = "SUPER_ADMIN";
+      updated = true;
+    }
+    if (!existing.isEmailVerified) {
+      existing.isEmailVerified = true;
+      existing.isVerified = true;
+      updated = true;
+    }
+    if (updated) {
+      await existing.save();
+    }
   }
 }

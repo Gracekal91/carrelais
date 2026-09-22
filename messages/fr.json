@@ -7,6 +7,14 @@
     "signIn": "Se connecter",
     "sellCar": "Vendre votre voiture"
   },
+  "MobileNav": {
+    "home": "Accueil",
+    "vehicles": "Véhicules",
+    "sell": "Vendre",
+    "account": "Compte",
+    "admin": "Admin",
+    "signIn": "Connexion"
+  },
   "SearchHero": {
     "title": "Voitures neuves et d'occasion",
     "subtitle": "Trouvons ce qui vous fait vibrer.",
@@ -137,6 +145,9 @@
     "joined": "Inscrit en",
     "whatsapp": "WhatsApp",
     "callSeller": "Appeler le vendeur",
+    "contactSeller": "Contacter le vendeur",
+    "published": "Publié",
+    "publishedOn": "Publié le",
     "reportListing": "Signaler cette annonce"
   },
   "VehicleWizard": {

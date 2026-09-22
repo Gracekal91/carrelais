@@ -8,6 +8,9 @@ import { formatListing } from "@/lib/data";
 export default async function ProfilePage() {
   const user = await getCurrentUser();
   if (!user) return redirect("/signin");
+  if (user.role === "ADMIN" || user.role === "SUPER_ADMIN") {
+    redirect("/admin");
+  }
 
   await connectToDatabase();
 

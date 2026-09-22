@@ -21,6 +21,13 @@ export interface IUser extends Document {
   description?: string;
   logo?: string;
   isVerified?: boolean;
+  isEmailVerified?: boolean;
+  verificationOtp?: string;
+  verificationOtpExpires?: Date;
+  resetPasswordOtp?: string;
+  resetPasswordOtpExpires?: Date;
+  changePasswordOtp?: string;
+  changePasswordOtpExpires?: Date;
   whatsapp?: string;
   foundedYear?: number;
   businessHours?: Record<string, string>;
@@ -88,6 +95,13 @@ const UserSchema = new Schema<IUser>(
     description: { type: String, trim: true },
     logo: { type: String, trim: true },
     isVerified: { type: Boolean, default: false },
+    isEmailVerified: { type: Boolean, default: false },
+    verificationOtp: { type: String },
+    verificationOtpExpires: { type: Date },
+    resetPasswordOtp: { type: String },
+    resetPasswordOtpExpires: { type: Date },
+    changePasswordOtp: { type: String },
+    changePasswordOtpExpires: { type: Date },
     whatsapp: { type: String, trim: true },
     foundedYear: { type: Number },
     businessHours: { type: Schema.Types.Mixed },
@@ -105,5 +119,11 @@ const UserSchema = new Schema<IUser>(
   }
 );
 
+// Ensure UserModel is fresh and not caching an outdated schema in dev
+if (process.env.NODE_ENV !== "production" && mongoose.models && mongoose.models.User) {
+  delete (mongoose.models as any).User;
+}
+
 export const UserModel: Model<IUser> =
   mongoose.models.User || mongoose.model<IUser>("User", UserSchema);
+

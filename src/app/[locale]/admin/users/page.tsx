@@ -7,6 +7,7 @@ import UserFilters from "@/components/admin/UserFilters";
 import UsersTableClient from "@/components/admin/UsersTableClient";
 import PaginationControls from "@/components/admin/PaginationControls";
 import { formatUser } from "@/lib/data";
+import { getCurrentUser } from "@/lib/auth";
 
 interface AdminUsersPageProps {
   searchParams: Promise<{
@@ -18,6 +19,8 @@ interface AdminUsersPageProps {
 }
 
 export default async function AdminUsersPage(props: AdminUsersPageProps) {
+  const currentUser = await getCurrentUser();
+  const isSuperAdmin = currentUser?.role === "SUPER_ADMIN";
   const searchParams = await props.searchParams;
   const page = Math.max(1, parseInt(searchParams.page || "1") || 1);
   const pageSize = 10;
@@ -109,7 +112,11 @@ export default async function AdminUsersPage(props: AdminUsersPageProps) {
       <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl overflow-hidden shadow-xs">
         {usersWithStats.length > 0 ? (
           <>
-            <UsersTableClient usersWithStats={usersWithStats} />
+            <UsersTableClient
+              usersWithStats={usersWithStats}
+              isSuperAdmin={isSuperAdmin}
+              currentUserId={currentUser?.id}
+            />
             <PaginationControls
               currentPage={page}
               totalPages={totalPages}

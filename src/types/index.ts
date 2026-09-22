@@ -9,6 +9,7 @@ export interface Seller {
   id: string;
   type: SellerType;
   name: string;
+  role?: string;
   isVerified: boolean;
   phone?: string;
   whatsapp?: string;
@@ -25,7 +26,7 @@ export interface VehicleListing {
   year: number;
   price: number;
   currency: string;
-  mileage: number;
+  mileage?: number;
   fuelType: FuelType;
   transmission: Transmission;
   bodyType: BodyType;
@@ -61,4 +62,11 @@ export interface VehicleListing {
   seats?: number;
   isNegotiable?: boolean;
   financeAvailable?: boolean;
+  source?: "FACEBOOK" | "TIKTOK" | "INSTAGRAM" | "WHATSAPP" | "OTHER" | string;
+  sourceUrl?: string;
+  contactOptions?: {
+    allowCalls?: boolean;
+    allowWhatsapp?: boolean;
+    allowDirectMessage?: boolean;
+  };
 }

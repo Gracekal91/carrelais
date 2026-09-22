@@ -16,7 +16,8 @@ import {
   ShieldCheck,
   Ban,
   Activity,
-  ChevronRight
+  ChevronRight,
+  Plus
 } from "lucide-react";
 import ListingStatusBadge from "@/components/admin/ListingStatusBadge";
 import { VehicleStatus } from "@/types";
@@ -71,13 +72,22 @@ export default async function AdminDashboardPage() {
   return (
     <div className="space-y-8">
       {/* Header */}
-      <div>
-        <h1 className="text-2xl md:text-3xl font-extrabold tracking-tight text-zinc-900 dark:text-zinc-100">
-          Tableau de bord administrateur
-        </h1>
-        <p className="text-sm text-zinc-500 mt-1">
-          Supervision globale et modération du marketplace Car Relais RDC
-        </p>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <h1 className="text-2xl md:text-3xl font-extrabold tracking-tight text-zinc-900 dark:text-zinc-100">
+            Tableau de bord administrateur
+          </h1>
+          <p className="text-sm text-zinc-500 mt-1">
+            Supervision globale et modération du marketplace Car Relais RDC
+          </p>
+        </div>
+        <Link
+          href="/admin/dashboard/listings/create"
+          className="inline-flex items-center gap-2 px-4 py-2.5 bg-primary text-white rounded-xl font-semibold hover:bg-primary/90 shadow-sm transition-all text-sm w-fit"
+        >
+          <Plus className="w-4 h-4" />
+          <span>Créer une annonce</span>
+        </Link>
       </div>
 
       {/* KPI Cards Grid */}

@@ -7,6 +7,14 @@
     "signIn": "Sign In",
     "sellCar": "Sell your car"
   },
+  "MobileNav": {
+    "home": "Home",
+    "vehicles": "Vehicles",
+    "sell": "Sell",
+    "account": "Account",
+    "admin": "Admin",
+    "signIn": "Sign In"
+  },
   "SearchHero": {
     "title": "New & used cars for sale",
     "subtitle": "Let's find what moves you.",
@@ -137,6 +145,9 @@
     "joined": "Joined",
     "whatsapp": "WhatsApp",
     "callSeller": "Call Seller",
+    "contactSeller": "Contact the Seller",
+    "published": "Published",
+    "publishedOn": "Published on",
     "reportListing": "Report this listing"
   },
   "VehicleWizard": {
