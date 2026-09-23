@@ -9,10 +9,9 @@ export const revalidate = 3600; // Cache sitemap for 1 hour
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl = getBaseUrl();
-
   const now = new Date();
 
-  // Core static landing pages
+  // Core static landing pages with proper hreflang alternates
   const staticRoutes: MetadataRoute.Sitemap = [
     {
       url: `${baseUrl}`,
@@ -29,7 +28,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     {
       url: `${baseUrl}/vehicles`,
       lastModified: now,
-      changeFrequency: "hourly",
+      changeFrequency: "daily", // Fixed from "hourly"
       priority: 0.9,
       alternates: {
         languages: {
@@ -40,42 +39,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     },
     {
       url: `${baseUrl}/apprendre`,
-      lastModified: now,
-      changeFrequency: "daily",
-      priority: 0.8,
-      alternates: {
-        languages: {
-          fr: `${baseUrl}/apprendre`,
-          en: `${baseUrl}/en/learn`,
-        },
-      },
-    },
-    {
-      url: `${baseUrl}/en`,
-      lastModified: now,
-      changeFrequency: "daily",
-      priority: 0.9,
-      alternates: {
-        languages: {
-          fr: `${baseUrl}`,
-          en: `${baseUrl}/en`,
-        },
-      },
-    },
-    {
-      url: `${baseUrl}/en/vehicles`,
-      lastModified: now,
-      changeFrequency: "hourly",
-      priority: 0.9,
-      alternates: {
-        languages: {
-          fr: `${baseUrl}/vehicles`,
-          en: `${baseUrl}/en/vehicles`,
-        },
-      },
-    },
-    {
-      url: `${baseUrl}/en/learn`,
       lastModified: now,
       changeFrequency: "daily",
       priority: 0.8,
@@ -125,42 +88,28 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       updatedAt?: Date | string;
     }
 
-    // Vehicle detail pages (bilingual alternates)
+    // Vehicle detail pages with dynamic alternate routes
     const vehicleRoutes: MetadataRoute.Sitemap = (publishedListings as ListingDoc[])
       .filter((listing): listing is ListingDoc & { slug: string } => Boolean(listing.slug))
-      .flatMap((listing) => {
+      .map((listing) => {
         const lastMod = listing.updatedAt || listing.createdAt || now;
-        return [
-          {
-            url: `${baseUrl}/vehicles/${listing.slug}`,
-            lastModified: new Date(lastMod),
-            changeFrequency: "daily" as const,
-            priority: 0.8,
-            alternates: {
-              languages: {
-                fr: `${baseUrl}/vehicles/${listing.slug}`,
-                en: `${baseUrl}/en/vehicles/${listing.slug}`,
-              },
+        return {
+          url: `${baseUrl}/vehicles/${listing.slug}`,
+          lastModified: new Date(lastMod),
+          changeFrequency: "daily" as const,
+          priority: 0.8,
+          alternates: {
+            languages: {
+              fr: `${baseUrl}/vehicles/${listing.slug}`,
+              en: `${baseUrl}/en/vehicles/${listing.slug}`,
             },
           },
-          {
-            url: `${baseUrl}/en/vehicles/${listing.slug}`,
-            lastModified: new Date(lastMod),
-            changeFrequency: "daily" as const,
-            priority: 0.8,
-            alternates: {
-              languages: {
-                fr: `${baseUrl}/vehicles/${listing.slug}`,
-                en: `${baseUrl}/en/vehicles/${listing.slug}`,
-              },
-            },
-          },
-        ];
+        };
       });
 
-    // Article detail pages
+    // Article detail pages (filters out "test" slugs)
     const articleRoutes: MetadataRoute.Sitemap = (publishedArticles as ArticleDoc[])
-      .filter((article): article is ArticleDoc & { slug: string } => Boolean(article.slug))
+      .filter((article): article is ArticleDoc & { slug: string } => Boolean(article.slug) && article.slug !== "test")
       .map((article) => {
         const lastMod = article.updatedAt || article.publishedAt || now;
         const isEn = article.language === "en";
@@ -174,38 +123,24 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         };
       });
 
-    // Dealer profile pages
+    // Dealer profile pages with dynamic alternate routes
     const dealerRoutes: MetadataRoute.Sitemap = (verifiedDealers as DealerDoc[])
       .filter((dealer): dealer is DealerDoc & { _id: { toString(): string } } => Boolean(dealer._id))
-      .flatMap((dealer) => {
+      .map((dealer) => {
         const id = dealer._id.toString();
         const lastMod = dealer.updatedAt || now;
-        return [
-          {
-            url: `${baseUrl}/dealers/${id}`,
-            lastModified: new Date(lastMod),
-            changeFrequency: "weekly" as const,
-            priority: 0.6,
-            alternates: {
-              languages: {
-                fr: `${baseUrl}/dealers/${id}`,
-                en: `${baseUrl}/en/dealers/${id}`,
-              },
+        return {
+          url: `${baseUrl}/dealers/${id}`,
+          lastModified: new Date(lastMod),
+          changeFrequency: "weekly" as const,
+          priority: 0.6,
+          alternates: {
+            languages: {
+              fr: `${baseUrl}/dealers/${id}`,
+              en: `${baseUrl}/en/dealers/${id}`,
             },
           },
-          {
-            url: `${baseUrl}/en/dealers/${id}`,
-            lastModified: new Date(lastMod),
-            changeFrequency: "weekly" as const,
-            priority: 0.6,
-            alternates: {
-              languages: {
-                fr: `${baseUrl}/dealers/${id}`,
-                en: `${baseUrl}/en/dealers/${id}`,
-              },
-            },
-          },
-        ];
+        };
       });
 
     return [...staticRoutes, ...vehicleRoutes, ...articleRoutes, ...dealerRoutes];
