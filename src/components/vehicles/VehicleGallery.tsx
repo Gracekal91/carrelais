@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import Image from "next/image";
-import { Badge } from "@/components/ui/Badge";
 import { ChevronLeft, ChevronRight, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useTranslations } from "next-intl";
@@ -56,13 +55,17 @@ export function VehicleGallery({ images, title, isLocal }: { images: string[], t
           {images.length > 1 && (
             <>
               <button 
+                type="button"
                 onClick={prevImg}
+                aria-label="Image précédente"
                 className="absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 bg-white/80 hover:bg-white rounded-full flex items-center justify-center shadow-md backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-opacity z-10"
               >
                 <ChevronLeft className="w-6 h-6 text-zinc-900" />
               </button>
               <button 
+                type="button"
                 onClick={nextImg}
+                aria-label="Image suivante"
                 className="absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 bg-white/80 hover:bg-white rounded-full flex items-center justify-center shadow-md backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-opacity z-10"
               >
                 <ChevronRight className="w-6 h-6 text-zinc-900" />
@@ -77,13 +80,15 @@ export function VehicleGallery({ images, title, isLocal }: { images: string[], t
             {images.map((img, idx) => (
               <button
                 key={idx}
+                type="button"
                 onClick={() => setActiveIdx(idx)}
+                aria-label={`Photo ${idx + 1} sur ${images.length}`}
                 className={cn(
                   "relative aspect-[4/3] rounded-lg overflow-hidden border-2 transition-all",
                   activeIdx === idx ? "border-primary shadow-sm" : "border-transparent opacity-70 hover:opacity-100"
                 )}
               >
-                <Image src={img} alt="" fill className="object-cover" sizes="150px" />
+                <Image src={img} alt={`Miniature ${idx + 1}`} fill className="object-cover" sizes="150px" />
               </button>
             ))}
           </div>
@@ -96,7 +101,9 @@ export function VehicleGallery({ images, title, isLocal }: { images: string[], t
           <div className="p-4 flex justify-between items-center text-white border-b border-white/10">
             <span className="font-medium">{title} ({activeIdx + 1} / {images.length})</span>
             <button 
+              type="button"
               onClick={() => setIsLightboxOpen(false)}
+              aria-label="Fermer la vue plein écran"
               className="p-2 hover:bg-white/10 rounded-full transition-colors"
             >
               <X className="w-6 h-6" />
@@ -115,13 +122,17 @@ export function VehicleGallery({ images, title, isLocal }: { images: string[], t
             {images.length > 1 && (
               <>
                 <button 
+                  type="button"
                   onClick={prevImg}
+                  aria-label="Image précédente"
                   className="absolute left-4 sm:left-10 top-1/2 -translate-y-1/2 w-12 h-12 bg-black/50 hover:bg-black/80 rounded-full flex items-center justify-center text-white transition-colors z-10"
                 >
                   <ChevronLeft className="w-8 h-8" />
                 </button>
                 <button 
+                  type="button"
                   onClick={nextImg}
+                  aria-label="Image suivante"
                   className="absolute right-4 sm:right-10 top-1/2 -translate-y-1/2 w-12 h-12 bg-black/50 hover:bg-black/80 rounded-full flex items-center justify-center text-white transition-colors z-10"
                 >
                   <ChevronRight className="w-8 h-8" />

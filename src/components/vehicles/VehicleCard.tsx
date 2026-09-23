@@ -8,9 +8,10 @@ import { useTranslations, useLocale } from "next-intl";
 
 interface VehicleCardProps {
   vehicle: VehicleListing;
+  priority?: boolean;
 }
 
-export function VehicleCard({ vehicle }: VehicleCardProps) {
+export function VehicleCard({ vehicle, priority = false }: VehicleCardProps) {
   const isLocal = vehicle.availability === "IN_CONGO";
   const t = useTranslations("Vehicles");
   const locale = useLocale();
@@ -23,8 +24,9 @@ export function VehicleCard({ vehicle }: VehicleCardProps) {
           src={vehicle.images[0]}
           alt={vehicle.title}
           fill
+          priority={priority}
           className="object-cover group-hover:scale-105 transition-transform duration-500"
-          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+          sizes="(max-width: 640px) calc(100vw - 32px), (max-width: 1024px) 50vw, (max-width: 1280px) 33vw, 280px"
         />
         <div className="absolute top-3 left-3 flex flex-col gap-2 z-10">
           {isLocal ? (

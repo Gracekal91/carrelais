@@ -9,6 +9,7 @@ import { NextIntlClientProvider } from 'next-intl';
 import { getMessages } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 import { routing } from '@/i18n/routing';
+import { getBaseUrl } from '@/lib/url';
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -20,16 +21,12 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-const BASE_URL =
-  process.env.NEXT_PUBLIC_APP_URL && !process.env.NEXT_PUBLIC_APP_URL.includes("localhost")
-    ? process.env.NEXT_PUBLIC_APP_URL
-    : "https://carrelais.com";
-
 export async function generateMetadata(props: {
   params: Promise<{ locale: string }>;
 }): Promise<Metadata> {
   const { locale } = await props.params;
   const isEn = locale === "en";
+  const baseUrl = getBaseUrl();
 
   const titleDefault = isEn
     ? "Car Relais — Premier Automotive Marketplace in DRC"
@@ -40,7 +37,7 @@ export async function generateMetadata(props: {
     : "Le premier marché automobile en RDC. Achetez, vendez et importez des véhicules vérifiés à Kinshasa et Lubumbashi. Voitures disponibles localement ou prêtes pour importation.";
 
   return {
-    metadataBase: new URL(BASE_URL),
+    metadataBase: new URL(baseUrl),
     title: {
       default: titleDefault,
       template: isEn ? "%s | Car Relais DRC" : "%s | Car Relais RDC",
@@ -58,7 +55,7 @@ export async function generateMetadata(props: {
       "kinshasa auto marketplace",
       "lubumbashi car sales",
     ],
-    authors: [{ name: "Car Relais", url: BASE_URL }],
+    authors: [{ name: "Car Relais", url: baseUrl }],
     creator: "Car Relais",
     publisher: "Car Relais",
     formatDetection: {
@@ -67,17 +64,17 @@ export async function generateMetadata(props: {
       address: true,
     },
     alternates: {
-      canonical: isEn ? `${BASE_URL}/en` : `${BASE_URL}`,
+      canonical: isEn ? `${baseUrl}/en` : `${baseUrl}`,
       languages: {
-        fr: `${BASE_URL}`,
-        en: `${BASE_URL}/en`,
-        "x-default": `${BASE_URL}`,
+        fr: `${baseUrl}`,
+        en: `${baseUrl}/en`,
+        "x-default": `${baseUrl}`,
       },
     },
     openGraph: {
       type: "website",
       locale: isEn ? "en_US" : "fr_FR",
-      url: isEn ? `${BASE_URL}/en` : `${BASE_URL}`,
+      url: isEn ? `${baseUrl}/en` : `${baseUrl}`,
       siteName: "Car Relais",
       title: titleDefault,
       description,

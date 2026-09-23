@@ -153,7 +153,11 @@ export function AdvancedSearchWidget({ initialCount = 0 }: AdvancedSearchWidgetP
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full h-12 md:h-14 pl-10 md:pl-12 pr-10 md:pr-12 bg-white dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-700 rounded-xl focus:ring-2 focus:ring-primary focus:border-primary outline-none text-base md:text-lg placeholder:text-zinc-400"
             />
-            <button type="button" className="absolute right-3.5 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 transition-colors">
+            <button
+              type="button"
+              aria-label="Historique de recherche"
+              className="absolute right-3.5 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 transition-colors"
+            >
               <History className="w-4 md:w-5 h-4 md:h-5" />
             </button>
           </div>

@@ -6,6 +6,7 @@ import {
   getConnectedTranslation,
 } from "@/lib/articles";
 import ArticleDetailPage from "@/components/articles/ArticleDetailPage";
+import { getBaseUrl } from "@/lib/url";
 
 export const revalidate = 60;
 
@@ -13,6 +14,7 @@ export async function generateMetadata(props: {
   params: Promise<{ slug: string; locale?: string }>;
 }): Promise<Metadata> {
   const params = await props.params;
+  const baseUrl = getBaseUrl();
   const result = await getArticleBySlug(params.slug, "en");
 
   if (!result.article) {
@@ -24,7 +26,7 @@ export async function generateMetadata(props: {
   const article = result.article;
   const title = article.seoTitle || `${article.title} - Car Relais`;
   const description = article.seoDescription || article.excerpt;
-  const canonicalUrl = `https://carrelais.com/en/learn/${article.slug}`;
+  const canonicalUrl = `${baseUrl}/en/learn/${article.slug}`;
 
   // Find translation for hreflang
   const translated = await getConnectedTranslation(
@@ -36,7 +38,7 @@ export async function generateMetadata(props: {
     en: canonicalUrl,
   };
   if (translated) {
-    languages.fr = `https://carrelais.com/apprendre/${translated.slug}`;
+    languages.fr = `${baseUrl}/apprendre/${translated.slug}`;
   }
 
   return {
@@ -95,7 +97,8 @@ export default async function EnglishArticleDetailPage(props: {
     getConnectedTranslation(article.id, article.translationId),
   ]);
 
-  const canonicalUrl = `https://carrelais.com/en/learn/${article.slug}`;
+  const baseUrl = getBaseUrl();
+  const canonicalUrl = `${baseUrl}/en/learn/${article.slug}`;
 
   // JSON-LD Structured Data for Article / BlogPosting
   const jsonLd = {
@@ -117,7 +120,7 @@ export default async function EnglishArticleDetailPage(props: {
       name: "Car Relais",
       logo: {
         "@type": "ImageObject",
-        url: "https://carrelais.com/icon.png",
+        url: `${baseUrl}/icon.png`,
       },
     },
     mainEntityOfPage: {

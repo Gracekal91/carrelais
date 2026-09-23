@@ -17,7 +17,7 @@ export function Header() {
   const [user, setUser] = useState<{id: string, role: string, name: string} | null>(null);
 
   useEffect(() => {
-    getAuthUser().then(setUser).catch(console.error);
+    getAuthUser().then(setUser).catch(() => setUser(null));
   }, [pathname]); // re-check on nav
 
   const handleLanguageChange = (value: string) => {
@@ -57,6 +57,7 @@ export function Header() {
           <button
             type="button"
             onClick={() => handleLanguageChange(locale === "fr" ? "en" : "fr")}
+            aria-label={locale === "fr" ? "Passer le site en anglais" : "Switch to French site"}
             className="md:hidden px-2.5 py-1 rounded-lg bg-white/10 hover:bg-white/20 active:bg-white/30 text-white font-bold text-xs uppercase tracking-wider transition-colors cursor-pointer"
             title="Changer de langue"
           >

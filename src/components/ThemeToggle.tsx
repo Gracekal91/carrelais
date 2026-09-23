@@ -14,7 +14,7 @@ export function ThemeToggle() {
   }, []);
 
   if (!mounted) {
-    return <Button variant="ghost" size="sm" className="w-9 h-9 px-0" />;
+    return <Button variant="ghost" size="sm" className="w-9 h-9 px-0" aria-label="Changer de thème" />;
   }
 
   return (

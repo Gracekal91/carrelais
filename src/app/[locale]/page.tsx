@@ -1,3 +1,4 @@
+import Image from "next/image";
 import { AdvancedSearchWidget } from "@/components/search/AdvancedSearchWidget";
 import { VehicleGrid } from "@/components/vehicles/VehicleGrid";
 import { getFeaturedVehicles, getLocalVehicles } from "@/lib/data";
@@ -7,6 +8,7 @@ import { Button } from "@/components/ui/Button";
 import { Link } from "@/i18n/routing";
 import { ArrowRight, ShieldCheck, Globe2, Clock } from "lucide-react";
 import { getTranslations } from "next-intl/server";
+import { getBaseUrl } from "@/lib/url";
 
 import type { Metadata } from "next";
 
@@ -15,6 +17,7 @@ export async function generateMetadata(props: {
 }): Promise<Metadata> {
   const { locale } = await props.params;
   const isEn = locale === "en";
+  const baseUrl = getBaseUrl();
 
   const title = isEn
     ? "Car Relais — #1 Automotive Marketplace in DRC | Cars for Sale in Kinshasa"
@@ -24,7 +27,7 @@ export async function generateMetadata(props: {
     ? "Browse verified new and used cars in the Democratic Republic of Congo. Vehicles available in Kinshasa and Lubumbashi, or ready for import from Dubai and Europe."
     : "Achetez et vendez des voitures neuves et d'occasion en République Démocratique du Congo. Véhicules disponibles à Kinshasa et Lubumbashi ou prêts pour importation.";
 
-  const canonicalUrl = isEn ? "https://carrelais.com/en" : "https://carrelais.com";
+  const canonicalUrl = isEn ? `${baseUrl}/en` : baseUrl;
 
   return {
     title,
@@ -32,8 +35,8 @@ export async function generateMetadata(props: {
     alternates: {
       canonical: canonicalUrl,
       languages: {
-        fr: "https://carrelais.com",
-        en: "https://carrelais.com/en",
+        fr: baseUrl,
+        en: `${baseUrl}/en`,
       },
     },
     openGraph: {
@@ -60,16 +63,18 @@ export default async function Home(props: { params: Promise<{ locale: string }> 
     getTranslations("Hero"),
   ]);
 
+  const baseUrl = getBaseUrl();
+
   const jsonLdWebsite = {
     "@context": "https://schema.org",
     "@type": "WebSite",
     name: "Car Relais",
-    url: isEn ? "https://carrelais.com/en" : "https://carrelais.com",
+    url: isEn ? `${baseUrl}/en` : baseUrl,
     potentialAction: {
       "@type": "SearchAction",
       target: {
         "@type": "EntryPoint",
-        urlTemplate: "https://carrelais.com/vehicles?q={search_term_string}",
+        urlTemplate: `${baseUrl}/vehicles?q={search_term_string}`,
       },
       "query-input": "required name=search_term_string",
     },
@@ -79,8 +84,8 @@ export default async function Home(props: { params: Promise<{ locale: string }> 
     "@context": "https://schema.org",
     "@type": "AutoMarketplace",
     name: "Car Relais",
-    url: "https://carrelais.com",
-    logo: "https://carrelais.com/icon.png",
+    url: baseUrl,
+    logo: `${baseUrl}/icon.png`,
     description: isEn
       ? "The premier automotive marketplace in the Democratic Republic of Congo."
       : "Le premier marché automobile en République Démocratique du Congo.",
@@ -107,14 +112,15 @@ export default async function Home(props: { params: Promise<{ locale: string }> 
       />
       <div className="flex flex-col min-h-screen">
       {/* Hero Section */}
-      <section className="relative h-auto md:h-[60vh] min-h-[460px] md:min-h-[550px] flex items-center">
-        {/* Background car image */}
-        <div
-          className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-          style={{
-            backgroundImage:
-              "url('https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?auto=format&fit=crop&w=1920&q=90')",
-          }}
+      <section className="relative h-auto md:h-[60vh] min-h-[460px] md:min-h-[550px] flex items-center overflow-hidden">
+        {/* Background car image optimized with Next.js Image for immediate LCP preloading & downscaling */}
+        <Image
+          src="https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?auto=format&fit=crop&w=1920&q=80"
+          alt="Car Relais — Marché Automobile en RDC"
+          fill
+          priority
+          sizes="100vw"
+          className="object-cover object-center pointer-events-none"
         />
         {/* Layered overlay: dark left-to-right gradient + subtle vignette */}
         <div className="absolute inset-0 bg-gradient-to-r from-zinc-950/95 via-zinc-900/80 to-zinc-950/30" />

@@ -300,6 +300,7 @@ export function VehiclesPage({
           {/* Mobile filter trigger */}
           <button
             type="button"
+            aria-label={t("filters")}
             onClick={() => setMobileOpen(true)}
             className="lg:hidden flex items-center gap-2 h-11 px-4 rounded-xl border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-sm font-semibold text-zinc-900 dark:text-white shadow-2xs hover:bg-zinc-50 dark:hover:bg-zinc-800 active:scale-95 transition-all cursor-pointer"
           >
@@ -326,11 +327,16 @@ export function VehiclesPage({
             {/* View toggle */}
             <div className="flex border border-zinc-300 dark:border-zinc-700 rounded-xl overflow-hidden h-11 bg-white dark:bg-zinc-900">
               {(["grid", "list"] as const).map(v => (
-                <button key={v} type="button" onClick={() => setView(v)}
+                <button
+                  key={v}
+                  type="button"
+                  aria-label={v === "grid" ? "Affichage en grille" : "Affichage en liste"}
+                  onClick={() => setView(v)}
                   className={cn(
                     "h-full w-10 flex items-center justify-center transition-colors cursor-pointer",
                     view === v ? "bg-primary text-white" : "text-zinc-500 hover:bg-zinc-100 dark:hover:bg-zinc-800"
-                  )}>
+                  )}
+                >
                   {v === "grid" ? <LayoutGrid className="w-4 h-4" /> : <List className="w-4 h-4" />}
                 </button>
               ))}
@@ -344,23 +350,23 @@ export function VehiclesPage({
             {filters.availability && (
               <span className="flex items-center gap-1 text-xs bg-primary/10 text-primary rounded-full px-3 py-1 font-medium shrink-0">
                 {t(AVAILABILITY_OPTIONS_KEYS.find(o => o.value === filters.availability)?.labelKey as any)}
-                <button onClick={() => setFilter("availability", "")} className="cursor-pointer"><X className="w-3 h-3" /></button>
+                <button type="button" aria-label="Supprimer le filtre de disponibilité" onClick={() => setFilter("availability", "")} className="cursor-pointer"><X className="w-3 h-3" /></button>
               </span>
             )}
             {filters.make && (
               <span className="flex items-center gap-1 text-xs bg-primary/10 text-primary rounded-full px-3 py-1 font-medium shrink-0">
                 {filters.make}{filters.model ? ` › ${filters.model}` : ""}
-                <button onClick={() => { setFilter("make", ""); setFilter("model", ""); }} className="cursor-pointer"><X className="w-3 h-3" /></button>
+                <button type="button" aria-label="Supprimer le filtre de marque" onClick={() => { setFilter("make", ""); setFilter("model", ""); }} className="cursor-pointer"><X className="w-3 h-3" /></button>
               </span>
             )}
             {filters.transmission.map(tr => (
               <span key={tr} className="flex items-center gap-1 text-xs bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 rounded-full px-3 py-1 shrink-0">
-                {t(tr as any)}<button onClick={() => toggleMulti("transmission", tr)} className="cursor-pointer"><X className="w-3 h-3" /></button>
+                {t(tr as any)}<button type="button" aria-label="Supprimer le filtre de boîte de vitesses" onClick={() => toggleMulti("transmission", tr)} className="cursor-pointer"><X className="w-3 h-3" /></button>
               </span>
             ))}
             {filters.fuelType.map(f => (
               <span key={f} className="flex items-center gap-1 text-xs bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 rounded-full px-3 py-1 shrink-0">
-                {t(f as any)}<button onClick={() => toggleMulti("fuelType", f)} className="cursor-pointer"><X className="w-3 h-3" /></button>
+                {t(f as any)}<button type="button" aria-label="Supprimer le filtre de carburant" onClick={() => toggleMulti("fuelType", f)} className="cursor-pointer"><X className="w-3 h-3" /></button>
               </span>
             ))}
           </div>

@@ -14,17 +14,14 @@ import { getTranslations } from "next-intl/server";
 import { getCurrentUser } from "@/lib/auth";
 import { connectToDatabase } from "@/lib/mongodb";
 import { UserModel } from "@/lib/models/User";
-
-const BASE_URL =
-  process.env.NEXT_PUBLIC_APP_URL && !process.env.NEXT_PUBLIC_APP_URL.includes("localhost")
-    ? process.env.NEXT_PUBLIC_APP_URL
-    : "https://carrelais.com";
+import { getBaseUrl } from "@/lib/url";
 
 export async function generateMetadata(props: {
   params: Promise<{ slug: string; locale?: string }>;
 }): Promise<Metadata> {
   const { slug, locale } = await props.params;
   const isEn = locale === "en";
+  const baseUrl = getBaseUrl();
 
   const vehicle = await getVehicleBySlug(slug);
 
@@ -51,8 +48,8 @@ export async function generateMetadata(props: {
     : `${vehicle.title} — Véhicule ${conditionText.toLowerCase()} à vendre à ${locationText}. ${vehicle.mileage ? vehicle.mileage.toLocaleString() + " km, " : ""}boîte ${vehicle.transmission}, moteur ${vehicle.fuelType}. Prix : ${priceFormatted}. Vendeur vérifié sur Car Relais.`;
 
   const canonicalUrl = isEn
-    ? `${BASE_URL}/en/vehicles/${vehicle.slug}`
-    : `${BASE_URL}/vehicles/${vehicle.slug}`;
+    ? `${baseUrl}/en/vehicles/${vehicle.slug}`
+    : `${baseUrl}/vehicles/${vehicle.slug}`;
 
   const ogImages = vehicle.images && vehicle.images.length > 0
     ? [
@@ -71,9 +68,9 @@ export async function generateMetadata(props: {
     alternates: {
       canonical: canonicalUrl,
       languages: {
-        fr: `${BASE_URL}/vehicles/${vehicle.slug}`,
-        en: `${BASE_URL}/en/vehicles/${vehicle.slug}`,
-        "x-default": `${BASE_URL}/vehicles/${vehicle.slug}`,
+        fr: `${baseUrl}/vehicles/${vehicle.slug}`,
+        en: `${baseUrl}/en/vehicles/${vehicle.slug}`,
+        "x-default": `${baseUrl}/vehicles/${vehicle.slug}`,
       },
     },
     openGraph: {
@@ -97,6 +94,7 @@ export async function generateMetadata(props: {
 export default async function VehicleDetailPage(props: { params: Promise<{ slug: string; locale?: string }> }) {
   const params = await props.params;
   const isEn = params.locale === "en";
+  const baseUrl = getBaseUrl();
   const vehicle = await getVehicleBySlug(params.slug);
 
   if (!vehicle || vehicle.status !== "PUBLISHED") {
@@ -128,8 +126,8 @@ export default async function VehicleDetailPage(props: { params: Promise<{ slug:
   const tVehicles = await getTranslations("Vehicles");
 
   const canonicalUrl = isEn
-    ? `${BASE_URL}/en/vehicles/${vehicle.slug}`
-    : `${BASE_URL}/vehicles/${vehicle.slug}`;
+    ? `${baseUrl}/en/vehicles/${vehicle.slug}`
+    : `${baseUrl}/vehicles/${vehicle.slug}`;
 
   const jsonLdBreadcrumb = {
     "@context": "https://schema.org",
@@ -139,13 +137,13 @@ export default async function VehicleDetailPage(props: { params: Promise<{ slug:
         "@type": "ListItem",
         position: 1,
         name: isEn ? "Home" : "Accueil",
-        item: isEn ? `${BASE_URL}/en` : `${BASE_URL}`,
+        item: isEn ? `${baseUrl}/en` : `${baseUrl}`,
       },
       {
         "@type": "ListItem",
         position: 2,
         name: isEn ? "Vehicles" : "Véhicules",
-        item: isEn ? `${BASE_URL}/en/vehicles` : `${BASE_URL}/vehicles`,
+        item: isEn ? `${baseUrl}/en/vehicles` : `${baseUrl}/vehicles`,
       },
       {
         "@type": "ListItem",

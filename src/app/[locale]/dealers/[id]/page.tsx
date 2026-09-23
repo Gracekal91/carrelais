@@ -8,6 +8,7 @@ import { formatListing } from "@/lib/data";
 import type { Metadata } from "next";
 import mongoose from "mongoose";
 import type { User } from "@/lib/db/schema";
+import { getBaseUrl } from "@/lib/url";
 
 async function getDealerUser(idOrSlug: string): Promise<User | null> {
   await connectToDatabase();
@@ -27,11 +28,6 @@ async function getDealerUser(idOrSlug: string): Promise<User | null> {
   }
 }
 
-const BASE_URL =
-  process.env.NEXT_PUBLIC_APP_URL && !process.env.NEXT_PUBLIC_APP_URL.includes("localhost")
-    ? process.env.NEXT_PUBLIC_APP_URL
-    : "https://carrelais.com";
-
 export async function generateMetadata({
   params,
 }: {
@@ -39,6 +35,7 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { id, locale } = await params;
   const isEn = locale === "en";
+  const baseUrl = getBaseUrl();
   const user = await getDealerUser(id);
 
   if (!user) {
@@ -61,7 +58,7 @@ export async function generateMetadata({
       ? `Discover new and used vehicles for sale at ${name} in ${city}, DRC.`
       : `Découvrez le catalogue de voitures neuves et d'occasion chez ${name} à ${city}, RDC.`);
 
-  const canonicalUrl = isEn ? `${BASE_URL}/en/dealers/${id}` : `${BASE_URL}/dealers/${id}`;
+  const canonicalUrl = isEn ? `${baseUrl}/en/dealers/${id}` : `${baseUrl}/dealers/${id}`;
 
   return {
     title,
@@ -69,9 +66,9 @@ export async function generateMetadata({
     alternates: {
       canonical: canonicalUrl,
       languages: {
-        fr: `${BASE_URL}/dealers/${id}`,
-        en: `${BASE_URL}/en/dealers/${id}`,
-        "x-default": `${BASE_URL}/dealers/${id}`,
+        fr: `${baseUrl}/dealers/${id}`,
+        en: `${baseUrl}/en/dealers/${id}`,
+        "x-default": `${baseUrl}/dealers/${id}`,
       },
     },
     openGraph: {
@@ -99,6 +96,7 @@ export default async function PublicDealerPage({
 }) {
   const { id, locale } = await params;
   const isEn = locale === "en";
+  const baseUrl = getBaseUrl();
   const dealerUser = await getDealerUser(id);
 
   if (!dealerUser) {
@@ -118,7 +116,7 @@ export default async function PublicDealerPage({
 
   const name = dealerUser.dealershipName || `${dealerUser.firstName} ${dealerUser.lastName}`;
   const city = dealerUser.city || dealerUser.location || "Kinshasa";
-  const canonicalUrl = isEn ? `${BASE_URL}/en/dealers/${id}` : `${BASE_URL}/dealers/${id}`;
+  const canonicalUrl = isEn ? `${baseUrl}/en/dealers/${id}` : `${baseUrl}/dealers/${id}`;
 
   const jsonLdDealer = {
     "@context": "https://schema.org",

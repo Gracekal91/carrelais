@@ -3,14 +3,12 @@ import { connectToDatabase } from "@/lib/mongodb";
 import { ListingModel } from "@/lib/models/Listing";
 import { ArticleModel } from "@/lib/models/Article";
 import { UserModel } from "@/lib/models/User";
+import { getBaseUrl } from "@/lib/url";
 
 export const revalidate = 3600; // Cache sitemap for 1 hour
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const baseUrl =
-    process.env.NEXT_PUBLIC_APP_URL && !process.env.NEXT_PUBLIC_APP_URL.includes("localhost")
-      ? process.env.NEXT_PUBLIC_APP_URL
-      : "https://carrelais.com";
+  const baseUrl = getBaseUrl();
 
   const now = new Date();
 

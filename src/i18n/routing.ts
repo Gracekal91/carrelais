@@ -13,7 +13,11 @@ export const routing = defineRouting({
   
   // Disable automatic locale detection based on user's browser settings
   // so that it ALWAYS defaults to French for new visitors
-  localeDetection: false
+  localeDetection: false,
+
+  // Disable next-intl automatic HTTP Link header generation
+  // (Prevents middleware from emitting localhost alternate link headers; HTML head provides absolute HTTPS tags)
+  alternateLinks: false,
 });
  
 // Lightweight wrappers around Next.js' navigation APIs

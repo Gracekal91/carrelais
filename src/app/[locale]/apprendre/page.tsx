@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { getPublishedArticles, getCategoryArticleCounts } from "@/lib/articles";
 import LearnLandingPage from "@/components/articles/LearnLandingPage";
+import { getBaseUrl } from "@/lib/url";
 
 export const revalidate = 60; // Revalidate every 60 seconds
 
@@ -10,13 +11,14 @@ export async function generateMetadata(props: {
 }): Promise<Metadata> {
   const { locale } = await props.params;
   const isEn = locale === "en";
+  const baseUrl = getBaseUrl();
 
   const title = isEn ? "Learn - Car Relais Automotive Guides" : "Apprendre - Guides & Actualités Automobiles Car Relais";
   const description = isEn
     ? "Expert automotive guides, car prices, maintenance advice, and market insights in DRC."
     : "Guides automobiles d'experts, prix des véhicules, conseils d'entretien, démarches d'importation et actualités du marché en RDC.";
 
-  const canonicalUrl = isEn ? "https://carrelais.com/en/learn" : "https://carrelais.com/apprendre";
+  const canonicalUrl = isEn ? `${baseUrl}/en/learn` : `${baseUrl}/apprendre`;
 
   return {
     title,
@@ -24,8 +26,8 @@ export async function generateMetadata(props: {
     alternates: {
       canonical: canonicalUrl,
       languages: {
-        fr: "https://carrelais.com/apprendre",
-        en: "https://carrelais.com/en/learn",
+        fr: `${baseUrl}/apprendre`,
+        en: `${baseUrl}/en/learn`,
       },
     },
     openGraph: {

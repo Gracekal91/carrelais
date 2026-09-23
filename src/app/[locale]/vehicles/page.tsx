@@ -1,11 +1,7 @@
 import type { Metadata } from "next";
 import { VehiclesPage } from "@/components/search/VehiclesPage";
 import { getPublishedVehicles } from "@/lib/data";
-
-const BASE_URL =
-  process.env.NEXT_PUBLIC_APP_URL && !process.env.NEXT_PUBLIC_APP_URL.includes("localhost")
-    ? process.env.NEXT_PUBLIC_APP_URL
-    : "https://carrelais.com";
+import { getBaseUrl } from "@/lib/url";
 
 export async function generateMetadata(props: {
   params: Promise<{ locale?: string }>;
@@ -20,6 +16,7 @@ export async function generateMetadata(props: {
 }): Promise<Metadata> {
   const [params, searchParams] = await Promise.all([props.params, props.searchParams]);
   const isEn = params.locale === "en";
+  const baseUrl = getBaseUrl();
 
   let title = isEn
     ? "Cars for Sale in DRC — New & Used Vehicles | Car Relais"
@@ -56,7 +53,15 @@ export async function generateMetadata(props: {
       : `Résultats de recherche pour « ${searchParams.q} » | Car Relais`;
   }
 
-  const canonicalUrl = isEn ? `${BASE_URL}/en/vehicles` : `${BASE_URL}/vehicles`;
+  const queryParts: string[] = [];
+  if (searchParams.availability) {
+    queryParts.push(`availability=${encodeURIComponent(searchParams.availability)}`);
+  }
+  if (searchParams.make) {
+    queryParts.push(`make=${encodeURIComponent(searchParams.make)}`);
+  }
+  const queryString = queryParts.length > 0 ? `?${queryParts.join("&")}` : "";
+  const canonicalUrl = isEn ? `${baseUrl}/en/vehicles${queryString}` : `${baseUrl}/vehicles${queryString}`;
 
   return {
     title,
@@ -64,9 +69,9 @@ export async function generateMetadata(props: {
     alternates: {
       canonical: canonicalUrl,
       languages: {
-        fr: `${BASE_URL}/vehicles`,
-        en: `${BASE_URL}/en/vehicles`,
-        "x-default": `${BASE_URL}/vehicles`,
+        fr: `${baseUrl}/vehicles${queryString}`,
+        en: `${baseUrl}/en/vehicles${queryString}`,
+        "x-default": `${baseUrl}/vehicles${queryString}`,
       },
     },
     openGraph: {
@@ -91,10 +96,19 @@ export default async function Page(props: {
 }) {
   const [params, searchParams] = await Promise.all([props.params, props.searchParams]);
   const isEn = params.locale === "en";
+  const baseUrl = getBaseUrl();
 
   const { vehicles, totalCount, currentPage, totalPages } = await getPublishedVehicles(searchParams);
 
-  const canonicalUrl = isEn ? `${BASE_URL}/en/vehicles` : `${BASE_URL}/vehicles`;
+  const queryParts: string[] = [];
+  if (typeof searchParams.availability === "string" && searchParams.availability) {
+    queryParts.push(`availability=${encodeURIComponent(searchParams.availability)}`);
+  }
+  if (typeof searchParams.make === "string" && searchParams.make) {
+    queryParts.push(`make=${encodeURIComponent(searchParams.make)}`);
+  }
+  const queryString = queryParts.length > 0 ? `?${queryParts.join("&")}` : "";
+  const canonicalUrl = isEn ? `${baseUrl}/en/vehicles${queryString}` : `${baseUrl}/vehicles${queryString}`;
 
   const jsonLdBreadcrumb = {
     "@context": "https://schema.org",
@@ -104,7 +118,7 @@ export default async function Page(props: {
         "@type": "ListItem",
         position: 1,
         name: isEn ? "Home" : "Accueil",
-        item: isEn ? `${BASE_URL}/en` : `${BASE_URL}`,
+        item: isEn ? `${baseUrl}/en` : `${baseUrl}`,
       },
       {
         "@type": "ListItem",
@@ -124,7 +138,7 @@ export default async function Page(props: {
       "@type": "ListItem",
       position: index + 1,
       name: v.title,
-      url: isEn ? `${BASE_URL}/en/vehicles/${v.slug}` : `${BASE_URL}/vehicles/${v.slug}`,
+      url: isEn ? `${baseUrl}/en/vehicles/${v.slug}` : `${baseUrl}/vehicles/${v.slug}`,
       image: v.images?.[0] || undefined,
     })),
   };
