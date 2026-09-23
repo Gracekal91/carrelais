@@ -137,6 +137,10 @@
     "condition": "Condition",
     "engine": "Engine",
     "color": "Color",
+    "originalColor": "Original Color",
+    "saleType": "Sale Type",
+    "plate": "License Plate",
+    "fullOptions": "Full Options",
     "keyFeatures": "Key Features",
     "airConditioning": "Air Conditioning",
     "bluetooth": "Bluetooth",
@@ -203,6 +207,11 @@
         "SOLD": "Sold",
         "RESERVED": "Reserved"
       },
+      "saleTypeLabel": "Sale Type",
+      "saleTypeOptions": {
+        "DIRECT": "Vente directe",
+        "SEMI_DIRECT": "Semi directe"
+      },
       "vehicleTypeLabel": "Vehicle Type",
       "vehicleTypeOptions": {
         "Berline": "Sedan",
@@ -249,6 +258,7 @@
       "title": "Vehicle Details",
       "appearanceTitle": "Appearance",
       "exteriorColorLabel": "Exterior Color",
+      "originalColorLabel": "Original Color",
       "interiorColorLabel": "Interior Color",
       "colorOptions": {
         "Noir": "Black",
@@ -290,6 +300,13 @@
     "step4": {
       "title": "Features",
       "subtitle": "Select features and equipment included with your vehicle.",
+      "specialOptionsTitle": "Key Options & License Plate",
+      "specialOptionsSubtitle": "Specify vehicle equipment level and license plate registration status.",
+      "fullOptionsTitle": "Full options",
+      "fullOptionsDesc": "Vehicle equipped with all top-tier factory features and options.",
+      "plateStatusLabel": "License Plate",
+      "withPlate": "Avec plaque",
+      "withoutPlate": "Sans plaque",
       "categories": {
         "comfort": "Comfort",
         "safety": "Safety",
@@ -423,6 +440,10 @@
       "fuelLabel": "Fuel",
       "conditionLabel": "Condition",
       "locationLabel": "Location",
+      "saleTypeLabel": "Sale Type",
+      "originalColorLabel": "Original Color",
+      "plateStatusLabel": "License Plate",
+      "fullOptionsLabel": "Full options",
       "photosLabel": "Photos",
       "featuresLabel": "Features",
       "descriptionLabel": "Description",

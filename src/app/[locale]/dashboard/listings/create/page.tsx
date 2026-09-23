@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter, Link } from "@/i18n/routing";
-import { createListing, getAuthUser } from "@/lib/actions";
+import { createListing, updateListing, getAuthUser } from "@/lib/actions";
 import { 
   Check, ChevronLeft, ChevronRight, Upload, X, Star, 
   Image as ImageIcon, AlertCircle, Info, Sparkles, Loader2 
@@ -61,11 +61,17 @@ const CATEGORIZED_FEATURES = [
 interface PostCarPageProps {
   isAdminPortal?: boolean;
   redirectOnSuccess?: string;
+  initialData?: Partial<ExtendedVehicleListing>;
+  listingId?: string;
 }
+
+const PREDEFINED_COLORS = ["Blanc", "Noir", "Gris", "Argent", "Bleu", "Rouge", "Vert", "Marron", "Beige", "Jaune", "Orange", "Violet"];
 
 export default function PostCarPage({
   isAdminPortal = false,
   redirectOnSuccess,
+  initialData,
+  listingId,
 }: PostCarPageProps = {}) {
   const router = useRouter();
   const t = useTranslations("VehicleWizard");
@@ -80,6 +86,11 @@ export default function PostCarPage({
   const [customModel, setCustomModel] = useState("");
   const [customCity, setCustomCity] = useState("");
   const [customExteriorColor, setCustomExteriorColor] = useState("");
+  const [customOriginalColor, setCustomOriginalColor] = useState(
+    initialData?.originalColor && !PREDEFINED_COLORS.includes(initialData.originalColor)
+      ? initialData.originalColor
+      : ""
+  );
   const [customInteriorColor, setCustomInteriorColor] = useState("");
   const [photoUrlInput, setPhotoUrlInput] = useState("");
   const [showUrlInput, setShowUrlInput] = useState(false);
@@ -98,41 +109,48 @@ export default function PostCarPage({
   const currentYear = new Date().getFullYear();
 
   const [formData, setFormData] = useState<Partial<ExtendedVehicleListing>>({
-    make: "",
-    model: "",
-    year: currentYear,
-    condition: "EXCELLENT",
-    mileage: undefined,
-    transmission: "Automatic",
-    fuelType: "Petrol",
-    availability: "IN_CONGO",
-    listingAvailability: "AVAILABLE",
-    vehicleType: "SUV",
-    drivetrain: "4WD",
-    steeringSide: "LEFT",
-    seats: 5,
-    price: 0,
-    isNegotiable: true,
-    financeAvailable: false,
-    color: "Blanc",
-    interiorColor: "Noir",
-    doors: 4,
-    engineSize: "2.0",
-    horsepower: 150,
-    features: [],
-    images: [],
-    serviceHistory: "FULL",
-    accidentHistory: "NONE",
-    isImported: false,
-    importYear: currentYear - 1,
-    documents: ["carte_rose", "certificat_immat"],
-    customsStatus: "CLEARED",
-    city: "Kinshasa",
-    commune: "Gombe",
-    description: "",
-    source: "OTHER",
-    sourceUrl: "",
-    contactOptions: {
+    make: initialData?.make || "",
+    model: initialData?.model || "",
+    year: initialData?.year || currentYear,
+    condition: initialData?.condition || "EXCELLENT",
+    mileage: initialData?.mileage,
+    transmission: initialData?.transmission || "Automatic",
+    fuelType: initialData?.fuelType || "Petrol",
+    availability: initialData?.availability || "IN_CONGO",
+    listingAvailability: initialData?.listingAvailability || "AVAILABLE",
+    saleType: initialData?.saleType || "Vente directe",
+    vehicleType: initialData?.vehicleType || "SUV",
+    drivetrain: initialData?.drivetrain || "4WD",
+    steeringSide: initialData?.steeringSide || "LEFT",
+    seats: initialData?.seats || 5,
+    price: initialData?.price || 0,
+    isNegotiable: initialData?.isNegotiable !== undefined ? initialData.isNegotiable : true,
+    financeAvailable: initialData?.financeAvailable || false,
+    color: initialData?.color || "Blanc",
+    originalColor: initialData?.originalColor 
+      ? (PREDEFINED_COLORS.includes(initialData.originalColor) ? initialData.originalColor : "Autre")
+      : "Blanc",
+    isFullOptions: initialData?.isFullOptions || (initialData?.vehicleOptions?.includes("Full options") ?? false),
+    plateStatus: initialData?.plateStatus || (initialData?.vehicleOptions?.includes("Sans plaque") ? "WITHOUT_PLATE" : "WITH_PLATE"),
+    vehicleOptions: initialData?.vehicleOptions || ["Avec plaque"],
+    interiorColor: initialData?.interiorColor || "Noir",
+    doors: initialData?.doors || 4,
+    engineSize: initialData?.engineSize || "2.0",
+    horsepower: initialData?.horsepower || 150,
+    features: initialData?.features || [],
+    images: initialData?.images || [],
+    serviceHistory: initialData?.serviceHistory || "FULL",
+    accidentHistory: initialData?.accidentHistory || "NONE",
+    isImported: initialData?.isImported || false,
+    importYear: initialData?.importYear || currentYear - 1,
+    documents: initialData?.documents || ["carte_rose", "certificat_immat"],
+    customsStatus: initialData?.customsStatus || "CLEARED",
+    city: initialData?.city || "Kinshasa",
+    commune: initialData?.commune || "Gombe",
+    description: initialData?.description || "",
+    source: initialData?.source || "OTHER",
+    sourceUrl: initialData?.sourceUrl || "",
+    contactOptions: initialData?.contactOptions || {
       allowCalls: true,
       allowWhatsapp: true,
       allowDirectMessage: false,
@@ -156,6 +174,37 @@ export default function PostCarPage({
       const feats = prev.features || [];
       if (feats.includes(feat)) return { ...prev, features: feats.filter(f => f !== feat) };
       return { ...prev, features: [...feats, feat] };
+    });
+  };
+
+  const handleFullOptionsToggle = () => {
+    setFormData(prev => {
+      const nextFullOptions = !prev.isFullOptions;
+      let nextOptions = [...(prev.vehicleOptions || [])].filter(o => o !== "Full options");
+      if (nextFullOptions) {
+        nextOptions.push("Full options");
+      }
+      return {
+        ...prev,
+        isFullOptions: nextFullOptions,
+        vehicleOptions: nextOptions,
+      };
+    });
+  };
+
+  const handlePlateStatusChange = (status: "WITH_PLATE" | "WITHOUT_PLATE") => {
+    setFormData(prev => {
+      let nextOptions = [...(prev.vehicleOptions || [])].filter(o => o !== "Avec plaque" && o !== "Sans plaque");
+      if (status === "WITH_PLATE") {
+        nextOptions.push("Avec plaque");
+      } else {
+        nextOptions.push("Sans plaque");
+      }
+      return {
+        ...prev,
+        plateStatus: status,
+        vehicleOptions: nextOptions,
+      };
     });
   };
 
@@ -340,6 +389,7 @@ export default function PostCarPage({
     const resolvedModel = (formData.model === "Autre" || formData.make === "Autre") ? customModel.trim() : (formData.model || "");
     const resolvedCity = formData.city === "Autre" ? customCity.trim() : (formData.city || "Kinshasa");
     const resolvedColor = formData.color === "Autre" ? (customExteriorColor.trim() || "Autre") : (formData.color || "Blanc");
+    const resolvedOriginalColor = formData.originalColor === "Autre" ? (customOriginalColor.trim() || "Autre") : (formData.originalColor || "Blanc");
     const resolvedInteriorColor = formData.interiorColor === "Autre" ? (customInteriorColor.trim() || "Autre") : (formData.interiorColor || "Noir");
     const resolvedMileage = (formData.mileage !== undefined && formData.mileage !== null && (formData.mileage as any) !== "")
       ? Math.max(0, Number(formData.mileage))
@@ -351,13 +401,23 @@ export default function PostCarPage({
       model: resolvedModel,
       city: resolvedCity,
       color: resolvedColor,
+      originalColor: resolvedOriginalColor,
+      saleType: formData.saleType || "Vente directe",
+      isFullOptions: Boolean(formData.isFullOptions),
+      plateStatus: formData.plateStatus || "WITH_PLATE",
+      vehicleOptions: formData.vehicleOptions || (formData.plateStatus === "WITHOUT_PLATE" ? ["Sans plaque"] : ["Avec plaque"]),
       interiorColor: resolvedInteriorColor,
       mileage: resolvedMileage,
       year: Number(formData.year) || currentYear,
       title: `${formData.year || currentYear} ${resolvedMake} ${resolvedModel}`,
     };
 
-    const res = await createListing(payload);
+    let res;
+    if (listingId) {
+      res = await updateListing(listingId, payload);
+    } else {
+      res = await createListing(payload);
+    }
     if (res.success) {
       router.push(redirectOnSuccess || (isAdminPortal ? "/admin/listings" : "/dashboard/listings"));
     }
@@ -616,6 +676,22 @@ export default function PostCarPage({
                     />
                     {errors.availability && <p className="text-red-500 text-xs mt-1.5">{errors.availability}</p>}
                   </div>
+
+                  {/* Type de vente */}
+                  <div>
+                    <label className="block text-sm font-medium mb-1.5 text-zinc-700 dark:text-zinc-300">
+                      {t("step1.saleTypeLabel")} <span className="text-red-500">*</span>
+                    </label>
+                    <Select
+                      value={formData.saleType || "Vente directe"}
+                      onChange={val => update("saleType", val)}
+                      options={[
+                        { value: "Vente directe", label: t("step1.saleTypeOptions.DIRECT") },
+                        { value: "Semi directe", label: t("step1.saleTypeOptions.SEMI_DIRECT") },
+                      ]}
+                      className="h-[48px]"
+                    />
+                  </div>
                 </div>
               </div>
 
@@ -781,7 +857,7 @@ export default function PostCarPage({
                 </h2>
                 <div className="h-0.5 w-10 bg-primary mb-6" />
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
                   {/* Couleur extérieure */}
                   <div>
                     <label className="block text-sm font-medium mb-1.5 text-zinc-700 dark:text-zinc-300">
@@ -813,6 +889,42 @@ export default function PostCarPage({
                         value={customExteriorColor}
                         onChange={e => setCustomExteriorColor(e.target.value)}
                         placeholder="Précisez la couleur extérieure (ex: Bleu Nuit, Bordeaux...)"
+                        className="mt-2 w-full h-[46px] px-3.5 border border-zinc-300 dark:border-zinc-700 rounded-lg dark:bg-zinc-800 text-sm animate-in fade-in"
+                      />
+                    )}
+                  </div>
+
+                  {/* Couleur d'origine */}
+                  <div>
+                    <label className="block text-sm font-medium mb-1.5 text-zinc-700 dark:text-zinc-300">
+                      {t("step3.originalColorLabel")}
+                    </label>
+                    <Select
+                      value={formData.originalColor || "Blanc"}
+                      onChange={val => update("originalColor", val)}
+                      options={[
+                        { value: "Blanc", label: t("step3.colorOptions.Blanc") },
+                        { value: "Noir", label: t("step3.colorOptions.Noir") },
+                        { value: "Gris", label: t("step3.colorOptions.Gris") },
+                        { value: "Argent", label: t("step3.colorOptions.Argent") },
+                        { value: "Bleu", label: t("step3.colorOptions.Bleu") },
+                        { value: "Rouge", label: t("step3.colorOptions.Rouge") },
+                        { value: "Vert", label: t("step3.colorOptions.Vert") },
+                        { value: "Marron", label: t("step3.colorOptions.Marron") },
+                        { value: "Beige", label: t("step3.colorOptions.Beige") },
+                        { value: "Jaune", label: t("step3.colorOptions.Jaune") },
+                        { value: "Orange", label: t("step3.colorOptions.Orange") },
+                        { value: "Violet", label: t("step3.colorOptions.Violet") },
+                        { value: "Autre", label: t("step3.colorOptions.Autre") },
+                      ]}
+                      className="h-[48px]"
+                    />
+                    {formData.originalColor === "Autre" && (
+                      <input
+                        type="text"
+                        value={customOriginalColor}
+                        onChange={e => setCustomOriginalColor(e.target.value)}
+                        placeholder="Précisez la couleur d'origine (ex: Blanc Perlé...)"
                         className="mt-2 w-full h-[46px] px-3.5 border border-zinc-300 dark:border-zinc-700 rounded-lg dark:bg-zinc-800 text-sm animate-in fade-in"
                       />
                     )}
@@ -925,6 +1037,92 @@ export default function PostCarPage({
               </div>
 
               <div className="space-y-6">
+                {/* Options clés & Immatriculation */}
+                <div className="bg-gradient-to-r from-primary/5 via-primary/10 to-transparent dark:from-primary/10 dark:via-primary/5 dark:to-transparent p-5 rounded-2xl border border-primary/20 space-y-4">
+                  <div className="flex items-center gap-2">
+                    <Sparkles className="w-5 h-5 text-primary shrink-0" />
+                    <div>
+                      <h3 className="font-bold text-base text-zinc-900 dark:text-zinc-100">
+                        {t("step4.specialOptionsTitle")}
+                      </h3>
+                      <p className="text-xs text-zinc-500 dark:text-zinc-400">
+                        {t("step4.specialOptionsSubtitle")}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-1">
+                    {/* Full options Card Toggle */}
+                    <div
+                      onClick={handleFullOptionsToggle}
+                      className={`p-4 rounded-xl border-2 cursor-pointer transition-all flex items-start gap-3.5 select-none ${
+                        formData.isFullOptions
+                          ? "border-primary bg-white dark:bg-zinc-900 shadow-sm shadow-primary/10"
+                          : "border-zinc-200 dark:border-zinc-800 bg-white/70 dark:bg-zinc-900/60 hover:border-zinc-300 dark:hover:border-zinc-700"
+                      }`}
+                    >
+                      <div className={`w-5 h-5 mt-0.5 rounded flex items-center justify-center shrink-0 transition-colors ${
+                        formData.isFullOptions ? "bg-primary text-white" : "border-2 border-zinc-300 dark:border-zinc-600"
+                      }`}>
+                        {formData.isFullOptions && <Check className="w-3.5 h-3.5" />}
+                      </div>
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <span className="font-bold text-sm text-zinc-900 dark:text-zinc-100">
+                            {t("step4.fullOptionsTitle")}
+                          </span>
+                          <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20">
+                            Premium
+                          </span>
+                        </div>
+                        <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1 leading-relaxed">
+                          {t("step4.fullOptionsDesc")}
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Immatriculation: Avec plaque / Sans plaque */}
+                    <div className="p-4 rounded-xl border-2 border-zinc-200 dark:border-zinc-800 bg-white/70 dark:bg-zinc-900/60 flex flex-col justify-between gap-2.5">
+                      <div>
+                        <span className="font-bold text-sm text-zinc-900 dark:text-zinc-100 block mb-0.5">
+                          {t("step4.plateStatusLabel")}
+                        </span>
+                        <p className="text-xs text-zinc-500 dark:text-zinc-400">
+                          Précisez si le véhicule est immatriculé avec ou sans plaque.
+                        </p>
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-2 pt-1">
+                        <button
+                          type="button"
+                          onClick={() => handlePlateStatusChange("WITH_PLATE")}
+                          className={`py-2.5 px-3 rounded-lg text-xs font-semibold flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
+                            formData.plateStatus !== "WITHOUT_PLATE"
+                              ? "bg-primary text-white shadow-xs"
+                              : "border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-700/50"
+                          }`}
+                        >
+                          {formData.plateStatus !== "WITHOUT_PLATE" && <Check className="w-3.5 h-3.5" />}
+                          <span>{t("step4.withPlate")}</span>
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={() => handlePlateStatusChange("WITHOUT_PLATE")}
+                          className={`py-2.5 px-3 rounded-lg text-xs font-semibold flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
+                            formData.plateStatus === "WITHOUT_PLATE"
+                              ? "bg-primary text-white shadow-xs"
+                              : "border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-700/50"
+                          }`}
+                        >
+                          {formData.plateStatus === "WITHOUT_PLATE" && <Check className="w-3.5 h-3.5" />}
+                          <span>{t("step4.withoutPlate")}</span>
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
                 {CATEGORIZED_FEATURES.map(category => (
                   <div key={category.key} className="bg-zinc-50 dark:bg-zinc-800/40 p-4 sm:p-5 rounded-xl border border-zinc-200/80 dark:border-zinc-800">
                     <h3 className="font-semibold text-sm sm:text-base text-zinc-900 dark:text-zinc-100 mb-3 flex items-center gap-2">
@@ -1575,6 +1773,24 @@ export default function PostCarPage({
                       </span>
                     </div>
                     <div>
+                      <span className="text-zinc-500 text-xs block">{t("step7.saleTypeLabel")}</span>
+                      <span className="font-semibold text-zinc-900 dark:text-zinc-100">
+                        {formData.saleType || "Vente directe"}
+                      </span>
+                    </div>
+                    <div>
+                      <span className="text-zinc-500 text-xs block">{t("step7.originalColorLabel")}</span>
+                      <span className="font-semibold text-zinc-900 dark:text-zinc-100">
+                        {formData.originalColor === "Autre" ? (customOriginalColor || "Autre") : (formData.originalColor || "Blanc")}
+                      </span>
+                    </div>
+                    <div>
+                      <span className="text-zinc-500 text-xs block">{t("step7.plateStatusLabel")}</span>
+                      <span className="font-semibold text-zinc-900 dark:text-zinc-100">
+                        {formData.plateStatus === "WITHOUT_PLATE" ? t("step4.withoutPlate") : t("step4.withPlate")}
+                      </span>
+                    </div>
+                    <div>
                       <span className="text-zinc-500 text-xs block">{t("step1.seatsLabel")}</span>
                       <span className="font-semibold text-zinc-900 dark:text-zinc-100">
                         {formData.seats} places
@@ -1584,13 +1800,19 @@ export default function PostCarPage({
                 </div>
 
                 {/* Features Grouped */}
-                {formData.features && formData.features.length > 0 && (
+                {(formData.isFullOptions || (formData.features && formData.features.length > 0)) && (
                   <div>
                     <h4 className="text-xs font-bold text-zinc-500 uppercase tracking-wider mb-2">
-                      {t("step7.featuresLabel")} ({formData.features.length})
+                      {t("step7.featuresLabel")} {(formData.features?.length || 0) + (formData.isFullOptions ? 1 : 0)}
                     </h4>
                     <div className="flex flex-wrap gap-2">
-                      {formData.features.map(feat => (
+                      {formData.isFullOptions && (
+                        <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-amber-500/10 text-amber-700 dark:text-amber-400 border border-amber-500/20 rounded-full text-xs font-bold">
+                          <Sparkles className="w-3.5 h-3.5 text-amber-500" />
+                          Full options
+                        </span>
+                      )}
+                      {(formData.features || []).map(feat => (
                         <span
                           key={feat}
                           className="inline-flex items-center gap-1.5 px-3 py-1 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-full text-xs font-medium text-zinc-800 dark:text-zinc-200"

@@ -5,7 +5,7 @@ import { formatPrice, formatListingDate } from "@/lib/utils";
 import {
   MapPin, CheckCircle2,
   Settings, Fuel, Calendar, Gauge, Car, ShieldAlert,
-  Check, Clock
+  Check, Clock, Palette, Tag, ShieldCheck, Sparkles
 } from "lucide-react";
 import { Link } from "@/i18n/routing";
 import { VehicleGallery } from "@/components/vehicles/VehicleGallery";
@@ -231,6 +231,20 @@ export default async function VehicleDetailPage(props: { params: Promise<{ slug:
 
             {/* Mobile title & price (shown on mobile, hidden on desktop - use p to avoid dual H1) */}
             <div className="lg:hidden">
+              <div className="flex flex-wrap items-center gap-2 mb-2">
+                {(vehicle.isFullOptions || vehicle.vehicleOptions?.includes("Full options")) && (
+                  <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20">
+                    <Sparkles className="w-3 h-3 text-amber-500" />
+                    Full options
+                  </span>
+                )}
+                {vehicle.saleType && (
+                  <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-primary/10 text-primary border border-primary/20">
+                    <Tag className="w-3 h-3" />
+                    {vehicle.saleType}
+                  </span>
+                )}
+              </div>
               <p className="text-2xl sm:text-3xl font-bold mb-2 text-zinc-900 dark:text-zinc-50">{vehicle.title}</p>
               <div className="text-3xl font-bold text-primary mb-3">{formatPrice(vehicle.price)}</div>
               <div className="flex flex-wrap items-center justify-between gap-2 text-zinc-600 dark:text-zinc-300">
@@ -281,6 +295,24 @@ export default async function VehicleDetailPage(props: { params: Promise<{ slug:
                 <span className="text-zinc-500 text-sm">{t("color")}</span>
                 <span className="font-semibold">{vehicle.color || "N/A"}</span>
               </div>
+              {vehicle.originalColor && (
+                <div className="flex flex-col gap-1">
+                  <span className="text-zinc-500 text-sm flex items-center gap-1.5"><Palette className="w-4 h-4" /> {t("originalColor")}</span>
+                  <span className="font-semibold">{vehicle.originalColor}</span>
+                </div>
+              )}
+              <div className="flex flex-col gap-1">
+                <span className="text-zinc-500 text-sm flex items-center gap-1.5"><Tag className="w-4 h-4" /> {t("saleType")}</span>
+                <span className="font-semibold">{vehicle.saleType || "Vente directe"}</span>
+              </div>
+              <div className="flex flex-col gap-1">
+                <span className="text-zinc-500 text-sm flex items-center gap-1.5"><ShieldCheck className="w-4 h-4" /> {t("plate")}</span>
+                <span className="font-semibold">
+                  {vehicle.plateStatus === "WITHOUT_PLATE" || vehicle.vehicleOptions?.includes("Sans plaque")
+                    ? (params.locale === "fr" ? "Sans plaque" : "Without plate")
+                    : (params.locale === "fr" ? "Avec plaque" : "With plate")}
+                </span>
+              </div>
               <div className="flex flex-col gap-1">
                 <span className="text-zinc-500 text-sm flex items-center gap-1.5"><Clock className="w-4 h-4" /> {t("published")}</span>
                 <span className="font-semibold text-sm">{formatListingDate(vehicle.createdAt, params.locale, true)}</span>
@@ -290,8 +322,22 @@ export default async function VehicleDetailPage(props: { params: Promise<{ slug:
 
           {/* Features */}
           <div className="bg-white dark:bg-zinc-900 p-6 rounded-2xl border border-zinc-100 dark:border-zinc-800/30">
-            <h2 className="text-xl font-bold mb-6">{t("keyFeatures")}</h2>
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-xl font-bold">{t("keyFeatures")}</h2>
+              {(vehicle.isFullOptions || vehicle.vehicleOptions?.includes("Full options")) && (
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20 rounded-full text-xs font-bold">
+                  <Sparkles className="w-3.5 h-3.5 text-amber-500" />
+                  Full options
+                </span>
+              )}
+            </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-y-4 gap-x-6">
+              {(vehicle.isFullOptions || vehicle.vehicleOptions?.includes("Full options")) && (
+                <div className="flex items-start gap-2">
+                  <Check className="w-5 h-5 text-amber-500 shrink-0" />
+                  <span className="text-zinc-900 dark:text-zinc-100 font-semibold">Full options</span>
+                </div>
+              )}
               {(vehicle.features || []).map((feature, idx) => (
                 <div key={idx} className="flex items-start gap-2">
                   <Check className="w-5 h-5 text-primary shrink-0" />
@@ -332,6 +378,20 @@ export default async function VehicleDetailPage(props: { params: Promise<{ slug:
 
           <div className="bg-white dark:bg-zinc-900 p-6 rounded-2xl border border-zinc-100 dark:border-zinc-800/30 shadow-sm lg:sticky lg:top-24">
             <div className="hidden lg:block">
+              <div className="flex flex-wrap items-center gap-2 mb-2">
+                {(vehicle.isFullOptions || vehicle.vehicleOptions?.includes("Full options")) && (
+                  <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20">
+                    <Sparkles className="w-3 h-3 text-amber-500" />
+                    Full options
+                  </span>
+                )}
+                {vehicle.saleType && (
+                  <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-primary/10 text-primary border border-primary/20">
+                    <Tag className="w-3 h-3" />
+                    {vehicle.saleType}
+                  </span>
+                )}
+              </div>
               <h1 className="text-2xl font-bold mb-2">{vehicle.title}</h1>
               <div className="text-4xl font-bold text-primary mb-4">{formatPrice(vehicle.price)}</div>
 

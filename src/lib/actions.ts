@@ -573,7 +573,12 @@ export async function createListing(data: Partial<ExtendedVehicleListing>) {
       financeAvailable: Boolean(data.financeAvailable),
       source: data.source || undefined,
       sourceUrl: data.sourceUrl || undefined,
-      contactOptions: data.contactOptions || undefined,
+      color: data.color || "Blanc",
+      originalColor: data.originalColor || undefined,
+      saleType: data.saleType || "Vente directe",
+      isFullOptions: Boolean(data.isFullOptions),
+      plateStatus: data.plateStatus || "WITH_PLATE",
+      vehicleOptions: Array.isArray(data.vehicleOptions) ? data.vehicleOptions : [],
       seller: {
         id: owner.id,
         name: isSuperAdminOrAdmin ? "Car Relais" : (owner.accountType === "DEALERSHIP" ? (owner.dealershipName || `${owner.firstName} ${owner.lastName}`) : `${owner.firstName} ${owner.lastName}`),
@@ -606,6 +611,47 @@ export async function createListing(data: Partial<ExtendedVehicleListing>) {
   } catch (error: any) {
     console.error("[Create Listing Error]", error);
     return { success: false, error: error.message || "Erreur lors de la création de l'annonce" };
+  }
+}
+
+export async function updateListing(listingId: string, data: Partial<ExtendedVehicleListing>) {
+  try {
+    const user = await requireAuth();
+    await connectToDatabase();
+
+    const listing = await ListingModel.findById(listingId);
+    if (!listing) {
+      return { success: false, error: "Annonce non trouvée" };
+    }
+
+    const isAdmin = user.role === "ADMIN" || user.role === "SUPER_ADMIN";
+    if (!isAdmin && listing.ownerId !== user.id) {
+      return { success: false, error: "Non autorisé" };
+    }
+
+    const updateFields: any = {
+      ...data,
+      updatedAt: new Date().toISOString(),
+    };
+
+    if (data.originalColor !== undefined) updateFields.originalColor = data.originalColor;
+    if (data.saleType !== undefined) updateFields.saleType = data.saleType;
+    if (data.isFullOptions !== undefined) updateFields.isFullOptions = Boolean(data.isFullOptions);
+    if (data.plateStatus !== undefined) updateFields.plateStatus = data.plateStatus;
+    if (data.vehicleOptions !== undefined) updateFields.vehicleOptions = Array.isArray(data.vehicleOptions) ? data.vehicleOptions : [];
+
+    await ListingModel.findByIdAndUpdate(listingId, { $set: updateFields });
+
+    revalidatePath("/dashboard");
+    revalidatePath("/dashboard/listings");
+    revalidatePath("/admin/listings");
+    revalidatePath("/vehicles");
+    if (listing.slug) revalidatePath(`/vehicles/${listing.slug}`);
+
+    return { success: true, id: listingId, slug: listing.slug };
+  } catch (error: any) {
+    console.error("[Update Listing Error]", error);
+    return { success: false, error: error.message || "Erreur lors de la modification de l'annonce" };
   }
 }
 
@@ -779,6 +825,57 @@ export async function setListingStatusAction(listingId: string, status: VehicleS
   } catch (error: any) {
     console.error("[Set Listing Status Error]", error);
     return { success: false, error: error.message || "Erreur lors du changement de statut" };
+  }
+}
+
+/**
+ * Admin Action: Delete a vehicle listing completely from the database
+ */
+export async function deleteListingAction(listingId: string) {
+  try {
+    const admin = await requireAdminUser();
+    await connectToDatabase();
+
+    const listing = await ListingModel.findById(listingId);
+    if (!listing) {
+      return { success: false, error: "Annonce introuvable." };
+    }
+
+    const listingTitle = `${listing.year} ${listing.make} ${listing.model}`;
+    const slug = listing.slug;
+
+    await ListingModel.findByIdAndDelete(listingId);
+
+    try {
+      await AuditLogModel.create({
+        adminId: admin.id,
+        adminName: `${admin.firstName} ${admin.lastName}`,
+        action: "LISTING_DELETED",
+        targetType: "LISTING",
+        targetId: listingId,
+        targetLabel: listingTitle,
+        details: `Annonce supprimée définitivement par l'administrateur (${admin.email}).`,
+        timestamp: new Date().toISOString(),
+      });
+    } catch (auditErr) {
+      console.error("[Audit Log Error - Listing Deleted]", auditErr);
+    }
+
+    revalidatePath("/admin");
+    revalidatePath("/admin/listings");
+    revalidatePath(`/admin/listings/${listingId}`);
+    revalidatePath("/dashboard");
+    revalidatePath("/vehicles");
+    if (slug) {
+      revalidatePath(`/vehicles/${slug}`);
+      revalidatePath(`/en/vehicles/${slug}`);
+    }
+    revalidatePath("/sitemap.xml");
+
+    return { success: true };
+  } catch (error: any) {
+    console.error("[Delete Listing Error]", error);
+    return { success: false, error: error.message || "Erreur lors de la suppression de l'annonce." };
   }
 }
 

@@ -59,6 +59,11 @@ export interface IListing {
   financeAvailable: boolean;
   engineSize?: string;
   color?: string;
+  originalColor?: string;
+  saleType?: string;
+  isFullOptions?: boolean;
+  plateStatus?: string;
+  vehicleOptions?: string[];
   interiorColor?: string;
   horsepower?: number;
   doors?: number;
@@ -156,6 +161,11 @@ const ListingSchema = new Schema<IListing>(
     financeAvailable: { type: Boolean, default: false },
     engineSize: { type: String },
     color: { type: String },
+    originalColor: { type: String },
+    saleType: { type: String, default: "Vente directe" },
+    isFullOptions: { type: Boolean, default: false },
+    plateStatus: { type: String, default: "WITH_PLATE" },
+    vehicleOptions: { type: [String], default: [] },
     interiorColor: { type: String },
     horsepower: { type: Number },
     doors: { type: Number, default: 4 },

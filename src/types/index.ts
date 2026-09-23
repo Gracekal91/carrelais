@@ -43,6 +43,11 @@ export interface VehicleListing {
   isVerified: boolean;
   engineSize?: string;
   color?: string;
+  originalColor?: string;
+  saleType?: "Vente directe" | "Semi directe" | "Directe" | string;
+  isFullOptions?: boolean;
+  plateStatus?: "WITH_PLATE" | "WITHOUT_PLATE" | string;
+  vehicleOptions?: string[];
   features?: string[];
   vehicleType?: string;
   drivetrain?: string;

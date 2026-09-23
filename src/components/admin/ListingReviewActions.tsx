@@ -11,7 +11,8 @@ import {
   FileText, 
   AlertTriangle, 
   Loader2,
-  Check
+  Check,
+  Trash2
 } from "lucide-react";
 import { VehicleStatus } from "@/types";
 import { 
@@ -19,6 +20,7 @@ import {
   rejectListingAction, 
   setListingStatusAction 
 } from "@/lib/actions";
+import DeleteListingModal from "./DeleteListingModal";
 
 interface ListingReviewActionsProps {
   listingId: string;
@@ -37,6 +39,7 @@ export default function ListingReviewActions({
   // Modals state
   const [showApproveModal, setShowApproveModal] = React.useState(false);
   const [showRejectModal, setShowRejectModal] = React.useState(false);
+  const [showDeleteModal, setShowDeleteModal] = React.useState(false);
   const [loading, setLoading] = React.useState(false);
   const [feedback, setFeedback] = React.useState<{ type: "success" | "error"; message: string } | null>(null);
 
@@ -208,6 +211,16 @@ export default function ListingReviewActions({
             </button>
           </>
         )}
+
+        <button
+          type="button"
+          onClick={() => setShowDeleteModal(true)}
+          disabled={loading}
+          className="w-full flex items-center justify-center gap-2 py-2 px-3 border border-red-200 dark:border-red-900/50 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30 rounded-xl text-xs font-semibold transition-colors cursor-pointer disabled:opacity-50 mt-1"
+        >
+          <Trash2 className="w-3.5 h-3.5" />
+          <span>Supprimer l'annonce</span>
+        </button>
       </div>
 
       {/* APPROVAL CONFIRMATION MODAL */}
@@ -333,6 +346,15 @@ export default function ListingReviewActions({
           </div>
         </div>
       )}
+
+      {/* DELETE CONFIRMATION MODAL */}
+      <DeleteListingModal
+        listingId={listingId}
+        listingTitle={title}
+        isOpen={showDeleteModal}
+        onClose={() => setShowDeleteModal(false)}
+        redirectTo="/admin/listings"
+      />
     </div>
   );
 }

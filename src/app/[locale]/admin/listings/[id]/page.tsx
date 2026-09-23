@@ -17,7 +17,8 @@ import {
   ShieldCheck,
   ExternalLink,
   History,
-  AlertCircle
+  AlertCircle,
+  Sparkles
 } from "lucide-react";
 import ListingStatusBadge from "@/components/admin/ListingStatusBadge";
 import ListingPhotoGallery from "@/components/admin/ListingPhotoGallery";
@@ -136,6 +137,20 @@ export default async function AdminListingReviewPage({ params }: { params: Promi
                 <span className="font-bold text-zinc-900 dark:text-zinc-100">{listing.color || "Non précisée"}</span>
               </div>
               <div className="p-3 bg-zinc-50 dark:bg-zinc-800/40 rounded-xl border border-zinc-100 dark:border-zinc-800">
+                <span className="text-zinc-500 block mb-0.5">Couleur d'origine</span>
+                <span className="font-bold text-zinc-900 dark:text-zinc-100">{listing.originalColor || "Non précisée"}</span>
+              </div>
+              <div className="p-3 bg-zinc-50 dark:bg-zinc-800/40 rounded-xl border border-zinc-100 dark:border-zinc-800">
+                <span className="text-zinc-500 block mb-0.5">Type de vente</span>
+                <span className="font-bold text-zinc-900 dark:text-zinc-100">{listing.saleType || "Vente directe"}</span>
+              </div>
+              <div className="p-3 bg-zinc-50 dark:bg-zinc-800/40 rounded-xl border border-zinc-100 dark:border-zinc-800">
+                <span className="text-zinc-500 block mb-0.5">Immatriculation</span>
+                <span className="font-bold text-zinc-900 dark:text-zinc-100">
+                  {listing.plateStatus === "WITHOUT_PLATE" || listing.vehicleOptions?.includes("Sans plaque") ? "Sans plaque" : "Avec plaque"}
+                </span>
+              </div>
+              <div className="p-3 bg-zinc-50 dark:bg-zinc-800/40 rounded-xl border border-zinc-100 dark:border-zinc-800">
                 <span className="text-zinc-500 block mb-0.5">Portes / Places</span>
                 <span className="font-bold text-zinc-900 dark:text-zinc-100">
                   {listing.doors || 4} portes • {listing.seats || 5} places
@@ -154,13 +169,29 @@ export default async function AdminListingReviewPage({ params }: { params: Promi
 
           {/* Features Grouped */}
           <div className="bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 p-6 shadow-xs space-y-4">
-            <h2 className="text-base font-bold text-zinc-900 dark:text-zinc-100">
-              Équipements et options déclarés ({listing.features?.length || 0})
-            </h2>
+            <div className="flex items-center justify-between">
+              <h2 className="text-base font-bold text-zinc-900 dark:text-zinc-100">
+                Équipements et options déclarés ({(listing.features?.length || 0) + (listing.isFullOptions || listing.vehicleOptions?.includes("Full options") ? 1 : 0)})
+              </h2>
+              {(listing.isFullOptions || listing.vehicleOptions?.includes("Full options")) && (
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-amber-500/10 border border-amber-500/20 rounded-full text-xs font-bold text-amber-700 dark:text-amber-400">
+                  <Sparkles className="w-3.5 h-3.5 text-amber-500" />
+                  <span>Full options</span>
+                </span>
+              )}
+            </div>
 
-            {listing.features && listing.features.length > 0 ? (
+            {((listing.features && listing.features.length > 0) || listing.isFullOptions || listing.vehicleOptions?.includes("Full options")) ? (
               <div className="flex flex-wrap gap-2">
-                {listing.features.map(feat => (
+                {(listing.isFullOptions || listing.vehicleOptions?.includes("Full options")) && (
+                  <span
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded-xl text-xs font-semibold text-amber-800 dark:text-amber-300"
+                  >
+                    <Sparkles className="w-3.5 h-3.5 text-amber-500" />
+                    <span>Full options</span>
+                  </span>
+                )}
+                {(listing.features || []).map(feat => (
                   <span
                     key={feat}
                     className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-xl text-xs font-semibold text-zinc-800 dark:text-zinc-200"

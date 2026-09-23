@@ -3,10 +3,11 @@ import Image from "next/image";
 import { connectToDatabase } from "@/lib/mongodb";
 import { ListingModel } from "@/lib/models/Listing";
 import { formatListing } from "@/lib/data";
-import { Eye, CarFront, Store, User as UserIcon, Plus } from "lucide-react";
+import { CarFront, Store, User as UserIcon, Plus } from "lucide-react";
 import ListingFilters from "@/components/admin/ListingFilters";
 import ListingStatusBadge from "@/components/admin/ListingStatusBadge";
 import PaginationControls from "@/components/admin/PaginationControls";
+import ListingRowActions from "@/components/admin/ListingRowActions";
 import mongoose from "mongoose";
 
 interface AdminListingsPageProps {
@@ -213,17 +214,11 @@ export default async function AdminListingsPage(props: AdminListingsPageProps) {
 
                       {/* Action */}
                       <td className="p-4 text-right">
-                        <Link
-                          href={`/admin/listings/${listing.id}`}
-                          className={`inline-flex items-center gap-1.5 text-xs font-bold px-3 py-2 rounded-xl transition-all shadow-xs ${
-                            listing.status === "PENDING_REVIEW"
-                              ? "bg-amber-600 hover:bg-amber-700 text-white"
-                              : "bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 text-zinc-800 dark:text-zinc-200"
-                          }`}
-                        >
-                          <Eye className="w-3.5 h-3.5" />
-                          <span>Examiner</span>
-                        </Link>
+                        <ListingRowActions
+                          listingId={listing.id}
+                          listingTitle={listing.title}
+                          status={listing.status}
+                        />
                       </td>
                     </tr>
                   ))}
@@ -264,13 +259,12 @@ export default async function AdminListingsPage(props: AdminListingsPageProps) {
                       </span>
                     </div>
 
-                    <Link
-                      href={`/admin/listings/${listing.id}`}
-                      className="inline-flex items-center gap-1 px-3 py-1.5 bg-zinc-100 dark:bg-zinc-800 rounded-lg text-xs font-bold text-zinc-800 dark:text-zinc-200"
-                    >
-                      <Eye className="w-3.5 h-3.5" />
-                      <span>Examiner</span>
-                    </Link>
+                    <ListingRowActions
+                      listingId={listing.id}
+                      listingTitle={listing.title}
+                      status={listing.status}
+                      compact
+                    />
                   </div>
                 </div>
               ))}

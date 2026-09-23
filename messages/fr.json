@@ -137,6 +137,10 @@
     "condition": "État",
     "engine": "Moteur",
     "color": "Couleur",
+    "originalColor": "Couleur d'origine",
+    "saleType": "Type de vente",
+    "plate": "Immatriculation",
+    "fullOptions": "Full options",
     "keyFeatures": "Équipements",
     "airConditioning": "Climatisation",
     "bluetooth": "Bluetooth",
@@ -203,6 +207,11 @@
         "SOLD": "Vendu",
         "RESERVED": "Réservé"
       },
+      "saleTypeLabel": "Type de vente",
+      "saleTypeOptions": {
+        "DIRECT": "Vente directe",
+        "SEMI_DIRECT": "Semi directe"
+      },
       "vehicleTypeLabel": "Type de véhicule",
       "vehicleTypeOptions": {
         "Berline": "Berline",
@@ -249,6 +258,7 @@
       "title": "Détails du véhicule",
       "appearanceTitle": "Apparence",
       "exteriorColorLabel": "Couleur extérieure",
+      "originalColorLabel": "Couleur d'origine",
       "interiorColorLabel": "Couleur intérieure",
       "colorOptions": {
         "Noir": "Noir",
@@ -290,6 +300,13 @@
     "step4": {
       "title": "Équipements",
       "subtitle": "Sélectionnez les options et équipements inclus dans votre véhicule.",
+      "specialOptionsTitle": "Options clés & Immatriculation",
+      "specialOptionsSubtitle": "Précisez le niveau d'équipement et le statut d'immatriculation du véhicule.",
+      "fullOptionsTitle": "Full options",
+      "fullOptionsDesc": "Véhicule doté de toutes les options et équipements haut de gamme du modèle.",
+      "plateStatusLabel": "Immatriculation",
+      "withPlate": "Avec plaque",
+      "withoutPlate": "Sans plaque",
       "categories": {
         "comfort": "Confort",
         "safety": "Sécurité",
@@ -423,6 +440,10 @@
       "fuelLabel": "Carburant",
       "conditionLabel": "État",
       "locationLabel": "Localisation",
+      "saleTypeLabel": "Type de vente",
+      "originalColorLabel": "Couleur d'origine",
+      "plateStatusLabel": "Immatriculation",
+      "fullOptionsLabel": "Full options",
       "photosLabel": "Photos",
       "featuresLabel": "Équipements",
       "descriptionLabel": "Description",
