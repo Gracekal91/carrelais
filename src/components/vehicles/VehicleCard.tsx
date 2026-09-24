@@ -50,8 +50,12 @@ export function VehicleCard({ vehicle, priority = false }: VehicleCardProps) {
         </div>
         
         <div className="text-sm text-zinc-500 dark:text-zinc-400 mb-3 flex items-center gap-2 flex-wrap">
-          <span>{vehicle.year}</span>
-          <span>&bull;</span>
+          {vehicle.year ? (
+            <>
+              <span>{vehicle.year}</span>
+              <span>&bull;</span>
+            </>
+          ) : null}
           <span>{t(vehicle.transmission as any)}</span>
           {vehicle.mileage !== undefined && vehicle.mileage !== null && (
             <>

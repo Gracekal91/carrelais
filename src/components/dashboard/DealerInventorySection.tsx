@@ -43,7 +43,7 @@ export default function DealerInventorySection({
         const matchesTitle = vehicle.title?.toLowerCase().includes(q);
         const matchesMake = vehicle.make?.toLowerCase().includes(q);
         const matchesModel = vehicle.model?.toLowerCase().includes(q);
-        const matchesYear = String(vehicle.year).includes(q);
+        const matchesYear = vehicle.year ? String(vehicle.year).includes(q) : false;
         if (!matchesTitle && !matchesMake && !matchesModel && !matchesYear) {
           return false;
         }

@@ -86,11 +86,6 @@ export default function PostCarPage({
   const [customModel, setCustomModel] = useState("");
   const [customCity, setCustomCity] = useState("");
   const [customExteriorColor, setCustomExteriorColor] = useState("");
-  const [customOriginalColor, setCustomOriginalColor] = useState(
-    initialData?.originalColor && !PREDEFINED_COLORS.includes(initialData.originalColor)
-      ? initialData.originalColor
-      : ""
-  );
   const [customInteriorColor, setCustomInteriorColor] = useState("");
   const [photoUrlInput, setPhotoUrlInput] = useState("");
   const [showUrlInput, setShowUrlInput] = useState(false);
@@ -111,7 +106,7 @@ export default function PostCarPage({
   const [formData, setFormData] = useState<Partial<ExtendedVehicleListing>>({
     make: initialData?.make || "",
     model: initialData?.model || "",
-    year: initialData?.year || currentYear,
+    year: initialData?.year !== undefined ? initialData.year : undefined,
     condition: initialData?.condition || "EXCELLENT",
     mileage: initialData?.mileage,
     transmission: initialData?.transmission || "Automatic",
@@ -127,9 +122,7 @@ export default function PostCarPage({
     isNegotiable: initialData?.isNegotiable !== undefined ? initialData.isNegotiable : true,
     financeAvailable: initialData?.financeAvailable || false,
     color: initialData?.color || "Blanc",
-    originalColor: initialData?.originalColor 
-      ? (PREDEFINED_COLORS.includes(initialData.originalColor) ? initialData.originalColor : "Autre")
-      : "Blanc",
+    originalColor: (initialData?.originalColor === "Repeinte" || initialData?.originalColor === "Repeint") ? "Repeinte" : (initialData?.originalColor || "Couleur d'origine"),
     isFullOptions: initialData?.isFullOptions || (initialData?.vehicleOptions?.includes("Full options") ?? false),
     plateStatus: initialData?.plateStatus || (initialData?.vehicleOptions?.includes("Sans plaque") ? "WITHOUT_PLATE" : "WITH_PLATE"),
     vehicleOptions: initialData?.vehicleOptions || ["Avec plaque"],
@@ -328,9 +321,11 @@ export default function PostCarPage({
       const modelVal = (formData.model === "Autre" || formData.make === "Autre") ? customModel.trim() : formData.model;
       if (!modelVal) newErrors.model = t("validation.requiredModel");
 
-      const yearNum = Number(formData.year);
-      if (!formData.year || isNaN(yearNum) || yearNum < 1950 || yearNum > currentYear + 1) {
-        newErrors.year = `Veuillez indiquer une année valide (entre 1950 et ${currentYear + 1})`;
+      if (formData.year !== undefined && formData.year !== null && (formData.year as any) !== "" && (formData.year as any) !== "NONE") {
+        const yearNum = Number(formData.year);
+        if (isNaN(yearNum) || yearNum < 1950 || yearNum > currentYear + 1) {
+          newErrors.year = `Veuillez indiquer une année valide (entre 1950 et ${currentYear + 1})`;
+        }
       }
 
       if (!formData.condition) newErrors.condition = t("validation.requiredCondition");
@@ -389,7 +384,7 @@ export default function PostCarPage({
     const resolvedModel = (formData.model === "Autre" || formData.make === "Autre") ? customModel.trim() : (formData.model || "");
     const resolvedCity = formData.city === "Autre" ? customCity.trim() : (formData.city || "Kinshasa");
     const resolvedColor = formData.color === "Autre" ? (customExteriorColor.trim() || "Autre") : (formData.color || "Blanc");
-    const resolvedOriginalColor = formData.originalColor === "Autre" ? (customOriginalColor.trim() || "Autre") : (formData.originalColor || "Blanc");
+    const resolvedOriginalColor = formData.originalColor || "Couleur d'origine";
     const resolvedInteriorColor = formData.interiorColor === "Autre" ? (customInteriorColor.trim() || "Autre") : (formData.interiorColor || "Noir");
     const resolvedMileage = (formData.mileage !== undefined && formData.mileage !== null && (formData.mileage as any) !== "")
       ? Math.max(0, Number(formData.mileage))
@@ -408,8 +403,12 @@ export default function PostCarPage({
       vehicleOptions: formData.vehicleOptions || (formData.plateStatus === "WITHOUT_PLATE" ? ["Sans plaque"] : ["Avec plaque"]),
       interiorColor: resolvedInteriorColor,
       mileage: resolvedMileage,
-      year: Number(formData.year) || currentYear,
-      title: `${formData.year || currentYear} ${resolvedMake} ${resolvedModel}`,
+      year: (formData.year && !isNaN(Number(formData.year)) && Number(formData.year) > 0)
+        ? Number(formData.year)
+        : undefined,
+      title: (formData.year && !isNaN(Number(formData.year)) && Number(formData.year) > 0)
+        ? `${Number(formData.year)} ${resolvedMake} ${resolvedModel}`
+        : `${resolvedMake} ${resolvedModel}`,
     };
 
     let res;
@@ -543,13 +542,33 @@ export default function PostCarPage({
 
                   {/* Année */}
                   <div>
-                    <label className="block text-sm font-medium mb-1.5 text-zinc-700 dark:text-zinc-300">
-                      {t("step1.yearLabel")} <span className="text-red-500">*</span>
-                    </label>
+                    <div className="flex items-center justify-between mb-1.5">
+                      <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300">
+                        {t("step1.yearLabel")} <span className="text-xs font-normal text-zinc-400">(Optionnel)</span>
+                      </label>
+                      {formData.year ? (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            update("year", undefined);
+                            if (errors.year) {
+                              setErrors(prev => {
+                                const n = { ...prev };
+                                delete n.year;
+                                return n;
+                              });
+                            }
+                          }}
+                          className="text-[11px] text-zinc-400 hover:text-red-500 transition-colors cursor-pointer"
+                        >
+                          Effacer
+                        </button>
+                      ) : null}
+                    </div>
                     <Select
-                      value={formData.year ? String(formData.year) : ""}
+                      value={formData.year ? String(formData.year) : (formData.year === null ? "NONE" : "")}
                       onChange={val => {
-                        update("year", parseInt(val));
+                        update("year", (val && val !== "NONE") ? parseInt(val) : null);
                         if (errors.year) {
                           setErrors(prev => {
                             const n = { ...prev };
@@ -559,10 +578,13 @@ export default function PostCarPage({
                         }
                       }}
                       placeholder="Sélectionner l'année..."
-                      options={Array.from({ length: currentYear - 1970 + 2 }, (_, i) => currentYear + 1 - i).map(y => ({
-                        value: String(y),
-                        label: String(y)
-                      }))}
+                      options={[
+                        { value: "NONE", label: t("step1.yearUnspecified") || "Non précisée" },
+                        ...Array.from({ length: currentYear - 1970 + 2 }, (_, i) => currentYear + 1 - i).map(y => ({
+                          value: String(y),
+                          label: String(y)
+                        }))
+                      ]}
                       className="h-[48px] w-full"
                     />
                     {errors.year && <p className="text-red-500 text-xs mt-1.5">{errors.year}</p>}
@@ -688,6 +710,8 @@ export default function PostCarPage({
                       options={[
                         { value: "Vente directe", label: t("step1.saleTypeOptions.DIRECT") },
                         { value: "Semi directe", label: t("step1.saleTypeOptions.SEMI_DIRECT") },
+                        { value: "Indirecte", label: t("step1.saleTypeOptions.INDIRECT") },
+                        { value: "Non spécifié", label: t("step1.saleTypeOptions.UNSPECIFIED") },
                       ]}
                       className="h-[48px]"
                     />
@@ -900,34 +924,14 @@ export default function PostCarPage({
                       {t("step3.originalColorLabel")}
                     </label>
                     <Select
-                      value={formData.originalColor || "Blanc"}
+                      value={formData.originalColor || "Couleur d'origine"}
                       onChange={val => update("originalColor", val)}
                       options={[
-                        { value: "Blanc", label: t("step3.colorOptions.Blanc") },
-                        { value: "Noir", label: t("step3.colorOptions.Noir") },
-                        { value: "Gris", label: t("step3.colorOptions.Gris") },
-                        { value: "Argent", label: t("step3.colorOptions.Argent") },
-                        { value: "Bleu", label: t("step3.colorOptions.Bleu") },
-                        { value: "Rouge", label: t("step3.colorOptions.Rouge") },
-                        { value: "Vert", label: t("step3.colorOptions.Vert") },
-                        { value: "Marron", label: t("step3.colorOptions.Marron") },
-                        { value: "Beige", label: t("step3.colorOptions.Beige") },
-                        { value: "Jaune", label: t("step3.colorOptions.Jaune") },
-                        { value: "Orange", label: t("step3.colorOptions.Orange") },
-                        { value: "Violet", label: t("step3.colorOptions.Violet") },
-                        { value: "Autre", label: t("step3.colorOptions.Autre") },
+                        { value: "Couleur d'origine", label: t("step3.originalColorOptions.ORIGINAL") },
+                        { value: "Repeinte", label: t("step3.originalColorOptions.REPAINTED") },
                       ]}
                       className="h-[48px]"
                     />
-                    {formData.originalColor === "Autre" && (
-                      <input
-                        type="text"
-                        value={customOriginalColor}
-                        onChange={e => setCustomOriginalColor(e.target.value)}
-                        placeholder="Précisez la couleur d'origine (ex: Blanc Perlé...)"
-                        className="mt-2 w-full h-[46px] px-3.5 border border-zinc-300 dark:border-zinc-700 rounded-lg dark:bg-zinc-800 text-sm animate-in fade-in"
-                      />
-                    )}
                   </div>
 
                   {/* Couleur intérieure */}
@@ -1685,7 +1689,7 @@ export default function PostCarPage({
                       {formData.vehicleType || "Véhicule"}
                     </span>
                     <h3 className="text-2xl font-bold text-zinc-900 dark:text-zinc-100">
-                      {formData.year} {formData.make === "Autre" ? customMake : formData.make} {formData.model === "Autre" ? customModel : formData.model}
+                      {formData.year ? `${formData.year} ` : ""}{formData.make === "Autre" ? customMake : formData.make} {formData.model === "Autre" ? customModel : formData.model}
                     </h3>
                     <p className="text-sm text-zinc-500 dark:text-zinc-400 mt-1">
                       {formData.commune ? `${formData.commune}, ` : ""}{formData.city === "Autre" ? customCity : formData.city}, RDC
@@ -1731,6 +1735,12 @@ export default function PostCarPage({
                   </h4>
                   <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-sm bg-white dark:bg-zinc-900 p-4 rounded-xl border border-zinc-200 dark:border-zinc-800">
                     <div>
+                      <span className="text-zinc-500 text-xs block">{t("step1.yearLabel")}</span>
+                      <span className="font-semibold text-zinc-900 dark:text-zinc-100">
+                        {formData.year || t("step1.yearUnspecified") || "Non précisée"}
+                      </span>
+                    </div>
+                    <div>
                       <span className="text-zinc-500 text-xs block">{t("step7.mileageLabel")}</span>
                       <span className="font-semibold text-zinc-900 dark:text-zinc-100">
                         {formData.mileage ? `${formData.mileage.toLocaleString()} km` : "Non spécifié"}
@@ -1775,13 +1785,21 @@ export default function PostCarPage({
                     <div>
                       <span className="text-zinc-500 text-xs block">{t("step7.saleTypeLabel")}</span>
                       <span className="font-semibold text-zinc-900 dark:text-zinc-100">
-                        {formData.saleType || "Vente directe"}
+                        {formData.saleType === "Semi directe"
+                          ? t("step1.saleTypeOptions.SEMI_DIRECT")
+                          : formData.saleType === "Indirecte"
+                          ? t("step1.saleTypeOptions.INDIRECT")
+                          : formData.saleType === "Non spécifié"
+                          ? t("step1.saleTypeOptions.UNSPECIFIED")
+                          : t("step1.saleTypeOptions.DIRECT")}
                       </span>
                     </div>
                     <div>
                       <span className="text-zinc-500 text-xs block">{t("step7.originalColorLabel")}</span>
                       <span className="font-semibold text-zinc-900 dark:text-zinc-100">
-                        {formData.originalColor === "Autre" ? (customOriginalColor || "Autre") : (formData.originalColor || "Blanc")}
+                        {formData.originalColor === "Repeinte"
+                          ? t("step3.originalColorOptions.REPAINTED")
+                          : t("step3.originalColorOptions.ORIGINAL")}
                       </span>
                     </div>
                     <div>

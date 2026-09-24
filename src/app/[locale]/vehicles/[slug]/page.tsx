@@ -35,9 +35,10 @@ export async function generateMetadata(props: {
   const locationText = vehicle.city || vehicle.location || (isEn ? "DRC" : "RDC");
   const priceFormatted = formatPrice(vehicle.price);
 
+  const yearPrefix = vehicle.year ? `${vehicle.year} ` : "";
   const title = isEn
-    ? `${vehicle.year} ${vehicle.make} ${vehicle.model} for Sale in ${locationText} (${priceFormatted}) | Car Relais`
-    : `${vehicle.year} ${vehicle.make} ${vehicle.model} à vendre à ${locationText} (${priceFormatted}) | Car Relais`;
+    ? `${yearPrefix}${vehicle.make} ${vehicle.model} for Sale in ${locationText} (${priceFormatted}) | Car Relais`
+    : `${yearPrefix}${vehicle.make} ${vehicle.model} à vendre à ${locationText} (${priceFormatted}) | Car Relais`;
 
   const conditionText = isEn
     ? vehicle.condition === "NEW" ? "New" : "Used"
@@ -124,6 +125,22 @@ export default async function VehicleDetailPage(props: { params: Promise<{ slug:
   const isLocal = vehicle.availability === "IN_CONGO";
   const t = await getTranslations("VehicleDetail");
   const tVehicles = await getTranslations("Vehicles");
+
+  const getSaleTypeLabel = (saleType?: string) => {
+    if (!saleType) return isEn ? "Direct sale" : "Vente directe";
+    if (saleType === "Vente directe" || saleType === "DIRECT") return isEn ? "Direct sale" : "Vente directe";
+    if (saleType === "Semi directe" || saleType === "SEMI_DIRECT") return isEn ? "Semi-direct" : "Semi directe";
+    if (saleType === "Indirecte" || saleType === "INDIRECT") return isEn ? "Indirect" : "Indirecte";
+    if (saleType === "Non spécifié" || saleType === "UNSPECIFIED") return isEn ? "Not specified" : "Non spécifié";
+    return saleType;
+  };
+
+  const getOriginalColorLabel = (origColor?: string) => {
+    if (!origColor) return "";
+    if (origColor === "Couleur d'origine" || origColor === "ORIGINAL") return isEn ? "Original color" : "Couleur d'origine";
+    if (origColor === "Repeinte" || origColor === "Repeint" || origColor === "REPAINTED") return isEn ? "Repainted" : "Repeinte";
+    return origColor;
+  };
 
   const canonicalUrl = isEn
     ? `${baseUrl}/en/vehicles/${vehicle.slug}`
@@ -238,10 +255,10 @@ export default async function VehicleDetailPage(props: { params: Promise<{ slug:
                     Full options
                   </span>
                 )}
-                {vehicle.saleType && (
+                {vehicle.saleType && vehicle.saleType !== "Non spécifié" && vehicle.saleType !== "UNSPECIFIED" && (
                   <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-primary/10 text-primary border border-primary/20">
                     <Tag className="w-3 h-3" />
-                    {vehicle.saleType}
+                    {getSaleTypeLabel(vehicle.saleType)}
                   </span>
                 )}
               </div>
@@ -267,7 +284,7 @@ export default async function VehicleDetailPage(props: { params: Promise<{ slug:
             <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
               <div className="flex flex-col gap-1">
                 <span className="text-zinc-500 text-sm flex items-center gap-1.5"><Calendar className="w-4 h-4" /> {t("year")}</span>
-                <span className="font-semibold">{vehicle.year}</span>
+                <span className="font-semibold">{vehicle.year || (params.locale === "en" ? "Not specified" : "Non précisée")}</span>
               </div>
               <div className="flex flex-col gap-1">
                 <span className="text-zinc-500 text-sm flex items-center gap-1.5"><Gauge className="w-4 h-4" /> {t("mileage")}</span>
@@ -298,12 +315,12 @@ export default async function VehicleDetailPage(props: { params: Promise<{ slug:
               {vehicle.originalColor && (
                 <div className="flex flex-col gap-1">
                   <span className="text-zinc-500 text-sm flex items-center gap-1.5"><Palette className="w-4 h-4" /> {t("originalColor")}</span>
-                  <span className="font-semibold">{vehicle.originalColor}</span>
+                  <span className="font-semibold">{getOriginalColorLabel(vehicle.originalColor)}</span>
                 </div>
               )}
               <div className="flex flex-col gap-1">
                 <span className="text-zinc-500 text-sm flex items-center gap-1.5"><Tag className="w-4 h-4" /> {t("saleType")}</span>
-                <span className="font-semibold">{vehicle.saleType || "Vente directe"}</span>
+                <span className="font-semibold">{getSaleTypeLabel(vehicle.saleType)}</span>
               </div>
               <div className="flex flex-col gap-1">
                 <span className="text-zinc-500 text-sm flex items-center gap-1.5"><ShieldCheck className="w-4 h-4" /> {t("plate")}</span>
@@ -385,10 +402,10 @@ export default async function VehicleDetailPage(props: { params: Promise<{ slug:
                     Full options
                   </span>
                 )}
-                {vehicle.saleType && (
+                {vehicle.saleType && vehicle.saleType !== "Non spécifié" && vehicle.saleType !== "UNSPECIFIED" && (
                   <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-primary/10 text-primary border border-primary/20">
                     <Tag className="w-3 h-3" />
-                    {vehicle.saleType}
+                    {getSaleTypeLabel(vehicle.saleType)}
                   </span>
                 )}
               </div>

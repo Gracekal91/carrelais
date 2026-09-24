@@ -515,7 +515,13 @@ export async function createListing(data: Partial<ExtendedVehicleListing>) {
       : (data.location || owner.location || "Kinshasa, RDC");
 
     const uniqueTimestamp = Date.now();
-    const slug = `${cleanMake}-${cleanModel}-${data.year || new Date().getFullYear()}-${uniqueTimestamp}`
+    const cleanYear = (data.year !== undefined && data.year !== null && String(data.year).trim() !== "" && Number(data.year) > 0)
+      ? Number(data.year)
+      : undefined;
+    const slugBase = cleanYear
+      ? `${cleanMake}-${cleanModel}-${cleanYear}-${uniqueTimestamp}`
+      : `${cleanMake}-${cleanModel}-${uniqueTimestamp}`;
+    const slug = slugBase
       .toLowerCase()
       .replace(/[^a-z0-9]+/g, "-")
       .replace(/(^-|-$)+/g, "");
@@ -542,10 +548,10 @@ export async function createListing(data: Partial<ExtendedVehicleListing>) {
       ...data,
       slug,
       ownerId: owner.id,
-      title: data.title || `${data.year} ${cleanMake} ${cleanModel}`,
+      title: data.title || (cleanYear ? `${cleanYear} ${cleanMake} ${cleanModel}` : `${cleanMake} ${cleanModel}`),
       make: cleanMake,
       model: cleanModel,
-      year: Number(data.year) || new Date().getFullYear(),
+      year: cleanYear,
       price: Math.max(0, Number(data.price) || 0),
       mileage: (data.mileage !== undefined && data.mileage !== null && String(data.mileage).trim() !== "")
         ? Math.max(0, Number(data.mileage))
@@ -639,6 +645,11 @@ export async function updateListing(listingId: string, data: Partial<ExtendedVeh
     if (data.isFullOptions !== undefined) updateFields.isFullOptions = Boolean(data.isFullOptions);
     if (data.plateStatus !== undefined) updateFields.plateStatus = data.plateStatus;
     if (data.vehicleOptions !== undefined) updateFields.vehicleOptions = Array.isArray(data.vehicleOptions) ? data.vehicleOptions : [];
+    if ("year" in data) {
+      updateFields.year = (data.year !== undefined && data.year !== null && String(data.year).trim() !== "" && Number(data.year) > 0)
+        ? Number(data.year)
+        : null;
+    }
 
     await ListingModel.findByIdAndUpdate(listingId, { $set: updateFields });
 

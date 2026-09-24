@@ -178,6 +178,7 @@
       "otherOption": "Autre",
       "customModelPlaceholder": "Préciser le modèle",
       "yearLabel": "Année",
+      "yearUnspecified": "Non précisée",
       "conditionLabel": "État du véhicule",
       "conditionOptions": {
         "NEW": "Neuf",
@@ -210,7 +211,9 @@
       "saleTypeLabel": "Type de vente",
       "saleTypeOptions": {
         "DIRECT": "Vente directe",
-        "SEMI_DIRECT": "Semi directe"
+        "SEMI_DIRECT": "Semi directe",
+        "INDIRECT": "Indirecte",
+        "UNSPECIFIED": "Non spécifié"
       },
       "vehicleTypeLabel": "Type de véhicule",
       "vehicleTypeOptions": {
@@ -259,6 +262,10 @@
       "appearanceTitle": "Apparence",
       "exteriorColorLabel": "Couleur extérieure",
       "originalColorLabel": "Couleur d'origine",
+      "originalColorOptions": {
+        "ORIGINAL": "Couleur d'origine",
+        "REPAINTED": "Repeinte"
+      },
       "interiorColorLabel": "Couleur intérieure",
       "colorOptions": {
         "Noir": "Noir",

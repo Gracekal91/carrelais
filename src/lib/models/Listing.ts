@@ -34,7 +34,7 @@ export interface IListing {
   title: string;
   make: string;
   model: string;
-  year: number;
+  year?: number;
   price: number;
   currency: string;
   mileage?: number;
@@ -123,7 +123,7 @@ const ListingSchema = new Schema<IListing>(
     title: { type: String, required: true, trim: true },
     make: { type: String, required: true, trim: true, index: true },
     model: { type: String, required: true, trim: true, index: true },
-    year: { type: Number, required: true, index: true },
+    year: { type: Number, required: false, index: true },
     price: { type: Number, required: true, min: 0, index: true },
     currency: { type: String, default: "USD" },
     mileage: { type: Number, required: false, min: 0 },

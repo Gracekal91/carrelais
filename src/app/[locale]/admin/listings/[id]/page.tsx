@@ -59,7 +59,7 @@ export default async function AdminListingReviewPage({ params }: { params: Promi
           <div>
             <div className="flex items-center gap-2.5">
               <h1 className="text-xl md:text-2xl font-black text-zinc-900 dark:text-zinc-100">
-                {listing.year} {listing.make} {listing.model}
+                {listing.year ? `${listing.year} ` : ""}{listing.make} {listing.model}
               </h1>
               <ListingStatusBadge status={listing.status} size="md" />
             </div>
@@ -108,7 +108,7 @@ export default async function AdminListingReviewPage({ params }: { params: Promi
               </div>
               <div className="p-3 bg-zinc-50 dark:bg-zinc-800/40 rounded-xl border border-zinc-100 dark:border-zinc-800">
                 <span className="text-zinc-500 block mb-0.5">Année</span>
-                <span className="font-bold text-zinc-900 dark:text-zinc-100">{listing.year}</span>
+                <span className="font-bold text-zinc-900 dark:text-zinc-100">{listing.year || "Non précisée"}</span>
               </div>
               <div className="p-3 bg-zinc-50 dark:bg-zinc-800/40 rounded-xl border border-zinc-100 dark:border-zinc-800">
                 <span className="text-zinc-500 block mb-0.5">Carrosserie</span>
@@ -303,7 +303,7 @@ export default async function AdminListingReviewPage({ params }: { params: Promi
           <ListingReviewActions
             listingId={listing.id}
             currentStatus={listing.status}
-            title={`${listing.year} ${listing.make} ${listing.model}`}
+            title={listing.title || `${listing.year ? `${listing.year} ` : ""}${listing.make} ${listing.model}`}
           />
 
           {/* Seller Information Card */}

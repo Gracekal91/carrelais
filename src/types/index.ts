@@ -23,7 +23,7 @@ export interface VehicleListing {
   title: string;
   make: string;
   model: string;
-  year: number;
+  year?: number;
   price: number;
   currency: string;
   mileage?: number;
@@ -43,8 +43,8 @@ export interface VehicleListing {
   isVerified: boolean;
   engineSize?: string;
   color?: string;
-  originalColor?: string;
-  saleType?: "Vente directe" | "Semi directe" | "Directe" | string;
+  originalColor?: "Couleur d'origine" | "Repeinte" | string;
+  saleType?: "Vente directe" | "Semi directe" | "Indirecte" | "Non spécifié" | string;
   isFullOptions?: boolean;
   plateStatus?: "WITH_PLATE" | "WITHOUT_PLATE" | string;
   vehicleOptions?: string[];

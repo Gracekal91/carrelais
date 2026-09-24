@@ -566,7 +566,9 @@ function VehicleCardList({ vehicle }: { vehicle: VehicleListing }) {
             <span className="font-bold text-xl text-primary shrink-0">{formatPrice(vehicle.price)}</span>
           </div>
           <div className="flex flex-wrap gap-4 text-sm text-zinc-500 dark:text-zinc-400">
-            <span className="flex items-center gap-1"><Calendar className="w-3.5 h-3.5" /> {vehicle.year}</span>
+            {vehicle.year ? (
+              <span className="flex items-center gap-1"><Calendar className="w-3.5 h-3.5" /> {vehicle.year}</span>
+            ) : null}
             <span className="flex items-center gap-1"><Settings className="w-3.5 h-3.5" /> {t(vehicle.transmission as any)}</span>
             <span className="flex items-center gap-1"><Fuel className="w-3.5 h-3.5" /> {t(vehicle.fuelType as any)}</span>
             {vehicle.mileage !== undefined && vehicle.mileage !== null && (
