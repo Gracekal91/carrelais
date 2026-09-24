@@ -49,7 +49,7 @@ export function Select({
   }, [isOpen]);
 
   return (
-    <div className="relative w-full" ref={containerRef}>
+    <div className={cn("relative w-full", isOpen && "z-50")} ref={containerRef}>
       <button
         type="button"
         id={id}
@@ -67,7 +67,7 @@ export function Select({
       </button>
       
       {isOpen && (
-        <div className="absolute z-50 mt-1 max-h-60 w-full overflow-auto rounded-md border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 py-1 text-base shadow-lg ring-1 ring-black/5 focus:outline-none sm:text-sm">
+        <div className="absolute z-[100] mt-1 max-h-60 w-full overflow-auto rounded-md border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 py-1 text-base shadow-xl ring-1 ring-black/5 focus:outline-none sm:text-sm">
           {options.length === 0 ? (
             <div className="relative cursor-default select-none px-4 py-2 text-zinc-500">
               No options

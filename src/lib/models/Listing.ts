@@ -88,6 +88,9 @@ export interface IListing {
     allowCalls?: boolean;
     allowWhatsapp?: boolean;
     allowDirectMessage?: boolean;
+    whatsappNumber?: string;
+    callNumber?: string;
+    showPhoneNumber?: boolean;
   };
   views: number;
   contacts: number;
@@ -190,6 +193,9 @@ const ListingSchema = new Schema<IListing>(
       allowCalls: { type: Boolean, default: true },
       allowWhatsapp: { type: Boolean, default: true },
       allowDirectMessage: { type: Boolean, default: false },
+      whatsappNumber: { type: String, trim: true },
+      callNumber: { type: String, trim: true },
+      showPhoneNumber: { type: Boolean, default: true },
     },
     views: { type: Number, default: 0 },
     contacts: { type: Number, default: 0 },

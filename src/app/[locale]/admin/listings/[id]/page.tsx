@@ -18,7 +18,8 @@ import {
   ExternalLink,
   History,
   AlertCircle,
-  Sparkles
+  Sparkles,
+  MessageCircle
 } from "lucide-react";
 import ListingStatusBadge from "@/components/admin/ListingStatusBadge";
 import ListingPhotoGallery from "@/components/admin/ListingPhotoGallery";
@@ -333,8 +334,30 @@ export default async function AdminListingReviewPage({ params }: { params: Promi
             <div className="space-y-2.5 text-xs pt-2 border-t border-zinc-100 dark:border-zinc-800">
               <div className="flex items-center gap-2 text-zinc-600 dark:text-zinc-400">
                 <Phone className="w-3.5 h-3.5 text-zinc-400 shrink-0" />
-                <span>{listing.seller?.phone || "Non renseigné"}</span>
+                <span>Tél : {listing.contactOptions?.callNumber || listing.seller?.phone || "Non renseigné"}</span>
               </div>
+              {(listing.contactOptions?.whatsappNumber || listing.seller?.whatsapp) && (
+                <div className="flex items-center gap-2 text-zinc-600 dark:text-zinc-400">
+                  <MessageCircle className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
+                  <span>WhatsApp : {listing.contactOptions?.whatsappNumber || listing.seller?.whatsapp}</span>
+                </div>
+              )}
+              {listing.contactOptions && (
+                <div className="p-2 bg-zinc-50 dark:bg-zinc-800/40 rounded-lg border border-zinc-100 dark:border-zinc-800 space-y-1 text-[11px] text-zinc-500 dark:text-zinc-400">
+                  <span className="font-semibold text-zinc-700 dark:text-zinc-300 block">Affichage contacts acheteurs :</span>
+                  <div className="flex flex-wrap gap-2">
+                    <span className={listing.contactOptions.allowCalls !== false ? "text-emerald-600" : "text-zinc-400"}>
+                      • Appels {listing.contactOptions.allowCalls !== false ? "actifs" : "masqués"}
+                    </span>
+                    <span className={listing.contactOptions.allowWhatsapp !== false ? "text-emerald-600" : "text-zinc-400"}>
+                      • WhatsApp {listing.contactOptions.allowWhatsapp !== false ? "actif" : "masqué"}
+                    </span>
+                    <span className={listing.contactOptions.showPhoneNumber !== false ? "text-emerald-600" : "text-zinc-400"}>
+                      • Numéro {listing.contactOptions.showPhoneNumber !== false ? "affiché" : "masqué"}
+                    </span>
+                  </div>
+                </div>
+              )}
               <div className="flex items-center gap-2 text-zinc-600 dark:text-zinc-400">
                 <MapPin className="w-3.5 h-3.5 text-zinc-400 shrink-0" />
                 <span>{listing.seller?.location || listing.location}</span>

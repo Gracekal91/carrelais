@@ -544,6 +544,16 @@ export async function createListing(data: Partial<ExtendedVehicleListing>) {
     const isSuperAdminOrAdmin = owner.role === "SUPER_ADMIN" || owner.role === "ADMIN";
     const initialStatus = data.status === "DRAFT" ? "DRAFT" : (isSuperAdminOrAdmin ? "PUBLISHED" : "PENDING_REVIEW");
 
+    const customCallNumber = (isSuperAdminOrAdmin && data.contactOptions?.callNumber?.trim())
+      ? data.contactOptions.callNumber.trim()
+      : undefined;
+    const customWhatsappNumber = (isSuperAdminOrAdmin && data.contactOptions?.whatsappNumber?.trim())
+      ? data.contactOptions.whatsappNumber.trim()
+      : undefined;
+
+    const resolvedPhone = customCallNumber || (isSuperAdminOrAdmin && data.seller?.phone) || owner.phone;
+    const resolvedWhatsapp = customWhatsappNumber || (isSuperAdminOrAdmin && data.seller?.whatsapp) || owner.whatsapp || owner.phone;
+
     const newListing = await ListingModel.create({
       ...data,
       slug,
@@ -579,6 +589,14 @@ export async function createListing(data: Partial<ExtendedVehicleListing>) {
       financeAvailable: Boolean(data.financeAvailable),
       source: data.source || undefined,
       sourceUrl: data.sourceUrl || undefined,
+      contactOptions: {
+        allowCalls: data.contactOptions?.allowCalls !== false,
+        allowWhatsapp: data.contactOptions?.allowWhatsapp !== false,
+        showPhoneNumber: data.contactOptions?.showPhoneNumber !== false,
+        callNumber: customCallNumber || undefined,
+        whatsappNumber: customWhatsappNumber || undefined,
+        allowDirectMessage: Boolean(data.contactOptions?.allowDirectMessage),
+      },
       color: data.color || "Blanc",
       originalColor: data.originalColor || undefined,
       saleType: data.saleType || "Vente directe",
@@ -591,8 +609,8 @@ export async function createListing(data: Partial<ExtendedVehicleListing>) {
         role: owner.role,
         type: owner.accountType,
         isVerified: Boolean(owner.isVerified || isSuperAdminOrAdmin),
-        phone: owner.phone,
-        whatsapp: owner.whatsapp || owner.phone,
+        phone: resolvedPhone,
+        whatsapp: resolvedWhatsapp,
         location: owner.location || resolvedLocation,
         joinedAt: owner.joinedAt,
       },
@@ -645,6 +663,28 @@ export async function updateListing(listingId: string, data: Partial<ExtendedVeh
     if (data.isFullOptions !== undefined) updateFields.isFullOptions = Boolean(data.isFullOptions);
     if (data.plateStatus !== undefined) updateFields.plateStatus = data.plateStatus;
     if (data.vehicleOptions !== undefined) updateFields.vehicleOptions = Array.isArray(data.vehicleOptions) ? data.vehicleOptions : [];
+    if (data.contactOptions !== undefined) {
+      const customCall = (isAdmin && data.contactOptions.callNumber !== undefined)
+        ? data.contactOptions.callNumber.trim()
+        : listing.contactOptions?.callNumber;
+      const customWa = (isAdmin && data.contactOptions.whatsappNumber !== undefined)
+        ? data.contactOptions.whatsappNumber.trim()
+        : listing.contactOptions?.whatsappNumber;
+
+      updateFields.contactOptions = {
+        ...(listing.contactOptions || {}),
+        ...data.contactOptions,
+        callNumber: customCall || undefined,
+        whatsappNumber: customWa || undefined,
+      };
+
+      if (isAdmin && customCall !== undefined) {
+        updateFields["seller.phone"] = customCall || listing.seller?.phone;
+      }
+      if (isAdmin && customWa !== undefined) {
+        updateFields["seller.whatsapp"] = customWa || listing.seller?.whatsapp;
+      }
+    }
     if ("year" in data) {
       updateFields.year = (data.year !== undefined && data.year !== null && String(data.year).trim() !== "" && Number(data.year) > 0)
         ? Number(data.year)

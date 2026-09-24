@@ -1,6 +1,7 @@
 "use client";
 
 import { Link, usePathname, useRouter } from "@/i18n/routing";
+import Image from "next/image";
 import { Button } from "../ui/Button";
 import { ThemeToggle } from "../ThemeToggle";
 import { useTranslations, useLocale } from "next-intl";
@@ -33,8 +34,15 @@ export function Header() {
     <header className="sticky top-0 z-50 w-full border-b border-primary-foreground/10 bg-primary text-white backdrop-blur supports-[backdrop-filter]:bg-primary/95">
       <div className="container mx-auto px-4 h-14 md:h-16 flex items-center justify-between">
         <div className="flex items-center gap-6">
-          <Link href="/" className="flex items-center gap-2">
-            <span className="text-xl md:text-2xl font-black tracking-tight">{t("title")}</span>
+          <Link href="/" aria-label="Car Relais" className="flex items-center group">
+            <Image
+              src="/logo_white.png"
+              alt="Car Relais"
+              width={75}
+              height={42}
+              priority
+              className="h-8 sm:h-9 md:h-10 w-auto object-contain transition-transform group-hover:scale-105"
+            />
           </Link>
           <nav className="hidden md:flex gap-6">
             <Link href="/vehicles" className="text-sm font-medium hover:text-white/80 transition-colors">

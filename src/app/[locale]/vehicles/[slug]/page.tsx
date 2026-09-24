@@ -464,11 +464,12 @@ export default async function VehicleDetailPage(props: { params: Promise<{ slug:
                 vehicleTitle={vehicle.title}
                 whatsappLabel={t("whatsapp")}
                 callLabel={t("callSeller")}
-                phone={vehicle.seller.phone}
-                whatsapp={vehicle.seller.whatsapp}
+                phone={vehicle.contactOptions?.callNumber || vehicle.seller?.phone}
+                whatsapp={vehicle.contactOptions?.whatsappNumber || vehicle.seller?.whatsapp}
                 source={vehicle.source}
                 sourceUrl={vehicle.sourceUrl}
                 contactOptions={vehicle.contactOptions}
+                phoneLabel={isEn ? "Phone" : "Tél"}
               />
 
               <div className="pt-4 flex justify-center">

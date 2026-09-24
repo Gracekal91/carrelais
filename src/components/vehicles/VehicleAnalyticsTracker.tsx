@@ -27,7 +27,11 @@ interface VehicleContactButtonsProps {
     allowCalls?: boolean;
     allowWhatsapp?: boolean;
     allowDirectMessage?: boolean;
+    whatsappNumber?: string;
+    callNumber?: string;
+    showPhoneNumber?: boolean;
   };
+  phoneLabel?: string;
 }
 
 function cleanPhoneForWhatsApp(rawNumber?: string): string {
@@ -50,13 +54,18 @@ export function VehicleContactButtons({
   source,
   sourceUrl,
   contactOptions,
+  phoneLabel = "Tél",
 }: VehicleContactButtonsProps) {
   const allowWhatsapp = contactOptions?.allowWhatsapp !== false;
   const allowCalls = contactOptions?.allowCalls !== false;
+  const showPhoneNumber = contactOptions?.showPhoneNumber !== false;
 
-  const targetWhatsapp = whatsapp || phone;
+  const targetWhatsapp = contactOptions?.whatsappNumber || whatsapp || phone;
+  const targetPhone = contactOptions?.callNumber || phone;
   const cleanWhatsappNumber = cleanPhoneForWhatsApp(targetWhatsapp);
-  const cleanPhoneNumber = phone?.replace(/[^0-9+]/g, "") || cleanWhatsappNumber;
+  const cleanPhoneNumber = targetPhone?.replace(/[^0-9+]/g, "") || cleanWhatsappNumber;
+  const displayPhoneNumber = targetPhone || (cleanPhoneNumber ? `+${cleanPhoneNumber.replace(/^\+/, "")}` : "");
+  const displayWhatsappNumber = targetWhatsapp;
 
   const handleChat = async () => {
     await incrementAnalytics(listingId, "chats").catch(console.error);
@@ -152,7 +161,7 @@ export function VehicleContactButtons({
           className="w-full lg:w-[90%] flex items-center justify-center gap-2 text-base font-semibold bg-green-600 hover:bg-green-700 text-white shadow-sm"
         >
           <MessageCircle className="w-5 h-5" />
-          {whatsappLabel}
+          <span>{whatsappLabel}</span>
         </Button>
       )}
 
@@ -165,8 +174,44 @@ export function VehicleContactButtons({
           className="w-full lg:w-[90%] flex items-center justify-center gap-2 text-base font-semibold border-zinc-200 dark:border-zinc-700 hover:bg-zinc-50 dark:hover:bg-zinc-800"
         >
           <Phone className="w-5 h-5" />
-          {callLabel}
+          <span>{callLabel}</span>
         </Button>
+      )}
+
+      {/* Display Phone Number & WhatsApp directly when showPhoneNumber is enabled */}
+      {showPhoneNumber && (displayPhoneNumber || displayWhatsappNumber) && (
+        <div className="w-full lg:w-[90%] p-3 rounded-xl bg-zinc-50 dark:bg-zinc-800/60 border border-zinc-200/80 dark:border-zinc-700/80 text-xs space-y-2 mt-0.5">
+          {displayPhoneNumber && (
+            <div className="flex items-center justify-between gap-2">
+              <span className="text-zinc-500 dark:text-zinc-400 flex items-center gap-1.5">
+                <Phone className="w-3.5 h-3.5 text-zinc-400" />
+                {phoneLabel} :
+              </span>
+              <a
+                href={`tel:${cleanPhoneNumber}`}
+                className="font-mono font-bold text-zinc-900 dark:text-zinc-100 hover:text-primary transition-colors select-all"
+              >
+                {displayPhoneNumber}
+              </a>
+            </div>
+          )}
+          {displayWhatsappNumber && displayWhatsappNumber !== displayPhoneNumber && (
+            <div className="flex items-center justify-between gap-2">
+              <span className="text-zinc-500 dark:text-zinc-400 flex items-center gap-1.5">
+                <MessageCircle className="w-3.5 h-3.5 text-emerald-500" />
+                WhatsApp :
+              </span>
+              <a
+                href={`https://wa.me/${cleanWhatsappNumber}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="font-mono font-bold text-emerald-600 dark:text-emerald-400 hover:underline transition-colors select-all"
+              >
+                {displayWhatsappNumber}
+              </a>
+            </div>
+          )}
+        </div>
       )}
     </div>
   );

@@ -73,5 +73,8 @@ export interface VehicleListing {
     allowCalls?: boolean;
     allowWhatsapp?: boolean;
     allowDirectMessage?: boolean;
+    whatsappNumber?: string;
+    callNumber?: string;
+    showPhoneNumber?: boolean;
   };
 }

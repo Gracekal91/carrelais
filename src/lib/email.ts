@@ -28,15 +28,14 @@ function getEmailHtml({
     body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; margin: 0; padding: 0; background-color: #f4f4f5; color: #18181b; }
     .wrapper { width: 100%; max-width: 600px; margin: 0 auto; padding: 24px 16px; }
     .card { background-color: #ffffff; border-radius: 16px; padding: 36px 28px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05), 0 2px 4px -2px rgba(0,0,0,0.05); border: 1px solid #e4e4e7; }
-    .brand-header { text-align: center; margin-bottom: 28px; }
-    .brand-logo { display: inline-flex; align-items: center; justify-content: center; font-size: 24px; font-weight: 800; color: #059669; text-decoration: none; letter-spacing: -0.5px; }
-    .brand-badge { background-color: #ecfdf5; color: #059669; font-size: 11px; font-weight: 700; padding: 4px 8px; border-radius: 9999px; margin-left: 8px; text-transform: uppercase; }
+    .brand-logo { display: inline-flex; align-items: center; justify-content: center; font-size: 24px; font-weight: 800; color: #ba5507; text-decoration: none; letter-spacing: -0.5px; }
+    .brand-badge { background-color: #fff7ed; color: #ba5507; font-size: 11px; font-weight: 700; padding: 4px 8px; border-radius: 9999px; margin-left: 8px; text-transform: uppercase; }
     .title { font-size: 22px; font-weight: 700; color: #18181b; margin: 0 0 16px 0; text-align: center; }
-    .otp-container { background-color: #f0fdf4; border: 2px dashed #10b981; border-radius: 12px; padding: 20px; text-align: center; margin: 24px 0; }
-    .otp-code { font-family: 'Courier New', Courier, monospace; font-size: 36px; font-weight: 800; letter-spacing: 8px; color: #047857; margin: 0; }
-    .otp-hint { font-size: 12px; color: #065f46; margin-top: 8px; font-weight: 500; }
-    .btn { display: inline-block; background-color: #059669; color: #ffffff !important; font-weight: 600; text-decoration: none; padding: 14px 28px; border-radius: 10px; font-size: 15px; text-align: center; margin-top: 16px; }
-    .btn:hover { background-color: #047857; }
+    .otp-container { background-color: #fff7ed; border: 2px dashed #ba5507; border-radius: 12px; padding: 20px; text-align: center; margin: 24px 0; }
+    .otp-code { font-family: 'Courier New', Courier, monospace; font-size: 36px; font-weight: 800; letter-spacing: 8px; color: #ba5507; margin: 0; }
+    .otp-hint { font-size: 12px; color: #9a4405; margin-top: 8px; font-weight: 500; }
+    .btn { display: inline-block; background-color: #ba5507; color: #ffffff !important; font-weight: 600; text-decoration: none; padding: 14px 28px; border-radius: 10px; font-size: 15px; text-align: center; margin-top: 16px; }
+    .btn:hover { background-color: #9a4405; }
     .footer { text-align: center; margin-top: 24px; font-size: 12px; color: #71717a; line-height: 1.5; }
     .divider { height: 1px; background-color: #e4e4e7; margin: 24px 0; }
     .note { font-size: 13px; color: #52525b; line-height: 1.6; }

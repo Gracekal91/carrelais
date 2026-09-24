@@ -30,8 +30,8 @@ export async function generateMetadata(props: {
   const baseUrl = getBaseUrl();
 
   const titleDefault = isEn
-    ? "Car Relais — Premier Automotive Marketplace in DRC"
-    : "Car Relais — #1 Marché Automobile en RDC | Voitures d'occasion & neuves";
+    ? "Car Relais - Premier Automotive Marketplace in DRC"
+    : "Car Relais - #1 Marché Automobile en RDC | Voitures d'occasion & neuves";
 
   const description = isEn
     ? "Buy, sell, and import verified vehicles in the Democratic Republic of Congo. Discover cars for sale in Kinshasa and Lubumbashi from verified dealers."
@@ -116,11 +116,11 @@ export async function generateMetadata(props: {
 
 export default async function RootLayout(props: {
   children: React.ReactNode;
-  params: Promise<{locale: string}>;
+  params: Promise<{ locale: string }>;
 }) {
   const params = await props.params;
   const { locale } = params;
-  
+
   if (!(routing.locales as readonly string[]).includes(locale)) {
     notFound();
   }

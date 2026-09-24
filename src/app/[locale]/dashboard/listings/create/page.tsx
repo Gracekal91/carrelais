@@ -5,7 +5,8 @@ import { useRouter, Link } from "@/i18n/routing";
 import { createListing, updateListing, getAuthUser } from "@/lib/actions";
 import { 
   Check, ChevronLeft, ChevronRight, Upload, X, Star, 
-  Image as ImageIcon, AlertCircle, Info, Sparkles, Loader2 
+  Image as ImageIcon, AlertCircle, Info, Sparkles, Loader2,
+  Phone, MessageCircle
 } from "lucide-react";
 import { ExtendedVehicleListing } from "@/lib/db/schema";
 import { Select } from "@/components/ui/Select";
@@ -143,9 +144,12 @@ export default function PostCarPage({
     description: initialData?.description || "",
     source: initialData?.source || "OTHER",
     sourceUrl: initialData?.sourceUrl || "",
-    contactOptions: initialData?.contactOptions || {
-      allowCalls: true,
-      allowWhatsapp: true,
+    contactOptions: {
+      allowCalls: initialData?.contactOptions?.allowCalls !== false,
+      allowWhatsapp: initialData?.contactOptions?.allowWhatsapp !== false,
+      showPhoneNumber: initialData?.contactOptions?.showPhoneNumber !== false,
+      whatsappNumber: initialData?.contactOptions?.whatsappNumber || initialData?.seller?.whatsapp || "",
+      callNumber: initialData?.contactOptions?.callNumber || initialData?.seller?.phone || "",
       allowDirectMessage: false,
     },
   });
@@ -401,6 +405,14 @@ export default function PostCarPage({
       isFullOptions: Boolean(formData.isFullOptions),
       plateStatus: formData.plateStatus || "WITH_PLATE",
       vehicleOptions: formData.vehicleOptions || (formData.plateStatus === "WITHOUT_PLATE" ? ["Sans plaque"] : ["Avec plaque"]),
+      contactOptions: {
+        allowCalls: formData.contactOptions?.allowCalls !== false,
+        allowWhatsapp: formData.contactOptions?.allowWhatsapp !== false,
+        showPhoneNumber: formData.contactOptions?.showPhoneNumber !== false,
+        callNumber: formData.contactOptions?.callNumber?.trim() || undefined,
+        whatsappNumber: formData.contactOptions?.whatsappNumber?.trim() || undefined,
+        allowDirectMessage: false,
+      },
       interiorColor: resolvedInteriorColor,
       mileage: resolvedMileage,
       year: (formData.year && !isNaN(Number(formData.year)) && Number(formData.year) > 0)
@@ -1580,54 +1592,58 @@ export default function PostCarPage({
                 <div className="pt-6 border-t border-zinc-100 dark:border-zinc-800 bg-amber-50/60 dark:bg-amber-950/20 p-5 rounded-2xl border border-amber-200 dark:border-amber-800/50 space-y-5">
                   <div className="flex items-center gap-2 text-amber-700 dark:text-amber-400">
                     <Sparkles className="w-5 h-5 shrink-0" />
-                    <h3 className="font-bold text-base">Configuration Super Admin : Source & Moyens de contact</h3>
+                    <h3 className="font-bold text-base">Configuration Super Admin : Moyens de contact & Source</h3>
                   </div>
                   <p className="text-xs text-zinc-600 dark:text-zinc-400">
-                    Indiquez la provenance de cette annonce si elle est importée depuis un réseau social. Vous pouvez également contrôler les canaux de contact disponibles pour les acheteurs.
+                    En tant qu'administrateur, vous pouvez renseigner des numéros de contact personnalisés (Appel normal et WhatsApp) et choisir les options d'affichage des boutons et du numéro sur l'annonce.
                   </p>
 
+                  {/* Numéros de contact personnalisés (Admin) */}
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    {/* Plateforme source */}
+                    {/* Numéro d'appel normal */}
                     <div>
-                      <label className="block text-sm font-medium mb-1.5 text-zinc-700 dark:text-zinc-300">
-                        Plateforme Source
-                      </label>
-                      <Select
-                        value={formData.source || "OTHER"}
-                        onChange={val => update("source", val)}
-                        options={[
-                          { value: "FACEBOOK", label: "Facebook" },
-                          { value: "TIKTOK", label: "TikTok" },
-                          { value: "WHATSAPP", label: "WhatsApp" },
-                          { value: "INSTAGRAM", label: "Instagram" },
-                          { value: "OTHER", label: "Autre / Site Web" },
-                        ]}
-                        className="h-[48px]"
-                      />
-                    </div>
-
-                    {/* URL source */}
-                    <div>
-                      <label className="block text-sm font-medium mb-1.5 text-zinc-700 dark:text-zinc-300">
-                        Lien URL du post original
+                      <label className="block text-sm font-medium mb-1.5 text-zinc-700 dark:text-zinc-300 flex items-center gap-1.5">
+                        <Phone className="w-4 h-4 text-primary" />
+                        Numéro d'appel normal
                       </label>
                       <input
-                        type="url"
-                        value={formData.sourceUrl || ""}
-                        onChange={e => update("sourceUrl", e.target.value)}
-                        placeholder="https://facebook.com/... ou https://tiktok.com/@..."
-                        className="w-full h-[48px] px-3.5 border border-zinc-300 dark:border-zinc-700 rounded-lg dark:bg-zinc-800 text-sm"
+                        type="tel"
+                        value={formData.contactOptions?.callNumber || ""}
+                        onChange={e => update("contactOptions", { ...(formData.contactOptions || {}), callNumber: e.target.value })}
+                        placeholder="+243 812 345 678"
+                        className="w-full h-[48px] px-3.5 border border-zinc-300 dark:border-zinc-700 rounded-lg dark:bg-zinc-800 text-sm font-mono"
                       />
+                      <span className="text-[11px] text-zinc-500 mt-1 block">
+                        Numéro composé lorsque l'acheteur clique sur « Appeler ».
+                      </span>
+                    </div>
+
+                    {/* Numéro WhatsApp */}
+                    <div>
+                      <label className="block text-sm font-medium mb-1.5 text-zinc-700 dark:text-zinc-300 flex items-center gap-1.5">
+                        <MessageCircle className="w-4 h-4 text-emerald-600" />
+                        Numéro WhatsApp
+                      </label>
+                      <input
+                        type="tel"
+                        value={formData.contactOptions?.whatsappNumber || ""}
+                        onChange={e => update("contactOptions", { ...(formData.contactOptions || {}), whatsappNumber: e.target.value })}
+                        placeholder="+243 812 345 678"
+                        className="w-full h-[48px] px-3.5 border border-zinc-300 dark:border-zinc-700 rounded-lg dark:bg-zinc-800 text-sm font-mono"
+                      />
+                      <span className="text-[11px] text-zinc-500 mt-1 block">
+                        Numéro ouvert lorsque l'acheteur clique sur « WhatsApp ».
+                      </span>
                     </div>
                   </div>
 
-                  {/* Options de contact */}
+                  {/* Options d'affichage des moyens de contact */}
                   <div>
                     <label className="block text-sm font-medium mb-2 text-zinc-700 dark:text-zinc-300">
-                      Canaux de contact autorisés pour cette annonce
+                      Options d'affichage sur la fiche du véhicule
                     </label>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                      <label className="flex items-center gap-3 p-3 bg-white dark:bg-zinc-900 rounded-xl border border-zinc-200 dark:border-zinc-700 cursor-pointer">
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                      <label className="flex items-center gap-3 p-3 bg-white dark:bg-zinc-900 rounded-xl border border-zinc-200 dark:border-zinc-700 cursor-pointer hover:border-primary/50 transition-colors">
                         <input
                           type="checkbox"
                           checked={formData.contactOptions?.allowCalls !== false}
@@ -1635,12 +1651,12 @@ export default function PostCarPage({
                           className="w-4 h-4 text-primary rounded"
                         />
                         <div>
-                          <span className="text-sm font-semibold text-zinc-900 dark:text-white block">Appels téléphoniques</span>
-                          <span className="text-xs text-zinc-500">Permettre aux acheteurs d'appeler directement</span>
+                          <span className="text-sm font-semibold text-zinc-900 dark:text-white block">Appels normaux</span>
+                          <span className="text-[11px] text-zinc-500">Afficher le bouton d'appel</span>
                         </div>
                       </label>
 
-                      <label className="flex items-center gap-3 p-3 bg-white dark:bg-zinc-900 rounded-xl border border-zinc-200 dark:border-zinc-700 cursor-pointer">
+                      <label className="flex items-center gap-3 p-3 bg-white dark:bg-zinc-900 rounded-xl border border-zinc-200 dark:border-zinc-700 cursor-pointer hover:border-primary/50 transition-colors">
                         <input
                           type="checkbox"
                           checked={formData.contactOptions?.allowWhatsapp !== false}
@@ -1648,10 +1664,64 @@ export default function PostCarPage({
                           className="w-4 h-4 text-primary rounded"
                         />
                         <div>
-                          <span className="text-sm font-semibold text-zinc-900 dark:text-white block">Messages WhatsApp</span>
-                          <span className="text-xs text-zinc-500">Afficher le bouton de discussion WhatsApp</span>
+                          <span className="text-sm font-semibold text-zinc-900 dark:text-white block">WhatsApp</span>
+                          <span className="text-[11px] text-zinc-500">Afficher le bouton WhatsApp</span>
                         </div>
                       </label>
+
+                      <label className="flex items-center gap-3 p-3 bg-white dark:bg-zinc-900 rounded-xl border border-zinc-200 dark:border-zinc-700 cursor-pointer hover:border-primary/50 transition-colors">
+                        <input
+                          type="checkbox"
+                          checked={formData.contactOptions?.showPhoneNumber !== false}
+                          onChange={e => update("contactOptions", { ...(formData.contactOptions || {}), showPhoneNumber: e.target.checked })}
+                          className="w-4 h-4 text-primary rounded"
+                        />
+                        <div>
+                          <span className="text-sm font-semibold text-zinc-900 dark:text-white block">Afficher numéro</span>
+                          <span className="text-[11px] text-zinc-500">Afficher le numéro en clair</span>
+                        </div>
+                      </label>
+                    </div>
+                  </div>
+
+                  {/* Origine / Réseau social */}
+                  <div className="pt-2 border-t border-amber-200/50 dark:border-amber-800/30">
+                    <label className="block text-xs font-semibold uppercase tracking-wider text-zinc-500 mb-2">
+                      Origine / Réseau social (Optionnel)
+                    </label>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      {/* Plateforme source */}
+                      <div>
+                        <label className="block text-sm font-medium mb-1.5 text-zinc-700 dark:text-zinc-300">
+                          Plateforme Source
+                        </label>
+                        <Select
+                          value={formData.source || "OTHER"}
+                          onChange={val => update("source", val)}
+                          options={[
+                            { value: "FACEBOOK", label: "Facebook" },
+                            { value: "TIKTOK", label: "TikTok" },
+                            { value: "WHATSAPP", label: "WhatsApp" },
+                            { value: "INSTAGRAM", label: "Instagram" },
+                            { value: "OTHER", label: "Autre / Site Web" },
+                          ]}
+                          className="h-[48px]"
+                        />
+                      </div>
+
+                      {/* URL source */}
+                      <div>
+                        <label className="block text-sm font-medium mb-1.5 text-zinc-700 dark:text-zinc-300">
+                          Lien URL du post original
+                        </label>
+                        <input
+                          type="url"
+                          value={formData.sourceUrl || ""}
+                          onChange={e => update("sourceUrl", e.target.value)}
+                          placeholder="https://facebook.com/... ou https://tiktok.com/@..."
+                          className="w-full h-[48px] px-3.5 border border-zinc-300 dark:border-zinc-700 rounded-lg dark:bg-zinc-800 text-sm"
+                        />
+                      </div>
                     </div>
                     {formData.sourceUrl && (
                       <p className="text-xs text-primary font-medium mt-2 flex items-center gap-1.5">
@@ -1814,6 +1884,38 @@ export default function PostCarPage({
                         {formData.seats} places
                       </span>
                     </div>
+
+                    {isSuperAdmin && (
+                      <div className="col-span-2 sm:col-span-3 p-3.5 rounded-xl bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800/40 text-xs space-y-1.5">
+                        <span className="font-bold text-amber-800 dark:text-amber-300 block">
+                          Configuration des contacts (Admin)
+                        </span>
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-zinc-700 dark:text-zinc-300">
+                          <div>
+                            <span className="text-zinc-500 block text-[11px]">Bouton Appel normal</span>
+                            <strong>
+                              {formData.contactOptions?.allowCalls !== false
+                                ? (formData.contactOptions?.callNumber ? `Activé (${formData.contactOptions.callNumber})` : "Activé (Numéro profil)")
+                                : "Désactivé"}
+                            </strong>
+                          </div>
+                          <div>
+                            <span className="text-zinc-500 block text-[11px]">Bouton WhatsApp</span>
+                            <strong>
+                              {formData.contactOptions?.allowWhatsapp !== false
+                                ? (formData.contactOptions?.whatsappNumber ? `Activé (${formData.contactOptions.whatsappNumber})` : "Activé (Numéro profil)")
+                                : "Désactivé"}
+                            </strong>
+                          </div>
+                          <div>
+                            <span className="text-zinc-500 block text-[11px]">Numéro en clair</span>
+                            <strong>
+                              {formData.contactOptions?.showPhoneNumber !== false ? "Visible sur la fiche" : "Masqué"}
+                            </strong>
+                          </div>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </div>
 

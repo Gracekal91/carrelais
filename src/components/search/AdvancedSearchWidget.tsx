@@ -132,7 +132,7 @@ export function AdvancedSearchWidget({ initialCount = 0 }: AdvancedSearchWidgetP
 
 
   return (
-    <div className="w-full max-w-4xl mx-auto bg-white dark:bg-zinc-900 rounded-2xl shadow-xl border border-zinc-200 dark:border-zinc-800" ref={containerRef}>
+    <div className={cn("relative w-full max-w-4xl mx-auto bg-white dark:bg-zinc-900 rounded-2xl shadow-xl border border-zinc-200 dark:border-zinc-800", activeDropdown ? "z-40" : "z-20")} ref={containerRef}>
 
       {/* Header */}
       <div className="px-4 py-4 md:px-6 md:py-8 text-center bg-zinc-50 dark:bg-zinc-950/50 border-b border-zinc-200 dark:border-zinc-800 rounded-t-2xl">
@@ -163,10 +163,10 @@ export function AdvancedSearchWidget({ initialCount = 0 }: AdvancedSearchWidgetP
           </div>
 
           {/* Filter Row 1 */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className={cn("grid grid-cols-1 md:grid-cols-2 gap-4 relative", activeDropdown ? "z-40" : "z-20")}>
 
             {/* Makes & Models Dropdown */}
-            <div className="relative">
+            <div className={cn("relative", activeDropdown === "make" && "z-50")}>
               <button
                 type="button"
                 onClick={() => toggleDropdown("make")}
@@ -261,7 +261,7 @@ export function AdvancedSearchWidget({ initialCount = 0 }: AdvancedSearchWidgetP
             </div>
 
             {/* Province Dropdown */}
-            <div className="relative">
+            <div className={cn("relative", activeDropdown === "province" && "z-50")}>
               <button
                 type="button"
                 onClick={() => toggleDropdown("province")}
@@ -308,7 +308,7 @@ export function AdvancedSearchWidget({ initialCount = 0 }: AdvancedSearchWidgetP
           </div>
 
           {/* Filter Row 2: Price & Year Range */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 relative z-10">
             <div className="space-y-1">
               <p className="text-xs font-medium text-zinc-500 dark:text-zinc-400 px-1">{tVehicles("priceRange")}</p>
               <div className="grid grid-cols-2 gap-2">
@@ -359,7 +359,7 @@ export function AdvancedSearchWidget({ initialCount = 0 }: AdvancedSearchWidgetP
           </div>
 
           {/* Filter Row 4: Actions */}
-          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 sm:gap-4 pt-2">
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 sm:gap-4 pt-2 relative z-0">
             <button
               type="submit"
               className="order-1 sm:order-2 w-full sm:flex-1 h-12 rounded-xl bg-primary hover:bg-primary/90 text-white font-bold text-sm sm:text-base transition-colors flex items-center justify-center gap-2 shadow-lg shadow-primary/20 active:scale-98 cursor-pointer px-4 min-w-0"
