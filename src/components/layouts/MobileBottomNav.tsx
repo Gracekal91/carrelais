@@ -1,14 +1,15 @@
 "use client";
 
 import { Link, usePathname } from "@/i18n/routing";
-import { Home, CarFront, PlusCircle, User, ShieldCheck } from "lucide-react";
-import { useTranslations } from "next-intl";
+import { Home, CarFront, PlusCircle, BookOpen, User, ShieldCheck } from "lucide-react";
+import { useTranslations, useLocale } from "next-intl";
 import { useEffect, useState } from "react";
 import { getAuthUser } from "@/lib/actions";
 import { cn } from "@/lib/utils";
 
 export function MobileBottomNav() {
   const t = useTranslations("MobileNav");
+  const locale = useLocale();
   const pathname = usePathname();
   const [user, setUser] = useState<{ id: string; role: string; name: string } | null>(null);
 
@@ -32,6 +33,10 @@ export function MobileBottomNav() {
   const isHomeActive = pathname === "/" || pathname === "";
   const isVehiclesActive = pathname.startsWith("/vehicles");
   const isSellActive = pathname.startsWith("/dashboard/listings/create") || pathname.startsWith("/admin/dashboard/listings/create");
+  const isLearnActive =
+    pathname.startsWith("/apprendre") ||
+    pathname.startsWith("/learn") ||
+    pathname.startsWith("/articles");
   const isAccountActive =
     pathname.startsWith("/dashboard") ||
     pathname.startsWith("/signin") ||
@@ -41,13 +46,14 @@ export function MobileBottomNav() {
   const accountHref = user ? (isAdmin ? "/admin" : "/dashboard") : "/signin";
   const accountLabel = user ? (isAdmin ? t("admin") : t("account")) : t("signIn");
   const sellHref = isAdmin ? "/admin/dashboard/listings/create" : "/dashboard/listings/create";
+  const learnHref = locale === "en" ? "/learn" : "/apprendre";
 
   return (
     <nav 
       aria-label="Navigation mobile"
       className="fixed bottom-0 left-0 right-0 z-50 lg:hidden bg-white/95 dark:bg-zinc-950/95 backdrop-blur-lg border-t border-zinc-200 dark:border-zinc-800 shadow-[0_-4px_20px_rgba(0,0,0,0.06)] pb-[max(env(safe-area-inset-bottom),0.5rem)]"
     >
-      <div className="grid grid-cols-4 items-center h-15 max-w-md mx-auto px-2">
+      <div className="grid grid-cols-5 items-center h-15 max-w-lg mx-auto px-1">
         {/* 1. Accueil */}
         <Link
           href="/"
@@ -99,7 +105,24 @@ export function MobileBottomNav() {
           )}
         </Link>
 
-        {/* 4. Profil / Compte */}
+        {/* 4. Apprendre */}
+        <Link
+          href={learnHref}
+          className={cn(
+            "flex flex-col items-center justify-center gap-0.5 h-full transition-colors relative py-1",
+            isLearnActive
+              ? "text-primary font-bold"
+              : "text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200 font-medium"
+          )}
+        >
+          <BookOpen className={cn("w-5 h-5 transition-transform", isLearnActive && "scale-110 stroke-[2.5]")} />
+          <span className="text-[11px] leading-tight tracking-tight">{t("learn")}</span>
+          {isLearnActive && (
+            <span className="absolute bottom-0.5 w-1 h-1 rounded-full bg-primary" />
+          )}
+        </Link>
+
+        {/* 5. Profil / Compte */}
         <Link
           href={accountHref}
           className={cn(
