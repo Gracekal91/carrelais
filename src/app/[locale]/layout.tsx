@@ -105,6 +105,15 @@ export async function generateMetadata(props: {
         "max-snippet": -1,
       },
     },
+    icons: {
+      icon: [
+        { url: "/favicon.ico", sizes: "any" },
+        { url: "/icon.png", type: "image/png", sizes: "512x512" },
+      ],
+      apple: [
+        { url: "/apple-icon.png", sizes: "180x180", type: "image/png" },
+      ],
+    },
     other: {
       "geo.region": "CD-KN",
       "geo.placename": "Kinshasa, République Démocratique du Congo",
